@@ -91,7 +91,7 @@ dependencies {
     embed("net.dv8tion:JDA:4.2.0_227") {
         exclude group: 'okhttp3', module: "okhttp"
     }
-    embed "com.squareup.okhttp3:okhttp:4.9.0"
+    embed "com.squareup.okhttp3:okhttp:4.9.1"
     embed 'club.minnced:discord-webhooks:0.5.4'
 
     //GSON
@@ -102,7 +102,7 @@ dependencies {
     embed('com.vdurmont:emoji-java:5.1.1')
 
     //Minecraft <==> Discord conversion
-    embed 'net.kyori:adventure-api:4.4.0'
+    embed 'net.kyori:adventure-api:4.7.0'
     embed('net.kyori:adventure-text-serializer-gson:4.4.0')
     embed "dev.vankka:MCDiscordReserializer:4.0.0"
     embed "dev.vankka:SimpleAST:2.2.5-SNAPSHOT"
