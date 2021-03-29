@@ -91,7 +91,7 @@ dependencies {
     embed("net.dv8tion:JDA:4.2.0_227") {
         exclude group: 'okhttp3', module: "okhttp"
     }
-    embed "com.squareup.okhttp3:okhttp:4.9.0"
+    embed "com.squareup.okhttp3:okhttp:4.9.1"
     embed 'club.minnced:discord-webhooks:0.5.4'
 
     //GSON
@@ -112,7 +112,7 @@ dependencies {
     embed("com.github.ErdbeerbaerLP:toml4j:wip-SNAPSHOT")
 
     //Apache commons lang3
-    embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
 
     //SLF4J Simple Binding
     embed group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
