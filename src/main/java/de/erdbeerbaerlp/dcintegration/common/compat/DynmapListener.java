@@ -55,7 +55,9 @@ public class DynmapListener extends DynmapCommonAPIListener {
     public class DynmapSender extends DiscordEventHandler {
         @Override
         public void onDiscordMessagePost(MessageReceivedEvent event) {
-            api.sendBroadcastToWeb(Configuration.instance().dynmap.webName.replace("%name#tag%", event.getAuthor().getAsTag()).replace("%name%", event.getMember() != null ? event.getMember().getEffectiveName() : event.getAuthor().getName()), event.getMessage().getContentDisplay());
+            if (event.getChannel().getId().equals(Configuration.instance().dynmap.dynmapChannelID.equals("default") ? Configuration.instance().general.botChannel : Configuration.instance().dynmap.dynmapChannelID)) {
+                api.sendBroadcastToWeb(Configuration.instance().dynmap.webName.replace("%name#tag%", event.getAuthor().getAsTag()).replace("%name%", event.getMember() != null ? event.getMember().getEffectiveName() : event.getAuthor().getName()), event.getMessage().getContentDisplay());
+            }
         }
     }
 
