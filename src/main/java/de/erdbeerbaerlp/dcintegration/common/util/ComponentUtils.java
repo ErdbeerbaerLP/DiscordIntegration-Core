@@ -163,6 +163,6 @@ public class ComponentUtils {
 
     @Nonnull
     public static Component append(final Component base, final Component toAppend){
-        return base.replaceText(TextReplacementConfig.builder().match("$").replacement(toAppend).build());
+        return base.append(toAppend);
     }
 }
