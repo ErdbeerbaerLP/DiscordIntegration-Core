@@ -112,7 +112,7 @@ dependencies {
     embed("com.github.ErdbeerbaerLP:toml4j:wip-SNAPSHOT")
 
     //Apache commons lang3
-    embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
 
     //SLF4J Simple Binding
     embed group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
