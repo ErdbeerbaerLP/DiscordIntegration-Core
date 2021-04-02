@@ -484,8 +484,7 @@ public class Discord extends Thread {
      * @return Sent message
      */
     @Nullable
-    public CompletableFuture<Message> sendMessageReturns(@Nonnull String msg) {
-        final TextChannel c = getChannel();
+    public CompletableFuture<Message> sendMessageReturns(@Nonnull String msg, TextChannel c) {
         if (Configuration.instance().webhook.enable || msg.isEmpty() || c == null) return null;
         else return c.sendMessage(msg).submit();
     }
