@@ -50,6 +50,7 @@ configurations {
     compile.extendsFrom(embed)
 }
 shadowJar {
+    classifier = ""
     configurations = [project.configurations.embed]
     relocate 'okhttp3', 'dcshadow.okhttp'
     relocate 'okio', 'dcshadow.okio'
@@ -120,6 +121,7 @@ dependencies {
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
 }
+tasks.build.dependsOn(tasks.shadowJar)
 //Manifest attributes
 jar {
     manifest {
