@@ -167,7 +167,7 @@ public class Discord extends Thread {
                 return;
             }
         }
-        if(getChannel() == null){
+        if (getChannel() == null) {
             System.err.println("ERROR! Channel ID of the default bot channel not valid!");
             kill(true);
             return;
@@ -195,12 +195,12 @@ public class Discord extends Thread {
 
         //Cache all users and (nick-)names
         System.out.println("Caching members...");
-        jda.getGuilds().forEach((g) -> g.loadMembers().onSuccess((m) -> System.out.println("All " + m.size() + " members cached for Guild "+g.getName())).onError((t) -> {
+        jda.getGuilds().forEach((g) -> g.loadMembers().onSuccess((m) -> System.out.println("All " + m.size() + " members cached for Guild " + g.getName())).onError((t) -> {
             System.err.println("Encountered an error while caching members:");
             t.printStackTrace();
         }));
 
-        final Thread t = new Thread(()->{
+        final Thread t = new Thread(() -> {
             System.out.println("Loading DiscordIntegration addons...");
             AddonLoader.loadAddons(this);
             System.out.println("Addon loading complete!");
@@ -247,7 +247,9 @@ public class Discord extends Thread {
     public void kill() {
         kill(true);
     }
-    private final HashMap<String,TextChannel> channelCache = new HashMap<>();
+
+    private final HashMap<String, TextChannel> channelCache = new HashMap<>();
+
     /**
      * @return the specified text channel
      */
@@ -261,20 +263,20 @@ public class Discord extends Thread {
      */
     @Nullable
     public TextChannel getChannel(@Nonnull String id) {
-        if(jda == null) return null;
+        if (jda == null) return null;
         TextChannel channel;
         final boolean deflt = id.equals("default") || id.equals(Configuration.instance().general.botChannel);
         if (deflt) id = Configuration.instance().general.botChannel;
-        if(id.isEmpty()){
+        if (id.isEmpty()) {
             System.err.println("Cannot get channel from empty ID! Check your config!");
-            if(deflt) return null;
+            if (deflt) return null;
             System.out.println("Falling back to default channel!");
             return getChannel();
         }
-        channel = channelCache.computeIfAbsent(id,(id2)->jda.getTextChannelById(id2));
-        if(channel == null){
-            System.err.println("Failed to get channel with ID '"+id+"', falling back to default channel");
-            channel = channelCache.computeIfAbsent(Configuration.instance().general.botChannel,jda::getTextChannelById);
+        channel = channelCache.computeIfAbsent(id, (id2) -> jda.getTextChannelById(id2));
+        if (channel == null) {
+            System.err.println("Failed to get channel with ID '" + id + "', falling back to default channel");
+            channel = channelCache.computeIfAbsent(Configuration.instance().general.botChannel, jda::getTextChannelById);
         }
         return channel;
     }
@@ -439,15 +441,19 @@ public class Discord extends Thread {
         if (jda == null || channel == null) return;
         try {
             if (Configuration.instance().webhook.enable) {
-                final WebhookMessageBuilder b = message.buildWebhookMessage();
-                b.setUsername(name);
-                b.setAvatarUrl(avatarURL);
-                getWebhookCli(channel.getId()).send(b.build()).thenAccept((a) -> addRecentMessage(a.getId() + "", UUID.fromString(uuid)));
+                final ArrayList<WebhookMessageBuilder> messages = message.buildWebhookMessages();
+                messages.forEach((builder) -> {
+                    builder.setUsername(name);
+                    builder.setAvatarUrl(avatarURL);
+                    getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> addRecentMessage(a.getId() + "", UUID.fromString(uuid)));
+                });
             } else if (isChatMessage) {
                 message.setMessage(Configuration.instance().localization.discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
-                channel.sendMessage(message.buildMessage()).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
+                for (Message m : message.buildMessages())
+                    channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
             } else {
-                channel.sendMessage(message.buildMessage()).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
+                for (Message m : message.buildMessages())
+                    channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -530,6 +536,7 @@ public class Discord extends Thread {
 
     /**
      * Gets a list of all personal settings and their descriptions
+     *
      * @return HashMap with the setting keys as key and the setting descriptions as value
      */
     @Nonnull
@@ -561,7 +568,7 @@ public class Discord extends Thread {
      */
     @SuppressWarnings("ConstantConditions")
     public void sendMessage(@Nonnull String playerName, @Nonnull String uuid, @Nonnull DiscordMessage msg, TextChannel channel) {
-        if(channel == null) return;
+        if (channel == null) return;
         final boolean isServerMessage = playerName.equals(Configuration.instance().webhook.serverName) && uuid.equals("0000000");
         final UUID uUUID = uuid.equals("0000000") ? null : UUID.fromString(uuid);
         String avatarURL = "";
@@ -766,7 +773,7 @@ public class Discord extends Thread {
                             jda.getPresence().setActivity(Activity.watching(game));
                             break;
                         case STREAMING:
-                            jda.getPresence().setActivity(Activity.streaming(game,Configuration.instance().general.streamingURL)); //URL is required to show up as "Streaming"
+                            jda.getPresence().setActivity(Activity.streaming(game, Configuration.instance().general.streamingURL)); //URL is required to show up as "Streaming"
                             break;
                     }
                 }

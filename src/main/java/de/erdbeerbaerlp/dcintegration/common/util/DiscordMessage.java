@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Queue;
 
 public final class DiscordMessage {
     private final boolean isNotRaw;
@@ -52,8 +54,9 @@ public final class DiscordMessage {
     public void setEmbed(@Nonnull final MessageEmbed embed) {
         this.embed = embed;
     }
+
     @Nonnull
-    public Message buildMessage() {
+    public Queue<Message> buildMessages() {
         final MessageBuilder out = new MessageBuilder();
         if (!message.isEmpty()) {
             if (isNotRaw) {
@@ -67,19 +70,43 @@ public final class DiscordMessage {
         }
         if (embed != null)
             out.setEmbed(embed);
-        return out.build();
+        return out.buildAll(MessageBuilder.SplitPolicy.NEWLINE, MessageBuilder.SplitPolicy.SPACE);
     }
+
+    private String[] splitMessages(final String inMsg) {
+        if (inMsg.length() <= 2000)
+            return new String[]{inMsg};
+        else {
+            String[] split = inMsg.split(" ");
+            final ArrayList<String> outStrings = new ArrayList<>();
+            String bufferString = "";
+            for (String s : split) {
+                if ((bufferString + " " + s).length() > 2000) {
+                    outStrings.add(bufferString);
+                    bufferString = " ";
+                } else
+                    bufferString += s;
+            }
+            outStrings.add(bufferString);
+            return outStrings.toArray(new String[0]);
+        }
+    }
+
     @Nonnull
-    public WebhookMessageBuilder buildWebhookMessage() {
-        final WebhookMessageBuilder out = new WebhookMessageBuilder();
+    public ArrayList<WebhookMessageBuilder> buildWebhookMessages() {
+        final ArrayList<WebhookMessageBuilder> out = new ArrayList<>();
+        String content;
         if (!message.isEmpty()) {
             if (isNotRaw) {
                 if (Configuration.instance().messages.formattingCodesToDiscord)
-                    out.setContent(MessageUtils.convertMCToMarkdown(message));
+                    content = MessageUtils.convertMCToMarkdown(message);
                 else
-                    out.setContent(MessageUtils.removeFormatting(MessageUtils.convertMCToMarkdown(message)));
+                    content = MessageUtils.removeFormatting(MessageUtils.convertMCToMarkdown(message));
             } else {
-                out.setContent(message);
+                content = message;
+            }
+            for (String msg : splitMessages(content)) {
+                out.add(new WebhookMessageBuilder().setContent(msg));
             }
         }
         if (embed != null) {
@@ -100,7 +127,7 @@ public final class DiscordMessage {
             eb.setTimestamp(embed.getTimestamp());
             if (embed.getTitle() != null)
                 eb.setTitle(new WebhookEmbed.EmbedTitle(embed.getTitle(), embed.getUrl()));
-            out.addEmbeds(eb.build());
+            out.set(out.size()-1,out.get(out.size()-1).addEmbeds(eb.build()));
         }
         return out;
     }

@@ -13,7 +13,7 @@ plugins {
 apply plugin: 'com.github.johnrengelman.shadow'
 
 //Build variables
-version = "2.1.1"
+version = "2.2.0"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 

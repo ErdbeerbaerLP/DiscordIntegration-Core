@@ -23,7 +23,7 @@ public class DynmapListener extends DynmapCommonAPIListener {
     }
 
     @Override
-    public void apiEnabled(DynmapCommonAPI api) {
+    public void apiEnabled(org.dynmap.DynmapCommonAPI api) {
         this.api = api;
         if (Variables.discord_instance != null)
             Variables.discord_instance.registerEventHandler(sender);
@@ -31,7 +31,7 @@ public class DynmapListener extends DynmapCommonAPIListener {
     }
 
     @Override
-    public void apiDisabled(DynmapCommonAPI api) {
+    public void apiDisabled(org.dynmap.DynmapCommonAPI api) {
         if (Variables.discord_instance != null)
             Variables.discord_instance.unregisterEventHandler(sender);
     }
