@@ -227,7 +227,8 @@ public class Discord extends Thread {
     public void kill(boolean instant) {
         AddonLoader.unloadAddons(this);
         if (jda != null) {
-            jda.removeEventListener(listener);
+            if (listener != null)
+                jda.removeEventListener(listener);
             stopThreads();
             unregisterAllEventHandlers();
             webhookClis.forEach((i, w) -> w.close());
