@@ -107,7 +107,7 @@ dependencies {
     embed('net.kyori:adventure-text-serializer-gson:4.8.1')
     embed "dev.vankka:MCDiscordReserializer:4.2.1"
     embed "dev.vankka:SimpleAST:2.2.7"
-    embed "net.kyori:adventure-text-serializer-legacy:4.7.0"
+    embed "net.kyori:adventure-text-serializer-legacy:4.8.1"
 
     //Toml4j
     embed("com.github.ErdbeerbaerLP:toml4j:wip-SNAPSHOT")
