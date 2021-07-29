@@ -339,6 +339,7 @@ public class Configuration {
             @TomlComment({"Sent when attempting to use personal commands while not linked", "PLACEHOLDERS:", "%method% - The currently enabled method for linking"})
             public String notLinked = "Your account is not linked! Link it first using %method%";
 
+
             @TomlComment({"Message of the link method in whitelist mode", "Used by %method% placeholder"})
             public String linkMethodWhitelist = "`%prefix%whitelist <Name-Or-UUID>` here";
 
@@ -423,6 +424,22 @@ public class Configuration {
             @TomlComment("Shows when running slash commands as command response")
             public String executing = "Executing...";
 
+            @TomlComment("Command argument description for the linkcheck command's Discord user parameter")
+            public String cmdLinkcheck_userargDesc = "The discord user to check";
+
+            @TomlComment("Command argument description for the linkcheck command's minecraft player parameter")
+            public String cmdLinkcheck_mcargDesc = "The minecraft player's UUID or Name to check";
+
+            @TomlComment("Sent when checked user is not linked")
+            public String cmdLinkcheck_notlinked = "This account is not linked!";
+
+            @TomlComment("")
+            public String cmdLinkcheck_discordAcc = "Discord-Account: ";
+
+            public String cmdLinkcheck_minecraftAcc = "Minecraft Account: ";
+
+            public String cmdLinkcheck_cannotGetPlayer = "Error getting player information! Maybe you used an invalid name / UUID";
+
             @TomlComment("Command descriptions")
             public Descriptions descriptions = new Descriptions();
 
@@ -433,6 +450,7 @@ public class Configuration {
                 public String list = "Lists all players currently online";
                 public String link = "Links your Discord account with your Minecraft account";
                 public String whitelist = "Whitelists you on the server by linking with Discord";
+                public String linkcheck = "Shows info about an linked discord user or an ingame player";
             }
         }
 

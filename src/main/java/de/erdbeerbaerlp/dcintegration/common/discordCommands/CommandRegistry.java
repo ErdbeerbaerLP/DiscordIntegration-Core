@@ -4,20 +4,22 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import de.erdbeerbaerlp.dcintegration.common.Discord;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat.*;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inDMs.*;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
-import javax.lang.model.element.VariableElement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CommandRegistry {
     /**
@@ -31,6 +33,8 @@ public class CommandRegistry {
 
     public static final CommandListUpdateAction cmdList = Variables.discord_instance.getChannel().getGuild().updateCommands();
 
+    private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByName = new HashMap<>();
+    private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByID = new HashMap<>();
 
     /**
      * Registers all default commands and custom commands from config
@@ -46,6 +50,7 @@ public class CommandRegistry {
         if (Configuration.instance().linking.enableLinking) {
             registerCommand(new DMHelpCommand());
             registerCommand(new SettingsCommand());
+            registerCommand(new CommandLinkcheck());
             if (Configuration.instance().linking.whitelistMode)
                 registerCommand(new WhitelistCommand());
             else
@@ -93,7 +98,8 @@ public class CommandRegistry {
      * @return true if the registration was successful
      */
     public static boolean registerCommand(@Nonnull DiscordCommand cmd) {
-
+        final ArrayList<Role> adminRoles = getAdminRoles(Variables.discord_instance.getChannel().getGuild());
+        final Member owner = Variables.discord_instance.getChannel().getGuild().retrieveOwner().complete();
         if (cmd instanceof DMCommand) {
             final ArrayList<DMCommand> toRemove = new ArrayList<>();
             for (DMCommand c : dmCommands) {
@@ -113,15 +119,40 @@ public class CommandRegistry {
                 commands.remove(cm);
             boolean ret = commands.add(cmd);
             if (ret && cmdList != null && cmd instanceof CommandFromCFG) {
-                if(cmd.isUsingArgs()) cmd.addOption(OptionType.STRING,"args", cmd.getArgText());
+                if (cmd.isUsingArgs()) cmd.addOption(OptionType.STRING, "args", cmd.getArgText());
+            }
+            if (cmd.adminOnly()) {
+                cmd.setDefaultEnabled(false);
+                final HashMap<String, Collection<? extends CommandPrivilege>> perm = new HashMap<>();
+                final ArrayList<CommandPrivilege> privileges = new ArrayList<>();
+                adminRoles.forEach((r) -> privileges.add(new CommandPrivilege(CommandPrivilege.Type.ROLE, true, r.getIdLong())));
+                privileges.add(new CommandPrivilege(CommandPrivilege.Type.USER, true, owner.getIdLong()));
+                permissionsByName.put(cmd.getName(), privileges);
             }
             return ret;
         }
     }
 
-    public static void updateSlashCommands(){
+    public static void updateSlashCommands() {
         cmdList.queue();
-        cmdList.addCommands(commands).queue();
+        cmdList.addCommands(commands).complete().forEach((cmd) -> {
+            if (permissionsByName.containsKey(cmd.getName())) {
+                permissionsByID.put(cmd.getId(), permissionsByName.get(cmd.getName()));
+            }
+        });
+        Variables.discord_instance.getChannel().getGuild().updateCommandPrivileges(permissionsByID).queue();
+    }
+
+    private static ArrayList<Role> getAdminRoles(Guild g) {
+        final List<Role> gRoles = g.getRoles();
+        final ArrayList<Role> adminRoles = new ArrayList<>();
+
+        for(Role r : gRoles){
+            if(ArrayUtils.contains(Configuration.instance().commands.adminRoleIDs,r.getId()))
+                adminRoles.add(r);
+        }
+
+        return adminRoles;
     }
 
     /**
