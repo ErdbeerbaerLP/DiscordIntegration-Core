@@ -7,6 +7,9 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.Arrays;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
@@ -46,6 +49,10 @@ public class SettingsCommand extends DMCommand {
                 channel.sendMessage(Configuration.instance().localization.personalSettings.invalidPersonalSettingKey.replace("%key%", args[1])).queue();
         } else if (args.length == 3 && args[0].equals("set")) {
             if (discord_instance.getSettings().containsKey(args[1])) {
+                if(ArrayUtils.contains(Configuration.instance().linking.settingsBlacklist,args[1])){
+                    channel.sendMessage(Configuration.instance().localization.personalSettings.settingUpdateBlocked).queue();
+                    return;
+                }
                 final PlayerSettings settings = PlayerLinkController.getSettings(sender.getId(), null);
                 boolean newval;
                 try {

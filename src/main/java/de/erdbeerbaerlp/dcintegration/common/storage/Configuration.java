@@ -438,6 +438,7 @@ public class Configuration {
 
         public static class PersonalSettings {
 
+
             @TomlComment("Message for getting an setting's value")
             public String personalSettingGet = "This settings value is `%bool%`";
 
@@ -455,6 +456,9 @@ public class Configuration {
 
             @TomlComment("Sent when setting an personal setting fails")
             public String settingUpdateFailed = "Failed to set value :/";
+
+            @TomlComment("Sent when attempting to change an blacklisted setting")
+            public String settingUpdateBlocked = "The server owner disabled changing of this setting";
 
             @TomlComment("Descriptions of the settings")
             public Descriptions descriptons = new Descriptions();
@@ -499,6 +503,9 @@ public class Configuration {
 
         @TomlComment("Allows you to configure the default values of some personal settings")
         PersonalSettingsDefaults personalSettingsDefaults = new PersonalSettingsDefaults();
+
+        @TomlComment({"Adding setting keys to this array will prevent thoose settings to be changed", "They will still show up in the list though"})
+        public String[] settingsBlacklist = new String[0];
 
         public static class PersonalSettingsDefaults {
             public boolean default_useDiscordNameInChannel = true;
