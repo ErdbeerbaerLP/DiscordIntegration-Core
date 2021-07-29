@@ -306,6 +306,7 @@ public class Discord extends Thread {
      * Starts all sub-threads
      */
     public void startThreads() {
+        CommandRegistry.updateSlashCommands();
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread();
         if (messageSender == null) messageSender = new MessageQueueThread();
         if (!messageSender.isAlive()) messageSender.start();
@@ -355,7 +356,7 @@ public class Discord extends Thread {
      * @param channel    Target channel
      * @param uuid       Player UUID
      */
-    public void sendMessage(@Nonnull final String playerName, @Nonnull String uuid, @Nonnull MessageEmbed embed, @Nonnull TextChannel channel) {
+    public void sendMessage(@Nonnull final String playerName, @Nonnull String uuid, @Nonnull MessageEmbed embed, @Nonnull MessageChannel channel) {
         sendMessage(playerName, uuid, new DiscordMessage(embed), channel);
     }
 
@@ -376,7 +377,7 @@ public class Discord extends Thread {
      * @param channel    Target channel
      * @param uuid       Player UUID
      */
-    public void sendMessage(@Nonnull final String playerName, @Nonnull String uuid, @Nonnull String msg, TextChannel channel) {
+    public void sendMessage(@Nonnull final String playerName, @Nonnull String uuid, @Nonnull String msg, MessageChannel channel) {
         sendMessage(playerName, uuid, new DiscordMessage(msg), channel);
     }
 
@@ -388,7 +389,7 @@ public class Discord extends Thread {
      * @param avatarURL URL of the avatar image for the webhook
      * @param name      Webhook name
      */
-    public void sendMessage(TextChannel channel, @Nonnull String message, @Nonnull String avatarURL, @Nonnull String name) {
+    public void sendMessage(MessageChannel channel, @Nonnull String message, @Nonnull String avatarURL, @Nonnull String name) {
         sendMessage(name, new DiscordMessage(message), avatarURL, channel, false);
     }
 
@@ -411,7 +412,7 @@ public class Discord extends Thread {
      * @param channel   Channel to send message into
      * @param avatarURL URL of the avatar image
      */
-    public void sendMessage(@Nonnull String name, @Nonnull String msg, TextChannel channel, @Nonnull String avatarURL) {
+    public void sendMessage(@Nonnull String name, @Nonnull String msg, MessageChannel channel, @Nonnull String avatarURL) {
         sendMessage(name, new DiscordMessage(msg), avatarURL, channel, true);
     }
 
@@ -424,7 +425,7 @@ public class Discord extends Thread {
      * @param channel       Target channel
      * @param isChatMessage true to send it as chat message (when not using webhook)
      */
-    public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, TextChannel channel, boolean isChatMessage) {
+    public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, MessageChannel channel, boolean isChatMessage) {
         sendMessage(name, message, avatarURL, channel, isChatMessage, dummyUUID.toString());
     }
 
@@ -438,7 +439,7 @@ public class Discord extends Thread {
      * @param isChatMessage true to send it as chat message (when not using webhook)
      * @param uuid          UUID of the player (required for in-game pinging)
      */
-    public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, TextChannel channel, boolean isChatMessage, @Nonnull String uuid) {
+    public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, MessageChannel channel, boolean isChatMessage, @Nonnull String uuid) {
         if (jda == null || channel == null) return;
         try {
             if (Configuration.instance().webhook.enable) {
@@ -499,21 +500,19 @@ public class Discord extends Thread {
 
     /**
      * Sends a message to discord
-     *
-     * @param msg         the message to send
+     *  @param msg         the message to send
      * @param textChannel the channel where the message should arrive
      */
-    public void sendMessage(@Nonnull String msg, TextChannel textChannel) {
+    public void sendMessage(@Nonnull String msg, MessageChannel textChannel) {
         sendMessage(new DiscordMessage(msg), textChannel);
     }
 
     /**
      * Sends a message to discord
-     *
-     * @param msg     the message to send
+     *  @param msg     the message to send
      * @param channel the channel where the message should arrive
      */
-    public void sendMessage(@Nonnull DiscordMessage msg, TextChannel channel) {
+    public void sendMessage(@Nonnull DiscordMessage msg, MessageChannel channel) {
         sendMessage(Configuration.instance().webhook.serverName, "0000000", msg, channel);
     }
 
@@ -568,7 +567,7 @@ public class Discord extends Thread {
      * @param msg        the message to send
      */
     @SuppressWarnings("ConstantConditions")
-    public void sendMessage(@Nonnull String playerName, @Nonnull String uuid, @Nonnull DiscordMessage msg, TextChannel channel) {
+    public void sendMessage(@Nonnull String playerName, @Nonnull String uuid, @Nonnull DiscordMessage msg, MessageChannel channel) {
         if (channel == null) return;
         final boolean isServerMessage = playerName.equals(Configuration.instance().webhook.serverName) && uuid.equals("0000000");
         final UUID uUUID = uuid.equals("0000000") ? null : UUID.fromString(uuid);
@@ -576,7 +575,7 @@ public class Discord extends Thread {
         if (!isServerMessage && uUUID != null) {
             if (PlayerLinkController.isPlayerLinked(uUUID)) {
                 final PlayerSettings s = PlayerLinkController.getSettings(null, uUUID);
-                final Member dc = channel.getGuild().getMemberById(PlayerLinkController.getDiscordFromPlayer(uUUID));
+                final Member dc = getChannel().getGuild().getMemberById(PlayerLinkController.getDiscordFromPlayer(uUUID));
                 if (s.useDiscordNameInChannel) {
                     playerName = dc.getEffectiveName();
                     avatarURL = dc.getUser().getAvatarUrl();

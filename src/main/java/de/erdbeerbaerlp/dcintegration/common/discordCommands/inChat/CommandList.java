@@ -1,7 +1,9 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,12 +14,7 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 
 public class CommandList extends DiscordCommand {
     public CommandList() {
-        super(Configuration.instance().advanced.listCmdChannelIDs);
-    }
-
-    @Override
-    public String getName() {
-        return "list";
+        super(Configuration.instance().advanced.listCmdChannelIDs, "list", Configuration.instance().localization.commands.descriptions.list);
     }
 
     @Override
@@ -25,16 +22,12 @@ public class CommandList extends DiscordCommand {
         return new String[]{"online"};
     }
 
-    @Override
-    public String getDescription() {
-        return Configuration.instance().localization.commands.descriptions.list;
-    }
 
     @Override
-    public void execute(String[] args, final MessageReceivedEvent cmdMsg) {
+    public void execute(SlashCommandEvent ev) {
         final HashMap<UUID, String> players = discord_instance.srv.getPlayers();
         if (players.isEmpty()) {
-            discord_instance.sendMessage(Configuration.instance().localization.commands.cmdList_empty, cmdMsg.getTextChannel());
+            ev.reply(Configuration.instance().localization.commands.cmdList_empty).queue();
             return;
         }
         StringBuilder out = new StringBuilder((players.size() == 1 ? Configuration.instance().localization.commands.cmdList_one
@@ -46,6 +39,6 @@ public class CommandList extends DiscordCommand {
 
 
         out = new StringBuilder(out.substring(0, out.length() - 1));
-        discord_instance.sendMessage(out + "\n```", cmdMsg.getTextChannel());
+        ev.reply(out + "\n```").queue();
     }
 }

@@ -4,12 +4,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import de.erdbeerbaerlp.dcintegration.common.Discord;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat.*;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inDMs.*;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
+import de.erdbeerbaerlp.dcintegration.common.util.Variables;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 import javax.annotation.Nonnull;
+import javax.lang.model.element.VariableElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +28,9 @@ public class CommandRegistry {
      * Registered commands
      */
     private static List<DiscordCommand> commands = new ArrayList<>();
+
+    public static final CommandListUpdateAction cmdList = Variables.discord_instance.getChannel().getGuild().updateCommands();
+
 
     /**
      * Registers all default commands and custom commands from config
@@ -82,9 +90,10 @@ public class CommandRegistry {
      * Registers an {@link DiscordCommand} or {@link DMCommand}
      *
      * @param cmd command
-     * @return if the registration was successful
+     * @return true if the registration was successful
      */
     public static boolean registerCommand(@Nonnull DiscordCommand cmd) {
+
         if (cmd instanceof DMCommand) {
             final ArrayList<DMCommand> toRemove = new ArrayList<>();
             for (DMCommand c : dmCommands) {
@@ -102,8 +111,17 @@ public class CommandRegistry {
             }
             for (DiscordCommand cm : toRemove)
                 commands.remove(cm);
-            return commands.add(cmd);
+            boolean ret = commands.add(cmd);
+            if (ret && cmdList != null && cmd instanceof CommandFromCFG) {
+                if(cmd.isUsingArgs()) cmd.addOption(OptionType.STRING,"args", cmd.getArgText());
+            }
+            return ret;
         }
+    }
+
+    public static void updateSlashCommands(){
+        cmdList.queue();
+        cmdList.addCommands(commands).queue();
     }
 
     /**

@@ -2,19 +2,16 @@ package de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 
 public class CommandUptime extends DiscordCommand {
     public CommandUptime() {
-        super(Configuration.instance().advanced.uptimeCmdChannelIDs);
-    }
-
-    @Override
-    public String getName() {
-        return "uptime";
+        super(Configuration.instance().advanced.uptimeCmdChannelIDs, "uptime",Configuration.instance().localization.commands.descriptions.uptime);
     }
 
     @Override
@@ -22,13 +19,9 @@ public class CommandUptime extends DiscordCommand {
         return new String[]{"up"};
     }
 
-    @Override
-    public String getDescription() {
-        return Configuration.instance().localization.commands.descriptions.uptime;
-    }
 
     @Override
-    public void execute(String[] args, final MessageReceivedEvent cmdMsg) {
-        discord_instance.sendMessage(Configuration.instance().localization.commands.cmdUptime_message.replace("%uptime%", MessageUtils.getFullUptime()), cmdMsg.getTextChannel());
+    public void execute(SlashCommandEvent ev) {
+        ev.reply(Configuration.instance().localization.commands.cmdUptime_message.replace("%uptime%", MessageUtils.getFullUptime())).queue();
     }
 }

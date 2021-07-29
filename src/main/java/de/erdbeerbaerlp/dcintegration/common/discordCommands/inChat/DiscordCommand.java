@@ -2,9 +2,11 @@ package de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
@@ -16,7 +18,7 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 /**
  * Abstract class used for discord commands
  */
-public abstract class DiscordCommand {
+public abstract class DiscordCommand extends CommandData {
 
     private final String[] EVERYWHERE = new String[]{"00"};
     private final String[] ONLY_IN_BOT_CHANNEL = new String[]{"0"};
@@ -26,12 +28,25 @@ public abstract class DiscordCommand {
     private final String[] channelIDs;
     boolean isConfigCmd = false;
 
-    protected DiscordCommand(@Nonnull String[] channelIDs) {
+    protected boolean useArgs = false;
+    protected String argText = "<undefined>";
+
+    public final boolean isUsingArgs() {
+        return useArgs;
+    }
+
+    public final String getArgText() {
+        return argText;
+    }
+
+
+    protected DiscordCommand(@Nonnull String[] channelIDs, String name, String desc) {
+        super(name,desc);
         this.channelIDs = channelIDs;
     }
 
-    protected DiscordCommand(@Nonnull String channelID) {
-        this.channelIDs = new String[]{channelID};
+    protected DiscordCommand(@Nonnull String channelID, String name, String desc) {
+        this(new String[]{channelID}, name,desc);
     }
 
     /**
@@ -39,7 +54,7 @@ public abstract class DiscordCommand {
      *
      * @param channel TextChannel to check for
      */
-    public final boolean worksInChannel(final TextChannel channel) {
+    public final boolean worksInChannel(final MessageChannel channel) {
         if(channel == null) return false;
         return worksInChannel(channel.getId());
     }
@@ -60,7 +75,9 @@ public abstract class DiscordCommand {
      * Sets the name of the command
      */
     @Nonnull
-    public abstract String getName();
+    public String getName(){
+        return name;
+    }
 
     /**
      * Sets the aliases of the command
@@ -72,7 +89,9 @@ public abstract class DiscordCommand {
      * Sets the description for the help command
      */
     @Nonnull
-    public abstract String getDescription();
+    public String getDescription(){
+        return description;
+    }
 
     /**
      * Is this command only for admins?
@@ -84,11 +103,9 @@ public abstract class DiscordCommand {
     /**
      * Method called when executing this command
      * <p>
-     *
-     * @param args   arguments passed by the player
-     * @param cmdMsg the {@link MessageReceivedEvent} of the message
+     *  @param ev the SlashCommandEvent
      */
-    public abstract void execute(@Nonnull String[] args, @Nonnull final MessageReceivedEvent cmdMsg);
+    public abstract void execute(SlashCommandEvent ev);
 
     /**
      * Wether or not this command should be visible in help
@@ -121,7 +138,7 @@ public abstract class DiscordCommand {
      * Override to customize the command usage, which is being displayed in help (ex. to add arguments)
      */
     public String getCommandUsage() {
-        return Configuration.instance().commands.prefix + getName();
+        return "/"+getName();
     }
 
     public final boolean equals(DiscordCommand cmd) {
@@ -142,4 +159,5 @@ public abstract class DiscordCommand {
     public final boolean isConfigCommand() {
         return isConfigCmd;
     }
+
 }

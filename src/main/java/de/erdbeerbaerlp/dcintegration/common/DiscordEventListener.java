@@ -17,10 +17,9 @@ import dev.vankka.simpleast.core.parser.ParseSpec;
 import dev.vankka.simpleast.core.parser.Parser;
 import dev.vankka.simpleast.core.parser.Rule;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.ChannelType;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
@@ -32,8 +31,10 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -63,6 +64,15 @@ public class DiscordEventListener implements EventListener {
         final Discord dc = Variables.discord_instance;
         final JDA jda = dc.getJDA();
         if (jda == null) return;
+        if (event instanceof SlashCommandEvent) {
+            SlashCommandEvent ev = (SlashCommandEvent) event;
+            if (ev.getChannelType().equals(ChannelType.TEXT)) {
+                //ev.reply(Configuration.instance().localization.commands.executing).queue();
+                String cmd = ev.getName();
+                String args = ev.getOption("args") != null ? ev.getOption("args").getAsString() : "";
+                processDiscordCommand(ev,ArrayUtils.addAll(new String[]{cmd}, args.split(" ")), ev.getTextChannel(), ev.getUser(), dc);
+            }
+        }
         if (event instanceof MessageReactionAddEvent) {
             final MessageReactionAddEvent ev = (MessageReactionAddEvent) event;
             final UUID sender = dc.getSenderUUIDFromMessageID(ev.getMessageId());
@@ -75,84 +85,36 @@ public class DiscordEventListener implements EventListener {
         if (event instanceof MessageReceivedEvent) {
             final MessageReceivedEvent ev = (MessageReceivedEvent) event;
 
-
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
                 if (!ev.isWebhookMessage() && !ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
                     if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;
-
-                    if (ev.getMessage().getContentRaw().startsWith(Configuration.instance().commands.prefix + (Configuration.instance().commands.spaceAfterPrefix ? " " : ""))) {
-                        final String[] command = ev.getMessage().getContentRaw().replaceFirst(Configuration.instance().commands.prefix, "").split(" ");
-                        String argumentsRaw = "";
-                        for (int i = 1; i < command.length; i++) {
-                            argumentsRaw = argumentsRaw + command[i] + " ";
-                        }
-                        argumentsRaw = argumentsRaw.trim();
-                        boolean hasPermission = true;
-                        boolean executed = false;
-                        for (final DiscordCommand cmd : CommandRegistry.getCommandList()) {
-                            if (!cmd.worksInChannel(ev.getTextChannel())) {
-                                continue;
-                            }
-                            if (cmd.getName().equals(command[0])) {
-                                if (cmd.canUserExecuteCommand(ev.getAuthor())) {
-                                    if (dc.callEvent((e) -> e.onDiscordCommand(ev, cmd))) return;
-                                    cmd.execute(argumentsRaw.split(" "), ev);
-                                    executed = true;
-                                } else {
-                                    hasPermission = false;
-                                }
-                            }
-                            for (final String alias : cmd.getAliases()) {
-                                if (alias.equals(command[0])) {
-                                    if (cmd.canUserExecuteCommand(ev.getAuthor())) {
-                                        if (dc.callEvent((e) -> e.onDiscordCommand(ev, cmd))) return;
-                                        cmd.execute(argumentsRaw.split(" "), ev);
-                                        executed = true;
-                                    } else {
-                                        hasPermission = false;
-                                    }
-                                }
-                            }
-                        }
-                        if (!executed)
-                            if (dc.callEvent((e) -> e.onDiscordCommand(ev, null))) return;
-                        if (!hasPermission) {
-                            dc.sendMessage(Configuration.instance().localization.commands.noPermission, ev.getTextChannel());
-                            return;
-                        }
-                        if (!executed && (Configuration.instance().commands.showUnknownCommandEverywhere || ev.getTextChannel().getId().equals(dc.getChannel().getId())) && Configuration.instance().commands.showUnknownCommandMessage) {
-                            if (Configuration.instance().commands.helpCmdEnabled)
-                                dc.sendMessage(Configuration.instance().localization.commands.unknownCommand.replace("%prefix%", Configuration.instance().commands.prefix), ev.getTextChannel());
-                        }
-
-
-                    } else if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatInputChannelID.equals("default") ? dc.getChannel().getId() : Configuration.instance().advanced.chatInputChannelID)) {
+                    if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatInputChannelID.equals("default") ? dc.getChannel().getId() : Configuration.instance().advanced.chatInputChannelID)) {
                         final List<MessageEmbed> embeds = ev.getMessage().getEmbeds();
                         String msg = ev.getMessage().getContentDisplay();
                         msg = MessageUtils.formatEmoteMessage(ev.getMessage().getEmotes(), msg);
                         Component attachmentComponent = Component.newline();
                         if (!ev.getMessage().getAttachments().isEmpty())
-                            ComponentUtils.append(attachmentComponent,Component.text("Attachments:").decorate(TextDecoration.UNDERLINED));
+                            ComponentUtils.append(attachmentComponent, Component.text("Attachments:").decorate(TextDecoration.UNDERLINED));
                         for (Message.Attachment a : ev.getMessage().getAttachments()) {
-                            ComponentUtils.append(attachmentComponent,Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
-                            ComponentUtils.append(attachmentComponent,Component.text("\n"));
+                            ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
+                            ComponentUtils.append(attachmentComponent, Component.text("\n"));
                         }
                         for (MessageEmbed e : embeds) {
                             if (e.isEmpty()) continue;
-                            ComponentUtils.append(attachmentComponent,Component.text("\n-----[Embed]-----\n"));
+                            ComponentUtils.append(attachmentComponent, Component.text("\n-----[Embed]-----\n"));
                             if (e.getAuthor() != null && e.getAuthor().getName() != null && !e.getAuthor().getName().trim().isEmpty()) {
-                                ComponentUtils.append(attachmentComponent,Component.text(e.getAuthor().getName() + "\n").decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC));
+                                ComponentUtils.append(attachmentComponent, Component.text(e.getAuthor().getName() + "\n").decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC));
                             }
                             if (e.getTitle() != null && !e.getTitle().trim().isEmpty()) {
-                                ComponentUtils.append(attachmentComponent,Component.text(e.getTitle() + "\n").decorate(TextDecoration.BOLD));
+                                ComponentUtils.append(attachmentComponent, Component.text(e.getTitle() + "\n").decorate(TextDecoration.BOLD));
                             }
                             if (e.getDescription() != null && !e.getDescription().trim().isEmpty()) {
-                                ComponentUtils.append(attachmentComponent,Component.text("Message:\n" + e.getDescription() + "\n"));
+                                ComponentUtils.append(attachmentComponent, Component.text("Message:\n" + e.getDescription() + "\n"));
                             }
                             if (e.getImage() != null && e.getImage().getUrl() != null && !e.getImage().getUrl().isEmpty()) {
-                                ComponentUtils.append(attachmentComponent,Component.text("Image: " + e.getImage().getUrl() + "\n"));
+                                ComponentUtils.append(attachmentComponent, Component.text("Image: " + e.getImage().getUrl() + "\n"));
                             }
-                            ComponentUtils.append(attachmentComponent,Component.text("\n-----------------"));
+                            ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
                         }
                         Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), mcSerializerOptions);
                         final Message reply = ev.getMessage().getReferencedMessage();
@@ -176,7 +138,7 @@ public class DiscordEventListener implements EventListener {
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
                         }
-                        ComponentUtils.append(out,attachmentComponent);
+                        ComponentUtils.append(out, attachmentComponent);
                         dc.srv.sendMCMessage(out);
                     }
                     dc.callEventC((e) -> e.onDiscordMessagePost(ev));
@@ -185,8 +147,8 @@ public class DiscordEventListener implements EventListener {
                 if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
 
                     if (dc.callEvent((e) -> e.onDiscordPrivateMessage(ev))) return;
-                    if (ev.getMessage().getContentRaw().startsWith(Configuration.instance().commands.prefix + (Configuration.instance().commands.spaceAfterPrefix ? " " : ""))) {
-                        final String[] command = ev.getMessage().getContentRaw().replaceFirst(Configuration.instance().commands.prefix, "").split(" ");
+                    if (ev.getMessage().getContentRaw().startsWith(Configuration.instance().commands.dmPrefix + (Configuration.instance().commands.spaceAfterPrefix ? " " : ""))) {
+                        final String[] command = ev.getMessage().getContentRaw().replaceFirst(Configuration.instance().commands.dmPrefix, "").split(" ");
                         String argumentsRaw = "";
                         for (int i = 1; i < command.length; i++) {
                             argumentsRaw += command[i] + " ";
@@ -197,9 +159,8 @@ public class DiscordEventListener implements EventListener {
                         for (final DMCommand cmd : CommandRegistry.getDMCommandList()) {
                             if (cmd.getName().equals(command[0])) {
                                 if (cmd.canUserExecuteCommand(ev.getAuthor())) {
-
                                     if (dc.callEvent((e) -> e.onDiscordDMCommand(ev, cmd))) return;
-                                    cmd.execute(argumentsRaw.split(" "), ev);
+                                    cmd.execute(argumentsRaw.split(" "), ev.getChannel(), ev.getAuthor());
                                     executed = true;
                                 } else {
                                     hasPermission = false;
@@ -209,7 +170,7 @@ public class DiscordEventListener implements EventListener {
                                 if (alias.equals(command[0])) {
                                     if (cmd.canUserExecuteCommand(ev.getAuthor())) {
                                         if (dc.callEvent((e) -> e.onDiscordDMCommand(ev, cmd))) return;
-                                        cmd.execute(argumentsRaw.split(" "), ev);
+                                        cmd.execute(argumentsRaw.split(" "), ev.getTextChannel(), ev.getAuthor());
                                         executed = true;
                                     } else {
                                         hasPermission = false;
@@ -224,10 +185,56 @@ public class DiscordEventListener implements EventListener {
                             return;
                         }
                         if (!executed)
-                            ev.getChannel().sendMessage(Configuration.instance().localization.commands.unknownCommand.replace("%prefix%", Configuration.instance().commands.prefix)).queue();
+                            ev.getChannel().sendMessage(Configuration.instance().localization.commands.unknownCommand.replace("%prefix%", Configuration.instance().commands.dmPrefix)).queue();
                     }
                 }
             }
         }
+    }
+
+    private void processDiscordCommand(SlashCommandEvent ev, final String[] command, final TextChannel channel, User sender, final Discord dc) {
+        String argumentsRaw = "";
+        for (int i = 1; i < command.length; i++) {
+            argumentsRaw = argumentsRaw + command[i] + " ";
+        }
+        argumentsRaw = argumentsRaw.trim();
+        boolean hasPermission = true;
+        boolean executed = false;
+        for (final DiscordCommand cmd : CommandRegistry.getCommandList()) {
+            if (!cmd.worksInChannel(channel)) {
+                continue;
+            }
+            if (cmd.getName().equals(command[0])) {
+                if (cmd.canUserExecuteCommand(sender)) {
+                    if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, cmd))) return;
+                    cmd.execute(ev);
+                    executed = true;
+                } else {
+                    hasPermission = false;
+                }
+            }
+            for (final String alias : cmd.getAliases()) {
+                if (alias.equals(command[0])) {
+                    if (cmd.canUserExecuteCommand(sender)) {
+                        if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, cmd))) return;
+                        cmd.execute(ev);
+                        executed = true;
+                    } else {
+                        hasPermission = false;
+                    }
+                }
+            }
+        }
+        if (!executed)
+            if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, null))) return;
+        if (!hasPermission) {
+            dc.sendMessage(Configuration.instance().localization.commands.noPermission, channel);
+            return;
+        }
+        if (!executed && (Configuration.instance().commands.showUnknownCommandEverywhere || channel.getId().equals(dc.getChannel().getId())) && Configuration.instance().commands.showUnknownCommandMessage) {
+            if (Configuration.instance().commands.helpCmdEnabled)
+                dc.sendMessage(Configuration.instance().localization.commands.unknownCommand.replace("%prefix%", "/"), channel);
+        }
+
     }
 }

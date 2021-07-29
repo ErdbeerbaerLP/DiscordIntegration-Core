@@ -1,30 +1,26 @@
 buildscript {
     repositories {
-        jcenter()
         mavenCentral()
-    }
-    dependencies {
-        classpath "com.github.jengelman.gradle.plugins:shadow:6.1.0"
     }
 }
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version "4.0.4"
 }
-apply plugin: 'com.github.johnrengelman.shadow'
 
 //Build variables
-version = "2.2.0"
+version = "2.3.0"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
 sourceCompatibility = targetCompatibility = '1.8'
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
-}
 
 //Gradle Repositories
 repositories {
-    jcenter()
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
     maven { url 'https://jitpack.io' }
     maven { url "https://nexus.vankka.dev/repository/maven-public/" }
     maven { url "https://repository.dev.gotan.io/repository/gotan.os/" }
@@ -40,14 +36,14 @@ repositories {
     }
     maven {
         name = 'howaner'
-        url = "http://repo.howaner.de/"
+        url = "https://repo.howaner.de/"
     }
 
 }
 //ShadowJar
 configurations {
     embed
-    compile.extendsFrom(embed)
+    compileOnly.extendsFrom(embed)
 }
 shadowJar {
     classifier = ""
@@ -89,7 +85,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed("net.dv8tion:JDA:4.2.0_247") {
+    embed("net.dv8tion:JDA:4.3.0_277") {
         exclude group: 'okhttp3', module: "okhttp"
     }
     embed "com.squareup.okhttp3:okhttp:4.9.1"
@@ -120,6 +116,7 @@ dependencies {
 
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
+
 }
 tasks.build.dependsOn(tasks.shadowJar)
 //Manifest attributes

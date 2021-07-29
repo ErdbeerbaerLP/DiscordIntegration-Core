@@ -8,8 +8,8 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -40,9 +40,9 @@ public class WhitelistCommand extends DMCommand {
     private final String uuidRegex = "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)";
 
     @Override
-    public void execute(String[] args, MessageReceivedEvent ev) {
-        if (discord_instance.getChannel().getGuild().isMember(ev.getAuthor())) {
-            Member m = discord_instance.getChannel().getGuild().getMember(ev.getAuthor());
+    public void execute(String[] args, final MessageChannel channel, User sender) {
+        if (discord_instance.getChannel().getGuild().isMember(sender)) {
+            Member m = discord_instance.getChannel().getGuild().getMember(sender);
             if (Configuration.instance().linking.requiredRoles.length != 0) {
                 AtomicBoolean ok = new AtomicBoolean(false);
                 m.getRoles().forEach((role) -> {
@@ -51,24 +51,24 @@ public class WhitelistCommand extends DMCommand {
                     }
                 });
                 if (!ok.get()) {
-                    ev.getChannel().sendMessage(Configuration.instance().localization.linking.link_requiredRole).queue();
+                    channel.sendMessage(Configuration.instance().localization.linking.link_requiredRole).queue();
                     return;
                 }
             }
         } else {
-            ev.getChannel().sendMessage(Configuration.instance().localization.linking.link_notMember).queue();
+           channel.sendMessage(Configuration.instance().localization.linking.link_notMember).queue();
             return;
         }
-        if (PlayerLinkController.isDiscordLinkedJava(ev.getAuthor().getId())) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.linking.alreadyLinked.replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(ev.getAuthor().getId())))).queue();
+        if (PlayerLinkController.isDiscordLinkedJava(sender.getId())) {
+            channel.sendMessage(Configuration.instance().localization.linking.alreadyLinked.replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(sender.getId())))).queue();
             return;
         }
         if (args.length > 1) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.commands.tooManyArguments).queue();
+            channel.sendMessage(Configuration.instance().localization.commands.tooManyArguments).queue();
             return;
         }
         if (args.length < 1) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.commands.notEnoughArguments).queue();
+            channel.sendMessage(Configuration.instance().localization.commands.notEnoughArguments).queue();
             return;
         }
         UUID u;
@@ -95,13 +95,13 @@ public class WhitelistCommand extends DMCommand {
                     ex.printStackTrace();
                 }
             }
-            final boolean linked = PlayerLinkController.linkPlayer(ev.getAuthor().getId(), u);
+            final boolean linked = PlayerLinkController.linkPlayer(sender.getId(), u);
             if (linked)
-                ev.getChannel().sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", Configuration.instance().commands.prefix).replace("%player%", MessageUtils.getNameFromUUID(u))).queue();
+                channel.sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", Configuration.instance().commands.dmPrefix).replace("%player%", MessageUtils.getNameFromUUID(u))).queue();
             else
-                ev.getChannel().sendMessage(Configuration.instance().localization.linking.linkFailed).queue();
+                channel.sendMessage(Configuration.instance().localization.linking.linkFailed).queue();
         } catch (IllegalArgumentException e) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.linking.link_argumentNotUUID.replace("%prefix%", Configuration.instance().commands.prefix).replace("%arg%", s)).queue();
+            channel.sendMessage(Configuration.instance().localization.linking.link_argumentNotUUID.replace("%prefix%", Configuration.instance().commands.dmPrefix).replace("%arg%", s)).queue();
         }
     }
 

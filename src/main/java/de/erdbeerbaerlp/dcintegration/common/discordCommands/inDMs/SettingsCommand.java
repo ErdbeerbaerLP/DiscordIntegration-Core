@@ -5,7 +5,8 @@ import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.User;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
@@ -28,24 +29,24 @@ public class SettingsCommand extends DMCommand {
     }
 
     @Override
-    public void execute(String[] args, MessageReceivedEvent ev) {
-        if (!PlayerLinkController.isDiscordLinked(ev.getAuthor().getId())) {
-            ev.getChannel().sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelist.replace("%prefix%", Configuration.instance().commands.prefix)) : Configuration.instance().localization.linking.linkMethodIngame)).queue();
+    public void execute(String[] args, final MessageChannel channel, User sender) {
+        if (!PlayerLinkController.isDiscordLinked(sender.getId())) {
+            channel.sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelist.replace("%prefix%", Configuration.instance().commands.dmPrefix)) : Configuration.instance().localization.linking.linkMethodIngame)).queue();
             return;
         }
         if (args.length == 2 && args[0].equals("get")) {
             if (discord_instance.getSettings().containsKey(args[1])) {
-                final PlayerSettings settings = PlayerLinkController.getSettings(ev.getAuthor().getId(), null);
+                final PlayerSettings settings = PlayerLinkController.getSettings(sender.getId(), null);
                 try {
-                    ev.getChannel().sendMessage(Configuration.instance().localization.personalSettings.personalSettingGet.replace("%bool%", settings.getClass().getField(args[1]).getBoolean(settings) ? "true" : "false")).queue();
+                    channel.sendMessage(Configuration.instance().localization.personalSettings.personalSettingGet.replace("%bool%", settings.getClass().getField(args[1]).getBoolean(settings) ? "true" : "false")).queue();
                 } catch (IllegalAccessException | NoSuchFieldException e) {
                     e.printStackTrace();
                 }
             } else
-                ev.getChannel().sendMessage(Configuration.instance().localization.personalSettings.invalidPersonalSettingKey.replace("%key%", args[1])).queue();
+                channel.sendMessage(Configuration.instance().localization.personalSettings.invalidPersonalSettingKey.replace("%key%", args[1])).queue();
         } else if (args.length == 3 && args[0].equals("set")) {
             if (discord_instance.getSettings().containsKey(args[1])) {
-                final PlayerSettings settings = PlayerLinkController.getSettings(ev.getAuthor().getId(), null);
+                final PlayerSettings settings = PlayerLinkController.getSettings(sender.getId(), null);
                 boolean newval;
                 try {
                     newval = Boolean.parseBoolean(args[2]);
@@ -55,18 +56,18 @@ public class SettingsCommand extends DMCommand {
                 final boolean newValue = newval;
                 try {
                     settings.getClass().getDeclaredField(args[1]).set(settings, newValue);
-                    PlayerLinkController.updatePlayerSettings(ev.getAuthor().getId(), null, settings);
+                    PlayerLinkController.updatePlayerSettings(sender.getId(), null, settings);
                 } catch (IllegalAccessException | NoSuchFieldException e) {
                     e.printStackTrace();
-                    ev.getChannel().sendMessage(Configuration.instance().localization.personalSettings.settingUpdateFailed).queue();
+                    channel.sendMessage(Configuration.instance().localization.personalSettings.settingUpdateFailed).queue();
                 }
-                ev.getChannel().sendMessage(Configuration.instance().localization.personalSettings.settingUpdateSuccessful).queue();
+                channel.sendMessage(Configuration.instance().localization.personalSettings.settingUpdateSuccessful).queue();
             } else
-                ev.getChannel().sendMessage(Configuration.instance().localization.personalSettings.invalidPersonalSettingKey.replace("%key%", args[1])).queue();
+                channel.sendMessage(Configuration.instance().localization.personalSettings.invalidPersonalSettingKey.replace("%key%", args[1])).queue();
         } else if (args.length == 1) {
-            final MessageBuilder msg = new MessageBuilder(Configuration.instance().localization.personalSettings.settingsCommandUsage.replace("%prefix%", Configuration.instance().commands.prefix));
+            final MessageBuilder msg = new MessageBuilder(Configuration.instance().localization.personalSettings.settingsCommandUsage.replace("%prefix%", Configuration.instance().commands.dmPrefix));
             final EmbedBuilder b = new EmbedBuilder();
-            final PlayerSettings settings = PlayerLinkController.getSettings(ev.getAuthor().getId(), null);
+            final PlayerSettings settings = PlayerLinkController.getSettings(sender.getId(), null);
             discord_instance.getSettings().forEach((name, desc) -> {
                 if (!(!Configuration.instance().webhook.enable && name.equals("useDiscordNameInChannel"))) {
                     try {
@@ -78,9 +79,9 @@ public class SettingsCommand extends DMCommand {
             });
             b.setAuthor(Configuration.instance().localization.personalSettings.personalSettingsHeader);
             msg.setEmbed(b.build());
-            ev.getChannel().sendMessage(msg.build()).queue();
+            channel.sendMessage(msg.build()).queue();
         } else {
-            ev.getChannel().sendMessage(Configuration.instance().localization.personalSettings.settingsCommandUsage.replace("%prefix%", Configuration.instance().commands.prefix)).queue();
+            channel.sendMessage(Configuration.instance().localization.personalSettings.settingsCommandUsage.replace("%prefix%", Configuration.instance().commands.dmPrefix)).queue();
         }
     }
 }

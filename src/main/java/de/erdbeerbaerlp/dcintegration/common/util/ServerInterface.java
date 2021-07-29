@@ -1,8 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.kyori.adventure.text.Component;
@@ -36,14 +34,15 @@ public abstract class ServerInterface {
      * @param targetUUID Original sender's {@link UUID}
      * @param reactionEmote Emote that was added to the message
      */
-    public abstract void sendMCReaction(@Nonnull Member member, @Nonnull RestAction<Message> retrieveMessage, @Nonnull UUID targetUUID, @Nonnull MessageReaction.ReactionEmote reactionEmote);
+    public abstract void sendMCReaction(Member member, @Nonnull RestAction<Message> retrieveMessage, @Nonnull UUID targetUUID, @Nonnull MessageReaction.ReactionEmote reactionEmote);
 
     /**
      * Runs an command on the server
      * @param cmd Command to execute
-     * @param msgEvent Message event
+     * @param channel Text channel where command was executed
+     * @param sender Command sender
      */
-    public abstract void runMcCommand(@Nonnull String cmd, @Nonnull MessageReceivedEvent msgEvent);
+    public abstract void runMcCommand(@Nonnull String cmd, final MessageChannel channel, User sender);
 
     /**
      * @return all online players on this server in format <{@link UUID}, PlayerName>

@@ -185,8 +185,8 @@ public class Configuration {
         @TomlComment({"The Role IDs of your Admin Roles", "Now supports multiple roles which can access admin commands"})
         public String[] adminRoleIDs = new String[0];
 
-        @TomlComment("The prefix of the commands usable in discord")
-        public String prefix = "/";
+        @TomlComment({"The prefix of the commands usable in discord DMs", "Using slash here will cause some commands to get inaccessible!"})
+        public String dmPrefix = "!";
 
         @TomlComment("Set to true to require an space after the prefix (e.g. 'mc help')")
         public boolean spaceAfterPrefix = false;
@@ -419,6 +419,10 @@ public class Configuration {
 
             @TomlComment({"The format of the uptime command", "For more help with the formatting visit https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/time/DurationFormatUtils.html"})
             public String uptimeFormat = "dd 'days' HH 'hours' mm 'minutes'";
+
+            @TomlComment("Shows when running slash commands as command response")
+            public String executing = "Executing...";
+
             @TomlComment("Command descriptions")
             public Descriptions descriptions = new Descriptions();
 
