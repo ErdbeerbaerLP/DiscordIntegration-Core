@@ -129,6 +129,3 @@ jar {
         ])
     }
 }
-artifacts {
-    archives tasks.shadowJar
-}
