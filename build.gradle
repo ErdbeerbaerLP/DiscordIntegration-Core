@@ -86,7 +86,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed("net.dv8tion:JDA:4.3.0_277") {
+    embed("net.dv8tion:JDA:4.3.0_299") {
         exclude group: 'okhttp3', module: "okhttp"
     }
     embed "com.squareup.okhttp3:okhttp:4.9.1"
