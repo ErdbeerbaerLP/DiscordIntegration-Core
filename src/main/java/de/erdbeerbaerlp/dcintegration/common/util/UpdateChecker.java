@@ -13,21 +13,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UpdateChecker {
-    /**
-     * URL to the update-checker JSON
-     */
-    public static final String updateCheckerURL = "https://raw.githubusercontent.com/ErdbeerbaerLP/Discord-Chat-Integration/1.16/update_checker.json";
     private static final JsonParser p = new JsonParser();
 
 
     /**
      * Checks for updates and prints the
      */
-    public static void runUpdateCheck() {
+    public static void runUpdateCheck(String url) {
         if (!Configuration.instance().general.enableUpdateChecker) return;
         final StringBuilder changelog = new StringBuilder();
         try {
-            final HttpURLConnection conn = (HttpURLConnection) new URL(updateCheckerURL).openConnection();
+            final HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestMethod("GET");
             final InputStreamReader r = new InputStreamReader(conn.getInputStream());
             final JsonArray parse = p.parse(r).getAsJsonArray();
@@ -75,7 +71,7 @@ public class UpdateChecker {
 
         public static ReleaseType getFromName(String name) {
             for (ReleaseType t : values()) {
-                if (name.toLowerCase().equals(t.name().toLowerCase())) return t;
+                if (name.equalsIgnoreCase(t.name())) return t;
             }
             return ReleaseType.beta;
         }
