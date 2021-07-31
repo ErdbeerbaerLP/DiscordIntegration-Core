@@ -181,7 +181,7 @@ public class DiscordEventListener implements EventListener {
                         if (!executed)
                             if (dc.callEvent((e) -> e.onDiscordDMCommand(ev, null))) return;
                         if (!hasPermission) {
-                            ev.getChannel().sendMessage(Configuration.instance().localization.linking.notLinked).queue();
+                            ev.getChannel().sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelist.replace("%prefix%", Configuration.instance().commands.dmPrefix)) : Configuration.instance().localization.linking.linkMethodIngame)).queue();
                             return;
                         }
                         if (!executed)
