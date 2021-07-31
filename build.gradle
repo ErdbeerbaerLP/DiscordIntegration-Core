@@ -4,17 +4,16 @@ buildscript {
     }
 }
 plugins {
-    id 'maven'
+    id 'maven-publish'
     id 'java'
-    id 'com.github.johnrengelman.shadow' version "4.0.4"
+    id 'com.github.johnrengelman.shadow' version "7.0.0"
 }
 
 //Build variables
-version = "2.3.0"
+version = "2.3.1"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
-sourceCompatibility = targetCompatibility = '1.8'
 
 //Gradle Repositories
 repositories {
