@@ -9,8 +9,6 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.Arrays;
-
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 
@@ -30,7 +28,7 @@ public class SettingsCommand extends DMCommand {
     @Override
     public void execute(String[] args, final MessageChannel channel, User sender) {
         if (!PlayerLinkController.isDiscordLinked(sender.getId())) {
-            channel.sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelist.replace("%prefix%", Configuration.instance().commands.dmPrefix)) : Configuration.instance().localization.linking.linkMethodIngame)).queue();
+            channel.sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelistCode.replace("%prefix%", Configuration.instance().commands.dmPrefix)) : Configuration.instance().localization.linking.linkMethodIngame)).queue();
             return;
         }
         if (args.length == 2 && args[0].equals("get")) {

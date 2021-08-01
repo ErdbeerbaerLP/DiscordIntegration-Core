@@ -52,10 +52,7 @@ public class CommandRegistry {
             registerCommand(new DMHelpCommand());
             registerCommand(new SettingsCommand());
             registerCommand(new CommandLinkcheck());
-            if (Configuration.instance().linking.whitelistMode)
-                registerCommand(new WhitelistCommand());
-            else
-                registerCommand(new LinkCommand());
+            registerCommand(new LinkCommand());
         }
         registerConfigCommands();
     }

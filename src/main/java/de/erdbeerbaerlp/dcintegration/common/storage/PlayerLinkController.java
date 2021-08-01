@@ -549,7 +549,7 @@ public class PlayerLinkController {
     /**
      * Unused for now, might be needed in the future
      *
-     * @return A all Player links as array or an empty array if parsing the json fails
+     * @return All Player links as array or an empty array if parsing the json fails
      */
     @Nonnull
     public static PlayerLink[] getAllLinks() {

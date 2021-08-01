@@ -155,6 +155,9 @@ public class Configuration {
 
         @TomlComment({"The minimum release type for the update checker to notify", "Allowed values: release, beta, alpha"})
         public UpdateChecker.ReleaseType updateCheckerMinimumReleaseType = UpdateChecker.ReleaseType.beta;
+
+        @TomlComment({"Set to false to disable config migration from other mods/plugins to this one","This does not prevent updating of this config after mod updates"})
+        public boolean allowConfigMigration = true;
     }
 
     public static class Messages {
@@ -238,15 +241,6 @@ public class Configuration {
 
         @TomlComment({"Custom channel where messages get sent to minecraft", "Leave 'default' to use default channel"})
         public String chatInputChannelID = "default";
-
-        @TomlComment("Custom Channel ID list for the help command. Set to 00 to allow usage from everywhere and to 0 to allow usage from the bots default channel")
-        public String[] helpCmdChannelIDs = new String[]{"0"};
-
-        @TomlComment("Custom Channel ID list for the list command. Set to 00 to allow usage from everywhere and to 0 to allow usage from the bots default channel")
-        public String[] listCmdChannelIDs = new String[]{"0"};
-
-        @TomlComment("Custom Channel ID list for the uptime command. Set to 00 to allow usage from everywhere and to 0 to allow usage from the bots default channel")
-        public String[] uptimeCmdChannelIDs = new String[]{"0"};
     }
 
     public static class ForgeSpecific {
@@ -342,7 +336,7 @@ public class Configuration {
 
 
             @TomlComment({"Message of the link method in whitelist mode", "Used by %method% placeholder"})
-            public String linkMethodWhitelist = "`%prefix%whitelist <Name-Or-UUID>` here";
+            public String linkMethodWhitelistCode = "joining the server and then using `%prefix%link <whitelist-code>` here";
 
             @TomlComment({"Message of the link method in normal mode", "Used by %method% placeholder"})
             public String linkMethodIngame = "`/discord link` ingame";
@@ -357,7 +351,7 @@ public class Configuration {
             public String linkNumberNAN = "This is not a number. Use `/discord link` ingame to get your link number";
 
             @TomlComment({"Message shown to players who are not whitelisted using discord", "No effect if discord whitelist is off"})
-            public String notWhitelisted = "\u00a7cYou are not whitelisted.\nJoin the discord server for more information\nhttps://discord.gg/someserver";
+            public String notWhitelistedCode = "\u00a7cYou are not whitelisted.\nJoin the discord server for more information\nhttps://discord.gg/someserver\nYour Whitelist-Code is: \u00a76%code%";
 
             @TomlComment("Sent when trying to link without an required role")
             public String link_requiredRole = "You need to have an role to use this";
