@@ -6,7 +6,7 @@ buildscript {
 plugins {
     id 'maven-publish'
     id 'java'
-    id 'com.github.johnrengelman.shadow' version "7.0.0"
+    id 'com.github.johnrengelman.shadow' version "4.0.4"
 }
 
 //Build variables
