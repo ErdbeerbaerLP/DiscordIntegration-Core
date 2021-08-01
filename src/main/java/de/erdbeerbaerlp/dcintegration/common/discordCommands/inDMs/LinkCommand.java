@@ -19,10 +19,6 @@ public class LinkCommand extends DMCommand {
         return "link";
     }
 
-    @Override
-    public String[] getAliases() {
-        return new String[0];
-    }
 
     @Override
     public String getDescription() {
@@ -60,7 +56,7 @@ public class LinkCommand extends DMCommand {
         if (!args[0].startsWith(Configuration.instance().commands.dmPrefix))
             try {
                 int num = Integer.parseInt(args[0]);
-                if (PlayerLinkController.isDiscordLinked(sender.getId()) && (!discord_instance.pendingBedrockLinks.isEmpty() && PlayerLinkController.isDiscordLinkedBedrock(sender.getId()))) {
+                if (PlayerLinkController.isDiscordLinked(sender.getId()) && (discord_instance.pendingBedrockLinks.isEmpty() && PlayerLinkController.isDiscordLinkedBedrock(sender.getId()))) {
                     channel.sendMessage(Configuration.instance().localization.linking.alreadyLinked.replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(sender.getId())))).queue();
                     return;
                 }

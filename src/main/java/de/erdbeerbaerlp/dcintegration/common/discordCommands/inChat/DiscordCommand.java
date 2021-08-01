@@ -20,12 +20,6 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
  */
 public abstract class DiscordCommand extends CommandData {
 
-    private final String[] EVERYWHERE = new String[]{"00"};
-    private final String[] ONLY_IN_BOT_CHANNEL = new String[]{"0"};
-    /**
-     * The channel ID the command listens to
-     */
-    private final String[] channelIDs;
     boolean isConfigCmd = false;
 
     protected boolean useArgs = false;
@@ -40,35 +34,8 @@ public abstract class DiscordCommand extends CommandData {
     }
 
 
-    protected DiscordCommand(@Nonnull String[] channelIDs, String name, String desc) {
+    protected DiscordCommand(String name, String desc) {
         super(name,desc);
-        this.channelIDs = channelIDs;
-    }
-
-    protected DiscordCommand(@Nonnull String channelID, String name, String desc) {
-        this(new String[]{channelID}, name,desc);
-    }
-
-    /**
-     * Checks if this command works from this channel
-     *
-     * @param channel TextChannel to check for
-     */
-    public final boolean worksInChannel(final MessageChannel channel) {
-        if(channel == null) return false;
-        return worksInChannel(channel.getId());
-    }
-
-    /**
-     * Checks if this command works from this channel
-     *
-     * @param channelID Channel ID of the current channel
-     */
-    public boolean worksInChannel(@Nonnull String channelID) {
-        if (Arrays.equals(channelIDs, EVERYWHERE)) return true;
-        if (Arrays.equals(channelIDs, ONLY_IN_BOT_CHANNEL))
-            return channelID.equals(Configuration.instance().general.botChannel);
-        return ArrayUtils.contains(channelIDs, channelID);
     }
 
     /**
@@ -80,10 +47,12 @@ public abstract class DiscordCommand extends CommandData {
     }
 
     /**
-     * Sets the aliases of the command
+     * Sets the aliases of the command<br>
+     *  no longer used
      */
     @Nonnull
-    public abstract String[] getAliases();
+    @Deprecated
+    public String[] getAliases(){return new String[0];}
 
     /**
      * Sets the description for the help command

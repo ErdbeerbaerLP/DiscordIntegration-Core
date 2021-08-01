@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 public abstract class DMCommand extends DiscordCommand {
 
     protected DMCommand() {
-        super("000000000000000000000", "dmcommand", "An DirectMessage command");
+        super("dmcommand", "An DirectMessage command");
     }
 
     @Override

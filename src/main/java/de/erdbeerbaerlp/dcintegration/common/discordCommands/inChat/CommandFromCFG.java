@@ -1,9 +1,12 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
@@ -15,36 +18,28 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 public class CommandFromCFG extends DiscordCommand {
     private final String mcCmd;
     private final boolean admin;
-    private final String[] aliases;
-    private final String[] channelIDs;
+    private final ConfigCommand.CommandArgument[] args;
+    private boolean hidden;
 
-    public CommandFromCFG(@Nonnull String cmd, @Nonnull String description, @Nonnull String mcCommand, boolean adminOnly, @Nonnull String[] aliases, boolean useArgs, @Nonnull String argText, @Nonnull String[] channelIDs) {
-        super("",cmd,description);
-        this.channelIDs = channelIDs;
+    public CommandFromCFG(@Nonnull String cmd, @Nonnull String description, @Nonnull String mcCommand, boolean adminOnly, ConfigCommand.CommandArgument[] args, boolean hidden) throws IllegalArgumentException {
+        super(cmd, description);
         this.isConfigCmd = true;
         this.admin = adminOnly;
         this.mcCmd = mcCommand;
-        this.aliases = aliases;
-        this.useArgs = useArgs;
-        this.argText = argText;
-    }
-
-    @Override
-    public boolean worksInChannel(String channelID) {
-        return Arrays.equals(channelIDs, new String[]{"00"}) || Arrays.equals(channelIDs, new String[]{"0"}) && channelID.equals(Configuration.instance().general.botChannel) || ArrayUtils.contains(channelIDs, channelID);
+        this.hidden = hidden;
+        if (args != null) {
+            this.args = args;
+            for (ConfigCommand.CommandArgument argument : args) {
+                addOption(OptionType.STRING, argument.name, argument.description, !argument.optional);
+            }
+        } else {
+            this.args = new ConfigCommand.CommandArgument[0];
+        }
     }
 
     @Override
     public boolean adminOnly() {
         return admin;
-    }
-
-    /**
-     * Sets the aliases of the command
-     */
-    @Override
-    public String[] getAliases() {
-        return aliases;
     }
 
     /**
@@ -60,18 +55,12 @@ public class CommandFromCFG extends DiscordCommand {
     @Override
     public void execute(SlashCommandEvent ev) {
         String cmd = mcCmd;
-        String argString = ev.getOption("args") != null ? ev.getOption("args").getAsString() : "";
-        String[] args = ArrayUtils.addAll(new String[]{cmd}, argString.split(" "));
-        int argsCount = useArgs ? args.length : 0;
-        if (argsCount > 0) {
-            for (int i = 0; i < argsCount; i++) {
-                argString += (" " + args[i]);
-            }
+        for (ConfigCommand.CommandArgument arg : args) {
+            final OptionMapping option = ev.getOption(arg.name);
+                cmd = cmd.replace("%" + arg.name + "%", option == null? "":option.getAsString());
+
         }
-        if (!cmd.contains("%args%")) cmd = cmd + argString;
-        else cmd = cmd.replace("%args%", argString.trim());
-        ev.reply(Configuration.instance().localization.commands.executing).queue();
-        discord_instance.srv.runMcCommand(cmd, ev.getChannel(),ev.getUser());
+        discord_instance.srv.runMcCommand(cmd, ev.deferReply(hidden).submit(), ev.getUser());
     }
 
 }

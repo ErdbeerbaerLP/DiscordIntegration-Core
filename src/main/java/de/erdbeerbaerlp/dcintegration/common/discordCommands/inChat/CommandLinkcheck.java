@@ -24,15 +24,9 @@ import java.util.concurrent.CompletableFuture;
 public class CommandLinkcheck extends DiscordCommand {
 
     public CommandLinkcheck() {
-        super("0", "linkcheck", Configuration.instance().localization.commands.descriptions.linkcheck);
+        super("linkcheck", Configuration.instance().localization.commands.descriptions.linkcheck);
         addOption(OptionType.USER, "discorduser", Configuration.instance().localization.commands.cmdLinkcheck_userargDesc, false);
         addOption(OptionType.STRING, "mcplayer", Configuration.instance().localization.commands.cmdLinkcheck_mcargDesc, false);
-    }
-
-    @NotNull
-    @Override
-    public String[] getAliases() {
-        return new String[0];
     }
 
     @Override

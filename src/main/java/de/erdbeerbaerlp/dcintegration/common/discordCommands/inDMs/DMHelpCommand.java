@@ -11,10 +11,6 @@ public class DMHelpCommand extends DMCommand {
         return "help";
     }
 
-    @Override
-    public String[] getAliases() {
-        return new String[]{"?", "h"};
-    }
 
     @Override
     public String getDescription() {

@@ -27,10 +27,6 @@ public class WhitelistCommand extends DMCommand {
         return "whitelist";
     }
 
-    @Override
-    public String[] getAliases() {
-        return new String[0];
-    }
 
     @Override
     public String getDescription() {

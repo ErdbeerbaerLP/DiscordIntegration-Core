@@ -166,17 +166,6 @@ public class DiscordEventListener implements EventListener {
                                     hasPermission = false;
                                 }
                             }
-                            for (final String alias : cmd.getAliases()) {
-                                if (alias.equals(command[0])) {
-                                    if (cmd.canUserExecuteCommand(ev.getAuthor())) {
-                                        if (dc.callEvent((e) -> e.onDiscordDMCommand(ev, cmd))) return;
-                                        cmd.execute(argumentsRaw.split(" "), ev.getTextChannel(), ev.getAuthor());
-                                        executed = true;
-                                    } else {
-                                        hasPermission = false;
-                                    }
-                                }
-                            }
                         }
                         if (!executed)
                             if (dc.callEvent((e) -> e.onDiscordDMCommand(ev, null))) return;
@@ -201,9 +190,6 @@ public class DiscordEventListener implements EventListener {
         boolean hasPermission = true;
         boolean executed = false;
         for (final DiscordCommand cmd : CommandRegistry.getCommandList()) {
-            if (!cmd.worksInChannel(channel)) {
-                continue;
-            }
             if (cmd.getName().equals(command[0])) {
                 if (cmd.canUserExecuteCommand(sender)) {
                     if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, cmd))) return;
@@ -213,17 +199,7 @@ public class DiscordEventListener implements EventListener {
                     hasPermission = false;
                 }
             }
-            for (final String alias : cmd.getAliases()) {
-                if (alias.equals(command[0])) {
-                    if (cmd.canUserExecuteCommand(sender)) {
-                        if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, cmd))) return;
-                        cmd.execute(ev);
-                        executed = true;
-                    } else {
-                        hasPermission = false;
-                    }
-                }
-            }
+
         }
         if (!executed)
             if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, null))) return;

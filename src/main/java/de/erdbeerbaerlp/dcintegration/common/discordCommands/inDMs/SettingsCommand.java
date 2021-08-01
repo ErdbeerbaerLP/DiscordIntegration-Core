@@ -21,10 +21,6 @@ public class SettingsCommand extends DMCommand {
         return "settings";
     }
 
-    @Override
-    public String[] getAliases() {
-        return new String[]{"set"};
-    }
 
     @Override
     public String getDescription() {

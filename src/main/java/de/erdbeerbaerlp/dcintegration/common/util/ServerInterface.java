@@ -1,7 +1,9 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.kyori.adventure.text.Component;
 
@@ -9,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class ServerInterface {
 
@@ -39,10 +42,9 @@ public abstract class ServerInterface {
     /**
      * Runs an command on the server
      * @param cmd Command to execute
-     * @param channel Text channel where command was executed
-     * @param sender Command sender
+     * @param ev the SlashCommandEvent of the executed command
      */
-    public abstract void runMcCommand(@Nonnull String cmd, final MessageChannel channel, User sender);
+    public abstract void runMcCommand(@Nonnull String cmd, final CompletableFuture<InteractionHook> cmdMsg, User user);
 
     /**
      * @return all online players on this server in format <{@link UUID}, PlayerName>

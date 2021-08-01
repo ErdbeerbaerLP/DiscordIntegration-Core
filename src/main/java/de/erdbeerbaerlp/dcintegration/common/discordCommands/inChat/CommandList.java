@@ -14,13 +14,9 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 
 public class CommandList extends DiscordCommand {
     public CommandList() {
-        super(Configuration.instance().advanced.listCmdChannelIDs, "list", Configuration.instance().localization.commands.descriptions.list);
+        super("list", Configuration.instance().localization.commands.descriptions.list);
     }
 
-    @Override
-    public String[] getAliases() {
-        return new String[]{"online"};
-    }
 
 
     @Override

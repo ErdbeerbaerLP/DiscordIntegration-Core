@@ -8,55 +8,53 @@ import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlComment;
 import com.moandjiezana.toml.TomlIgnore;
 import com.moandjiezana.toml.TomlWriter;
+import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.GameType;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
+import net.dv8tion.jda.api.entities.Webhook;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
 
 public class Configuration {
 
     @TomlIgnore
-    private static final String defaultCommandJson;
+    private static final ConfigCommand[] defaultCommands;
     @TomlIgnore
     private static Configuration INSTANCE;
 
     static {
-        //Default command json
-        final JsonObject a = new JsonObject();
-        final JsonObject kick = new JsonObject();
-        kick.addProperty("adminOnly", true);
-        kick.addProperty("mcCommand", "kick");
-        kick.addProperty("description", "Kicks a player from the server");
-        kick.addProperty("useArgs", true);
-        kick.addProperty("argText", "<player> [reason]");
-        a.add("kick", kick);
-        final JsonObject stop = new JsonObject();
-        stop.addProperty("adminOnly", true);
-        stop.addProperty("mcCommand", "stop");
-        stop.addProperty("description", "Stops the server");
-        final JsonArray stopAliases = new JsonArray();
-        stopAliases.add("shutdown");
-        stop.add("aliases", stopAliases);
-        stop.addProperty("useArgs", false);
-        a.add("stop", stop);
-        final JsonObject kill = new JsonObject();
-        kill.addProperty("adminOnly", true);
-        kill.addProperty("mcCommand", "kill");
-        kill.addProperty("description", "Kills a player");
-        kill.addProperty("useArgs", true);
-        kill.addProperty("argText", "<player>");
-        a.add("kill", kill);
-        /*final JsonObject tps = new JsonObject();
-        tps.addProperty("adminOnly", false);
-        tps.addProperty("mcCommand", "forge tps");
-        tps.addProperty("description", "Displays TPS");
-        tps.addProperty("useArgs", false);
-        a.add("tps", tps);*/
-        final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-        defaultCommandJson = gson.toJson(a);
+        final ArrayList<ConfigCommand> defaultCmds = new ArrayList<>();
+        final ConfigCommand kick = new ConfigCommand();
+        kick.name = "kick";
+        kick.description = "Kicks an player from the Server";
+        kick.mcCommand = "kick %player% %reason%";
+        kick.args = new ConfigCommand.CommandArgument[]{
+                new ConfigCommand.CommandArgument("player","The player to be kicked"),
+                new ConfigCommand.CommandArgument("reason","Reason for the kick",true)
+        };
+        kick.adminOnly = true;
+        defaultCmds.add(kick);
 
+        final ConfigCommand stop = new ConfigCommand();
+        stop.name = "stop";
+        stop.description = "Stops the server";
+        stop.mcCommand = "stop";
+        stop.adminOnly = true;
+        defaultCmds.add(stop);
+        final ConfigCommand kill = new ConfigCommand();
+        kill.name = "kill";
+        kill.description = "Kills an Player or Entity";
+        kill.mcCommand = "kill %target%";
+        kill.adminOnly = true;
+        kill.args = new ConfigCommand.CommandArgument[]{
+                new ConfigCommand.CommandArgument("target","The target(s) for the kill command.")
+        };
+        defaultCmds.add(kill);
+
+        defaultCommands = defaultCmds.toArray(new ConfigCommand[0]);
 
         //First instance of the Config
         INSTANCE = new Configuration();
@@ -191,6 +189,9 @@ public class Configuration {
         @TomlComment("Set to true to require an space after the prefix (e.g. 'mc help')")
         public boolean spaceAfterPrefix = false;
 
+        @TomlComment("[BETA] Add your custom commands here")
+        public ConfigCommand[] customCommands = defaultCommands;
+        /*
         @TomlComment({"Add your Custom commands to this JSON",
                 "You can copy-paste it to https://jsoneditoronline.org  Make sure when pasting here, that the json is NOT mulitlined.",
                 "You can click on \"Compact JSON Data\" on the website",
@@ -203,7 +204,7 @@ public class Configuration {
                 "useArgs     -   Shows argument text after the command in the help command",
                 "argText     -   Defines custom arg text. Default is <args>",
                 "channelIDs  -   Allows you to set specific text channels outside of the server channel to use this command (make it an string array), Set to [\"00\"] to allow from all channels"})
-        public String customCommandJSON = defaultCommandJson;
+        public String customCommandJSON = defaultCommandJson;*/
 
         @TomlComment("You must op this UUID in the ops.txt or some custom commands won't work!")
         public String senderUUID = "8d8982a5-8cf9-4604-8feb-3dd5ee1f83a3";

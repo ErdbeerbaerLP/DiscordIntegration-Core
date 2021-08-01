@@ -11,13 +11,9 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 
 public class CommandUptime extends DiscordCommand {
     public CommandUptime() {
-        super(Configuration.instance().advanced.uptimeCmdChannelIDs, "uptime",Configuration.instance().localization.commands.descriptions.uptime);
+        super("uptime",Configuration.instance().localization.commands.descriptions.uptime);
     }
 
-    @Override
-    public String[] getAliases() {
-        return new String[]{"up"};
-    }
 
 
     @Override

@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat.*;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inDMs.*;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.Permission;
@@ -63,30 +64,15 @@ public class CommandRegistry {
      * Registers all custom commands from config
      */
     public static void registerConfigCommands() {
-        final JsonObject commandJson = new JsonParser().parse(Configuration.instance().commands.customCommandJSON).getAsJsonObject();
-        System.out.println("Detected to load " + commandJson.size() + " commands to load from config");
-        for (Map.Entry<String, JsonElement> cmd : commandJson.entrySet()) {
-            final JsonObject cmdVal = cmd.getValue().getAsJsonObject();
-            if (!cmdVal.has("mcCommand")) {
-                System.err.println("Skipping command " + cmd.getKey() + " because it is invalid! Check your config!");
-                continue;
+        for (ConfigCommand cmd : Configuration.instance().commands.customCommands) {
+            try {
+                final DiscordCommand regCmd = new CommandFromCFG(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden);
+                if (!registerCommand(regCmd))
+                    System.err.println("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
+            } catch (IllegalArgumentException e) {
+                System.err.println("Failed Registering command \"" + cmd.name + "\":");
+                e.printStackTrace();
             }
-            final String mcCommand = cmdVal.get("mcCommand").getAsString();
-            final String desc = cmdVal.has("description") ? cmdVal.get("description").getAsString() : "No Description";
-            final boolean admin = !cmdVal.has("adminOnly") || cmdVal.get("adminOnly").getAsBoolean();
-            final boolean useArgs = !cmdVal.has("useArgs") || cmdVal.get("useArgs").getAsBoolean();
-            String argText = "<args>";
-            if (cmdVal.has("argText")) argText = cmdVal.get("argText").getAsString();
-            String[] aliases = new String[0];
-            if (cmdVal.has("aliases") && cmdVal.get("aliases").isJsonArray()) {
-                aliases = new String[cmdVal.getAsJsonArray("aliases").size()];
-                for (int i = 0; i < aliases.length; i++)
-                    aliases[i] = cmdVal.getAsJsonArray("aliases").get(i).getAsString();
-            }
-            String[] channelID = (cmdVal.has("channelID") && cmdVal.get("channelID") instanceof JsonArray) ? MessageUtils.makeStringArray(cmdVal.get("channelID").getAsJsonArray()) : new String[]{"0"};
-            final DiscordCommand regCmd = new CommandFromCFG(cmd.getKey(), desc, mcCommand, admin, aliases, useArgs, argText, channelID);
-            if (!registerCommand(regCmd))
-                System.err.println("Failed Registering command \"" + cmd.getKey() + "\" because it would override an existing command!");
         }
         System.out.println("Finished registering! Registered " + commands.size() + " commands");
     }
@@ -147,8 +133,8 @@ public class CommandRegistry {
         final List<Role> gRoles = g.getRoles();
         final ArrayList<Role> adminRoles = new ArrayList<>();
 
-        for(Role r : gRoles){
-            if(ArrayUtils.contains(Configuration.instance().commands.adminRoleIDs,r.getId()))
+        for (Role r : gRoles) {
+            if (ArrayUtils.contains(Configuration.instance().commands.adminRoleIDs, r.getId()))
                 adminRoles.add(r);
         }
 
