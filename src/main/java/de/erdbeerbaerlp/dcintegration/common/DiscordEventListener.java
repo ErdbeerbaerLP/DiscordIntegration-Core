@@ -2,7 +2,6 @@ package de.erdbeerbaerlp.dcintegration.common;
 
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.CommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat.DiscordCommand;
-import de.erdbeerbaerlp.dcintegration.common.discordCommands.inDMs.DMCommand;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
@@ -93,27 +92,27 @@ public class DiscordEventListener implements EventListener {
                         msg = MessageUtils.formatEmoteMessage(ev.getMessage().getEmotes(), msg);
                         Component attachmentComponent = Component.newline();
                         if (!ev.getMessage().getAttachments().isEmpty())
-                            ComponentUtils.append(attachmentComponent, Component.text("Attachments:").decorate(TextDecoration.UNDERLINED));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("Attachments:").decorate(TextDecoration.UNDERLINED));
                         for (Message.Attachment a : ev.getMessage().getAttachments()) {
-                            ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
-                            ComponentUtils.append(attachmentComponent, Component.text("\n"));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n"));
                         }
                         for (MessageEmbed e : embeds) {
                             if (e.isEmpty()) continue;
-                            ComponentUtils.append(attachmentComponent, Component.text("\n-----[Embed]-----\n"));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----[Embed]-----\n"));
                             if (e.getAuthor() != null && e.getAuthor().getName() != null && !e.getAuthor().getName().trim().isEmpty()) {
-                                ComponentUtils.append(attachmentComponent, Component.text(e.getAuthor().getName() + "\n").decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC));
+                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getAuthor().getName() + "\n").decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC));
                             }
                             if (e.getTitle() != null && !e.getTitle().trim().isEmpty()) {
-                                ComponentUtils.append(attachmentComponent, Component.text(e.getTitle() + "\n").decorate(TextDecoration.BOLD));
+                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getTitle() + "\n").decorate(TextDecoration.BOLD));
                             }
                             if (e.getDescription() != null && !e.getDescription().trim().isEmpty()) {
-                                ComponentUtils.append(attachmentComponent, Component.text("Message:\n" + e.getDescription() + "\n"));
+                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("Message:\n" + e.getDescription() + "\n"));
                             }
                             if (e.getImage() != null && e.getImage().getUrl() != null && !e.getImage().getUrl().isEmpty()) {
-                                ComponentUtils.append(attachmentComponent, Component.text("Image: " + e.getImage().getUrl() + "\n"));
+                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("Image: " + e.getImage().getUrl() + "\n"));
                             }
-                            ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
                         }
                         Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), mcSerializerOptions);
                         final Message reply = ev.getMessage().getReferencedMessage();
@@ -141,40 +140,6 @@ public class DiscordEventListener implements EventListener {
                         dc.srv.sendMCMessage(out);
                     }
                     dc.callEventC((e) -> e.onDiscordMessagePost(ev));
-                }
-            } else if (ev.getChannelType().equals(ChannelType.PRIVATE)) {
-                if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
-
-                    if (dc.callEvent((e) -> e.onDiscordPrivateMessage(ev))) return;
-                    if (ev.getMessage().getContentRaw().startsWith(Configuration.instance().commands.dmPrefix + (Configuration.instance().commands.spaceAfterPrefix ? " " : ""))) {
-                        final String[] command = ev.getMessage().getContentRaw().replaceFirst(Configuration.instance().commands.dmPrefix, "").split(" ");
-                        String argumentsRaw = "";
-                        for (int i = 1; i < command.length; i++) {
-                            argumentsRaw += command[i] + " ";
-                        }
-                        argumentsRaw = argumentsRaw.trim();
-                        boolean hasPermission = true;
-                        boolean executed = false;
-                        for (final DMCommand cmd : CommandRegistry.getDMCommandList()) {
-                            if (cmd.getName().equals(command[0])) {
-                                if (cmd.canUserExecuteCommand(ev.getAuthor())) {
-                                    if (dc.callEvent((e) -> e.onDiscordDMCommand(ev, cmd))) return;
-                                    cmd.execute(argumentsRaw.split(" "), ev.getChannel(), ev.getAuthor());
-                                    executed = true;
-                                } else {
-                                    hasPermission = false;
-                                }
-                            }
-                        }
-                        if (!executed)
-                            if (dc.callEvent((e) -> e.onDiscordDMCommand(ev, null))) return;
-                        if (!hasPermission) {
-                            ev.getChannel().sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelistCode.replace("%prefix%", Configuration.instance().commands.dmPrefix)) : Configuration.instance().localization.linking.linkMethodIngame)).queue();
-                            return;
-                        }
-                        if (!executed)
-                            ev.getChannel().sendMessage(Configuration.instance().localization.commands.unknownCommand.replace("%prefix%", Configuration.instance().commands.dmPrefix)).queue();
-                    }
                 }
             }
         }

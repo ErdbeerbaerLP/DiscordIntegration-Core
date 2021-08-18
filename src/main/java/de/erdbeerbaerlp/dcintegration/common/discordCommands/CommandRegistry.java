@@ -1,16 +1,9 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat.*;
-import de.erdbeerbaerlp.dcintegration.common.discordCommands.inDMs.*;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
-import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -23,10 +16,6 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 public class CommandRegistry {
-    /**
-     * Registered commands for bot DMs
-     */
-    private static final List<DMCommand> dmCommands = new ArrayList<>();
     /**
      * Registered commands
      */
@@ -49,10 +38,9 @@ public class CommandRegistry {
             registerCommand(new CommandUptime());
 
         if (Configuration.instance().linking.enableLinking) {
-            registerCommand(new DMHelpCommand());
-            registerCommand(new SettingsCommand());
+            registerCommand(new CommandSettings());
             registerCommand(new CommandLinkcheck());
-            registerCommand(new LinkCommand());
+            registerCommand(new CommandLink());
         }
         registerConfigCommands();
     }
@@ -75,7 +63,7 @@ public class CommandRegistry {
     }
 
     /**
-     * Registers an {@link DiscordCommand} or {@link DMCommand}
+     * Registers an {@link DiscordCommand}
      *
      * @param cmd command
      * @return true if the registration was successful
@@ -83,37 +71,28 @@ public class CommandRegistry {
     public static boolean registerCommand(@Nonnull DiscordCommand cmd) {
         final ArrayList<Role> adminRoles = getAdminRoles(Variables.discord_instance.getChannel().getGuild());
         final Member owner = Variables.discord_instance.getChannel().getGuild().retrieveOwner().complete();
-        if (cmd instanceof DMCommand) {
-            final ArrayList<DMCommand> toRemove = new ArrayList<>();
-            for (DMCommand c : dmCommands) {
-                if (!cmd.isConfigCommand() && cmd.equals(c)) return false;
-                else if (cmd.isConfigCommand() && cmd.equals(c)) toRemove.add(c);
-            }
-            for (DMCommand cm : toRemove)
-                dmCommands.remove(cm);
-            return dmCommands.add((DMCommand) cmd);
-        } else {
-            final ArrayList<DiscordCommand> toRemove = new ArrayList<>();
-            for (DiscordCommand c : commands) {
-                if (!cmd.isConfigCommand() && cmd.equals(c)) return false;
-                else if (cmd.isConfigCommand() && cmd.equals(c)) toRemove.add(c);
-            }
-            for (DiscordCommand cm : toRemove)
-                commands.remove(cm);
-            boolean ret = commands.add(cmd);
-            if (ret && cmdList != null && cmd instanceof CommandFromCFG) {
-                if (cmd.isUsingArgs()) cmd.addOption(OptionType.STRING, "args", cmd.getArgText());
-            }
-            if (cmd.adminOnly()) {
-                cmd.setDefaultEnabled(false);
-                final HashMap<String, Collection<? extends CommandPrivilege>> perm = new HashMap<>();
-                final ArrayList<CommandPrivilege> privileges = new ArrayList<>();
-                adminRoles.forEach((r) -> privileges.add(new CommandPrivilege(CommandPrivilege.Type.ROLE, true, r.getIdLong())));
-                privileges.add(new CommandPrivilege(CommandPrivilege.Type.USER, true, owner.getIdLong()));
-                permissionsByName.put(cmd.getName(), privileges);
-            }
-            return ret;
+
+        final ArrayList<DiscordCommand> toRemove = new ArrayList<>();
+        for (DiscordCommand c : commands) {
+            if (!cmd.isConfigCommand() && cmd.equals(c)) return false;
+            else if (cmd.isConfigCommand() && cmd.equals(c)) toRemove.add(c);
         }
+        for (DiscordCommand cm : toRemove)
+            commands.remove(cm);
+        boolean ret = commands.add(cmd);
+        if (ret && cmdList != null && cmd instanceof CommandFromCFG) {
+            if (cmd.isUsingArgs()) cmd.addOption(OptionType.STRING, "args", cmd.getArgText());
+        }
+        if (cmd.adminOnly()) {
+            cmd.setDefaultEnabled(false);
+            final HashMap<String, Collection<? extends CommandPrivilege>> perm = new HashMap<>();
+            final ArrayList<CommandPrivilege> privileges = new ArrayList<>();
+            adminRoles.forEach((r) -> privileges.add(new CommandPrivilege(CommandPrivilege.Type.ROLE, true, r.getIdLong())));
+            privileges.add(new CommandPrivilege(CommandPrivilege.Type.USER, true, owner.getIdLong()));
+            permissionsByName.put(cmd.getName(), privileges);
+        }
+        return ret;
+
     }
 
     public static void updateSlashCommands() {
@@ -152,15 +131,6 @@ public class CommandRegistry {
         }
 
         System.out.println("Registered " + commands.size() + " commands");
-
-        final List<DMCommand> dmcmds = dmCommands;
-        System.out.println("Reloading " + dmcmds.size() + " DM commands");
-        commands = new ArrayList<>();
-        for (DMCommand cmd : dmcmds) {
-            if (cmd.isConfigCommand()) continue;
-            commands.add(cmd);
-        }
-        System.out.println("Registered " + dmCommands.size() + " commands");
     }
 
     /**
@@ -171,11 +141,4 @@ public class CommandRegistry {
         return commands;
     }
 
-    /**
-     * @return List of registered DM commands
-     */
-    @Nonnull
-    public static List<DMCommand> getDMCommandList() {
-        return dmCommands;
-    }
 }
