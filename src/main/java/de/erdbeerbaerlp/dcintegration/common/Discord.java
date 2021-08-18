@@ -632,7 +632,7 @@ public class Discord extends Thread {
         });
         if (r.get() != -1) return r.get();
         do {
-            r.set(new Random().nextInt(Integer.MAX_VALUE));
+            r.set(new Random().nextInt(999999));
         } while (pendingLinks.containsKey(r.get()));
         pendingLinks.put(r.get(), new DefaultKeyValue<>(Instant.now(), uniqueID));
         return r.get();
@@ -652,7 +652,7 @@ public class Discord extends Thread {
         });
         if (r.get() != -1) return r.get();
         do {
-            r.set(new Random().nextInt(99999)); //Making it shorter as bedrock has no click events in chat
+            r.set(new Random().nextInt(99999));
         } while (pendingBedrockLinks.containsKey(r.get()));
         pendingBedrockLinks.put(r.get(), new DefaultKeyValue<>(Instant.now(), uniqueID));
         return r.get();
