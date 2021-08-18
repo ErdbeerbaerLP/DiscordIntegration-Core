@@ -30,11 +30,11 @@ public class CommandSettings extends DiscordCommand {
         for (Field f : settingsFields)
             settings.add(new Command.Choice(f.getName(), f.getName()));
 
-        addSubcommands(new SubcommandData("get", "").addOptions(
-                new OptionData(OptionType.STRING, "key", "Destination settings key", false).addChoices(settings)),
-                new SubcommandData("set", "").addOptions(
-                        new OptionData(OptionType.STRING, "key", "Destination settings key", true).addChoices(settings),
-                        new OptionData(OptionType.BOOLEAN, "value", "Settings value")));
+        addSubcommands(new SubcommandData("get", Configuration.instance().localization.commands.cmdSett_get).addOptions(
+                new OptionData(OptionType.STRING, "key", Configuration.instance().localization.commands.cmdSett_key, false).addChoices(settings)),
+                new SubcommandData("set", Configuration.instance().localization.commands.cmdSett_set).addOptions(
+                        new OptionData(OptionType.STRING, "key", Configuration.instance().localization.commands.cmdSett_key, true).addChoices(settings),
+                        new OptionData(OptionType.BOOLEAN, "value", Configuration.instance().localization.commands.cmdSett_val)));
     }
 
     @Override

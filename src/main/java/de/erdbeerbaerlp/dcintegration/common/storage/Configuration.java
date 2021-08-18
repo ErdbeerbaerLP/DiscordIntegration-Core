@@ -435,6 +435,11 @@ public class Configuration {
 
             public String cmdLinkcheck_cannotGetPlayer = "Error getting player information! Maybe you used an invalid name / UUID";
 
+            public String cmdSett_key = "Destination settings key";
+            public String cmdSett_val = "Settings value";
+            public String cmdSett_set = "Change an setting";
+            public String cmdSett_get = "Retrieve an setting value";
+
             @TomlComment("Command descriptions")
             public Descriptions descriptions = new Descriptions();
 
