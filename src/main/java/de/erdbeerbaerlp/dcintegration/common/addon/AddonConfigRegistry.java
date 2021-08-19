@@ -24,17 +24,10 @@ public class AddonConfigRegistry {
             return cfg;
         }
         final File cfgFile = cfg.getConfigFile();
-        try {
-            final FileInputStream is = new FileInputStream(cfgFile);
-            final T conf = (T) new Toml().read(is).to(cfg.getClass());
-            conf.setConfigFile(cfgFile);
-            is.close();
-            saveConfig(conf); //Re-write the config so new values get added after updates
-            return conf;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        final T conf = (T) new Toml().read(cfgFile).to(cfg.getClass());
+        conf.setConfigFile(cfgFile);
+        saveConfig(conf); //Re-write the config so new values get added after updates
+        return conf;
 
     }
 
@@ -53,9 +46,7 @@ public class AddonConfigRegistry {
                     .indentTablesBy(4)
                     .padArrayDelimitersBy(2)
                     .build();
-            final FileOutputStream os = new FileOutputStream(cfg.getConfigFile());
-            w.write(cfg, os);
-            os.close();
+            w.write(cfg, cfg.getConfigFile());
         } catch (IOException e) {
             e.printStackTrace();
         }
