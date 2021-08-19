@@ -52,14 +52,14 @@ public class CommandLink extends DiscordCommand {
                 if (discord_instance.pendingLinks.containsKey(num)) {
                     final boolean linked = PlayerLinkController.linkPlayer(ev.getUser().getId(), discord_instance.pendingLinks.get(num).getValue());
                     if (linked) {
-                        reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", Configuration.instance().commands.dmPrefix).replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(ev.getUser().getId())))).queue());
+                        reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", "/").replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(ev.getUser().getId())))).queue());
                         discord_instance.srv.sendMCMessage(Configuration.instance().localization.linking.linkSuccessfulIngame.replace("%name%", ev.getUser().getName()).replace("%name#tag%", ev.getUser().getAsTag()), discord_instance.pendingLinks.get(num).getValue());
                     } else
                         reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkFailed).queue());
                 } else if (discord_instance.pendingBedrockLinks.containsKey(num)) {
                     final boolean linked = PlayerLinkController.linkBedrockPlayer(ev.getUser().getId(), discord_instance.pendingBedrockLinks.get(num).getValue());
                     if (linked) {
-                        reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", Configuration.instance().commands.dmPrefix).replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getBedrockPlayerFromDiscord(ev.getUser().getId())))).queue());
+                        reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", "/").replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getBedrockPlayerFromDiscord(ev.getUser().getId())))).queue());
                         discord_instance.srv.sendMCMessage(Configuration.instance().localization.linking.linkSuccessfulIngame.replace("%name%", ev.getUser().getName()).replace("%name#tag%", ev.getUser().getAsTag()), discord_instance.pendingBedrockLinks.get(num).getValue());
                     } else
                         reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkFailed).queue());

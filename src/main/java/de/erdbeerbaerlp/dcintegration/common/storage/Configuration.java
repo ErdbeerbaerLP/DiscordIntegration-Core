@@ -186,9 +186,6 @@ public class Configuration {
         @TomlComment({"The Role IDs of your Admin Roles", "Now supports multiple roles which can access admin commands"})
         public String[] adminRoleIDs = new String[0];
 
-        @TomlComment({"The prefix of the commands usable in discord DMs", "Using slash here will cause some commands to get inaccessible!"})
-        public String dmPrefix = "!";
-
         @TomlComment("Set to true to require an space after the prefix (e.g. 'mc help')")
         public boolean spaceAfterPrefix = false;
 
@@ -322,8 +319,8 @@ public class Configuration {
 
         public static class Linking {
 
-            @TomlComment({"Sent to the user when he linked his discord successfully", "PLACEHOLDERS:", "%player% - The in-game player name", "%prefix% - Command prefix"})
-            public String linkSuccessful = "Your account is now linked with %player%.\nUse %prefix%settings here to view and set some user-specific settings";
+            @TomlComment({"Sent to the user when he linked his discord successfully", "PLACEHOLDERS:", "%player% - The in-game player name"})
+            public String linkSuccessful = "Your account is now linked with %player%.\nUse /settings to view and set some user-specific settings";
 
             @TomlComment({"Sent to the user when linking fails"})
             public String linkFailed = "Account link failed";
@@ -336,13 +333,13 @@ public class Configuration {
 
 
             @TomlComment({"Message of the link method in whitelist mode", "Used by %method% placeholder"})
-            public String linkMethodWhitelistCode = "joining the server and then using `%prefix%link <whitelist-code>` here";
+            public String linkMethodWhitelistCode = "joining the server and then using `/link <whitelist-code>` here";
 
             @TomlComment({"Message of the link method in normal mode", "Used by %method% placeholder"})
             public String linkMethodIngame = "`/discord link` ingame";
 
-            @TomlComment({"Sent when attempting to whitelist-link with an non uuid string", "PLACEHOLDERS:", "%arg% - The provided argument", "%prefix% - Command prefix"})
-            public String link_argumentNotUUID = "Argument \"%arg%\" is not an valid UUID or Name. Use `%prefix%whitelist <Name-or-UUID>`";
+            @TomlComment({"Sent when attempting to whitelist-link with an non uuid string", "PLACEHOLDERS:", "%arg% - The provided argument"})
+            public String link_argumentNotUUID = "Argument \"%arg%\" is not an valid UUID or Name. Use `/whitelist <Name-or-UUID>`";
 
             @TomlComment("Sent when attempting to link with an unknown number")
             public String invalidLinkNumber = "Invalid link number! Use `/discord link` ingame to get your link number";
@@ -360,8 +357,8 @@ public class Configuration {
             public String link_notMember = "You are not member of the Discord-Server this bot is operating in!";
             @TomlComment({"Sent to the user when he linked his discord successfully", "PLACEHOLDERS:", "%name% - The linked discord name", "%name#tag% - The linked discord name with tag"})
             public String linkSuccessfulIngame = "Your account is now linked with discord-user %name#tag%";
-            @TomlComment({"Message shown to players who want to link their discord account ingame", "", "PLACEHOLDERS:", "%num% - The link number", "%prefix% - Command prefix"})
-            public String linkMsgIngame = "Send this command as a direct message to the bot to link your account: %prefix%link %num%\nThis number will expire after 10 minutes";
+            @TomlComment({"Message shown to players who want to link their discord account ingame", "", "PLACEHOLDERS:", "%num% - The link number"})
+            public String linkMsgIngame = "Send this command as a direct message to the bot to link your account: /link %num%\nThis number will expire after 10 minutes";
 
             @TomlComment("Shown when hovering over the link message")
             public String hoverMsg_copyClipboard = "Click to copy command to clipboard";
@@ -380,8 +377,8 @@ public class Configuration {
             @TomlComment("Message sent when user does not have permission to run a command")
             public String noPermission = "You don't have permission to execute this command!";
 
-            @TomlComment({"Message sent when an invalid command was typed", "", "PLACEHOLDERS:", "%prefix% - Command prefix"})
-            public String unknownCommand = "Unknown command, try `%prefix%help` for a list of commands";
+            @TomlComment({"Message sent when an invalid command was typed", "", "PLACEHOLDERS:"})
+            public String unknownCommand = "Unknown command, try `/help` for a list of commands";
 
             @TomlComment("Message if a player provides less arguments than required")
             public String notEnoughArguments = "Not enough arguments";
@@ -469,8 +466,8 @@ public class Configuration {
             @TomlComment("Error message when providing an invalid personal setting name")
             public String invalidPersonalSettingKey = "`%key%` is not an valid setting!";
 
-            @TomlComment({"PLACEHOLDERS:", "%prefix% - Returns the current command prefix"})
-            public String settingsCommandUsage = "Usages:\n\n%prefix%settings - lists all available keys\n%prefix%settings get <key> - Gets the current settings value\n%prefix%settings set <key> <value> - Sets an Settings value";
+            @TomlComment({})
+            public String settingsCommandUsage = "Usages:\n\n/settings - lists all available keys\n/settings get <key> - Gets the current settings value\n/settings set <key> <value> - Sets an Settings value";
 
             @TomlComment("Sent when setting an personal setting fails")
             public String settingUpdateFailed = "Failed to set value :/";

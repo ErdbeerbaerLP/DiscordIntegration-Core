@@ -41,7 +41,7 @@ public class CommandSettings extends DiscordCommand {
     public void execute(SlashCommandEvent ev) {
         final CompletableFuture<InteractionHook> reply = ev.deferReply(true).submit();
         if (!PlayerLinkController.isDiscordLinked(ev.getUser().getId())) {
-            reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelistCode.replace("%prefix%", Configuration.instance().commands.dmPrefix)) : Configuration.instance().localization.linking.linkMethodIngame)).queue());
+            reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelistCode.replace("%prefix%", "/")) : Configuration.instance().localization.linking.linkMethodIngame)).queue());
             return;
         }
         final OptionMapping key = ev.getOption("key");

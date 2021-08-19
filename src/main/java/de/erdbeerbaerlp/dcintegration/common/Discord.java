@@ -632,7 +632,7 @@ public class Discord extends Thread {
         });
         if (r.get() != -1) return r.get();
         do {
-            r.set(new Random().nextInt(999999));
+            r.set(new Random().nextInt(99999));
         } while (pendingLinks.containsKey(r.get()));
         pendingLinks.put(r.get(), new DefaultKeyValue<>(Instant.now(), uniqueID));
         return r.get();
