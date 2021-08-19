@@ -7,8 +7,7 @@ import de.erdbeerbaerlp.dcintegration.common.Discord;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 
 public class AddonConfigRegistry {
@@ -25,10 +24,18 @@ public class AddonConfigRegistry {
             return cfg;
         }
         final File cfgFile = cfg.getConfigFile();
-        final T conf = (T) new Toml().read(cfgFile).to(cfg.getClass());
-        conf.setConfigFile(cfgFile);
-        saveConfig(conf); //Re-write the config so new values get added after updates
-        return conf;
+        try {
+            final FileInputStream is = new FileInputStream(cfgFile);
+            final T conf = (T) new Toml().read(is).to(cfg.getClass());
+            conf.setConfigFile(cfgFile);
+            is.close();
+            saveConfig(conf); //Re-write the config so new values get added after updates
+            return conf;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
     /**
@@ -46,7 +53,9 @@ public class AddonConfigRegistry {
                     .indentTablesBy(4)
                     .padArrayDelimitersBy(2)
                     .build();
-            w.write(cfg, cfg.getConfigFile());
+            final FileOutputStream os = new FileOutputStream(cfg.getConfigFile());
+            w.write(cfg, os);
+            os.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -65,7 +74,7 @@ public class AddonConfigRegistry {
             final T conf = cfg.getDeclaredConstructor().newInstance();
             conf.setConfigFile(new File(AddonLoader.getAddonDir(), AddonLoader.getAddonMeta(inst).getName() + ".toml"));
             return loadConfig(conf);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (RuntimeException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             System.err.println("An exception occurred while loading addon configuration " +cfg.getName() );
             e.printStackTrace();
         }
