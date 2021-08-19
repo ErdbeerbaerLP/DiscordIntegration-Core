@@ -306,7 +306,7 @@ public class Discord extends Thread {
      * Starts all sub-threads
      */
     public void startThreads() {
-        CommandRegistry.updateSlashCommands();
+        new Thread(CommandRegistry::updateSlashCommands).start();
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread();
         if (messageSender == null) messageSender = new MessageQueueThread();
         if (!messageSender.isAlive()) messageSender.start();
