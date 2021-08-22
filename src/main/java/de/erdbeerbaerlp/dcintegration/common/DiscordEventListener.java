@@ -136,7 +136,7 @@ public class DiscordEventListener implements EventListener {
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
                         }
-                        ComponentUtils.append(out, attachmentComponent);
+                        out = ComponentUtils.append(out, attachmentComponent);
                         dc.srv.sendMCMessage(out);
                     }
                     dc.callEventC((e) -> e.onDiscordMessagePost(ev));
