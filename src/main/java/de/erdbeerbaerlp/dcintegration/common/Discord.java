@@ -441,6 +441,7 @@ public class Discord extends Thread {
      */
     public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, MessageChannel channel, boolean isChatMessage, @Nonnull String uuid) {
         if (jda == null || channel == null) return;
+        final Thread t = new Thread(()->{
         try {
             if (Configuration.instance().webhook.enable) {
                 final ArrayList<WebhookMessageBuilder> messages = message.buildWebhookMessages();
@@ -460,6 +461,10 @@ public class Discord extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        });
+        t.setDaemon(true);
+        t.setName("Discord SendMessage");
+        t.start();
     }
 
     /**
