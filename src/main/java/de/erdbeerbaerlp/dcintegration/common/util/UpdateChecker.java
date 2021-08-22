@@ -21,44 +21,50 @@ public class UpdateChecker {
      */
     public static void runUpdateCheck(String url) {
         if (!Configuration.instance().general.enableUpdateChecker) return;
-        final StringBuilder changelog = new StringBuilder();
-        try {
-            final HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-            conn.setRequestMethod("GET");
-            final InputStreamReader r = new InputStreamReader(conn.getInputStream());
-            final JsonArray parse = p.parse(r).getAsJsonArray();
-            if (parse == null) {
-                System.err.println("Could not check for updates");
-                return;
-            }
-            final AtomicBoolean shouldNotify = new AtomicBoolean(false);
-            final AtomicInteger versionsBehind = new AtomicInteger();
-            parse.forEach((elm) -> {
-                if (elm != null && elm.isJsonObject()) {
-                    final JsonObject versionDetails = elm.getAsJsonObject();
-                    final String version = versionDetails.get("version").getAsString();
-                    try {
-                        if (Integer.parseInt(version.replace(".", "")) > Integer.parseInt(Variables.VERSION.replace(".", ""))) {
-                            versionsBehind.getAndIncrement();
-                            changelog.append("\n").append(version).append(":\n").append(versionDetails.get("changelog").getAsString()).append("\n");
-                            if (!shouldNotify.get()) {
-                                if (ReleaseType.getFromName(versionDetails.get("type").getAsString()).value >= Configuration.instance().general.updateCheckerMinimumReleaseType.value)
-                                    shouldNotify.set(true);
-                            }
-                        }
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
+        final Thread thread = new Thread(() -> {
+            final StringBuilder changelog = new StringBuilder();
+            try {
+                final HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+                conn.setRequestMethod("GET");
+                final InputStreamReader r = new InputStreamReader(conn.getInputStream());
+                final JsonArray parse = p.parse(r).getAsJsonArray();
+                if (parse == null) {
+                    System.err.println("Could not check for updates");
+                    return;
                 }
-            });
-            final String changelogString = changelog.toString();
-            if (shouldNotify.get()) {
-                System.out.println("[Discord Integration] Updates available! You are " + versionsBehind.get() + " version" + (versionsBehind.get() == 1 ? "" : "s") + " behind\nChangelog since last update:\n" + changelogString);
+                final AtomicBoolean shouldNotify = new AtomicBoolean(false);
+                final AtomicInteger versionsBehind = new AtomicInteger();
+                parse.forEach((elm) -> {
+                    if (elm != null && elm.isJsonObject()) {
+                        final JsonObject versionDetails = elm.getAsJsonObject();
+                        final String version = versionDetails.get("version").getAsString();
+                        try {
+                            if (Integer.parseInt(version.replace(".", "")) > Integer.parseInt(Variables.VERSION.replace(".", ""))) {
+                                versionsBehind.getAndIncrement();
+                                changelog.append("\n").append(version).append(":\n").append(versionDetails.get("changelog").getAsString()).append("\n");
+                                if (!shouldNotify.get()) {
+                                    if (ReleaseType.getFromName(versionDetails.get("type").getAsString()).value >= Configuration.instance().general.updateCheckerMinimumReleaseType.value)
+                                        shouldNotify.set(true);
+                                }
+                            }
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                final String changelogString = changelog.toString();
+                if (shouldNotify.get()) {
+                    System.out.println("[Discord Integration] Updates available! You are " + versionsBehind.get() + " version" + (versionsBehind.get() == 1 ? "" : "s") + " behind\nChangelog since last update:\n" + changelogString);
+                }
+            } catch (IOException e) {
+                System.out.println("Could not check for updates");
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            System.out.println("Could not check for updates");
-            e.printStackTrace();
-        }
+        });
+        thread.setDaemon(true);
+        thread.setName("Discord Integration update checker");
+        thread.start();
+
     }
 
     public enum ReleaseType {
