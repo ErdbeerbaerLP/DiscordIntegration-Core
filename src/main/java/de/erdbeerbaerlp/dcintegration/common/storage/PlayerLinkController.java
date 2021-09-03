@@ -291,7 +291,6 @@ public class PlayerLinkController {
         if (isDiscordLinkedJava(discordID) || isPlayerLinked(player))
             throw new IllegalArgumentException("One link side already exists");
         try {
-            if (MessageUtils.getNameFromUUID(player) == null) return false;
             final JsonArray a = getJson();
             final PlayerLink link = isDiscordLinkedBedrock(discordID) ? getUser(discordID, getPlayerFromDiscord(discordID)) : new PlayerLink();
             link.discordID = discordID;
