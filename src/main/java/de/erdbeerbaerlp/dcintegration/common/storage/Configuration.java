@@ -345,7 +345,7 @@ public class Configuration {
             public String invalidLinkNumber = "Invalid link number! Use `/discord link` ingame to get your link number";
 
             @TomlComment("Sent when attempting to link with an invalid number")
-            public String linkNumberNAN = "This is not a number. Use `/discord link` ingame to get your link number";
+            public String linkNumberNAN = "This is not a number!";
 
             @TomlComment({"Message shown to players who are not whitelisted using discord", "No effect if discord whitelist is off"})
             public String notWhitelistedCode = "\u00a7cYou are not whitelisted.\nJoin the discord server for more information\nhttps://discord.gg/someserver\nYour Whitelist-Code is: \u00a76%code%";

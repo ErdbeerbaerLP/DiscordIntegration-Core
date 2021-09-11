@@ -106,7 +106,7 @@ dependencies {
     embed "net.kyori:adventure-text-serializer-legacy:4.8.1"
 
     //Toml4j
-    embed("de.erdbeerbaerlp:toml4j:257b99ed")
+    embed("de.erdbeerbaerlp:toml4j:cf5b4655")
 
     //Apache commons lang3
     embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
