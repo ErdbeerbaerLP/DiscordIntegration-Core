@@ -181,7 +181,12 @@ public class Discord extends Thread {
             if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().getMember(jda.getSelfUser()), Permission.MANAGE_WEBHOOKS)) {
                 System.err.println("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
                 Configuration.instance().webhook.enable = false;
-                Configuration.instance().saveConfig();
+                try {
+                    Configuration.instance().saveConfig();
+                } catch (IOException e) {
+                    System.err.println("FAILED TO SAVE CONFIG");
+                    e.printStackTrace();
+                }
             }
 
         System.out.println("Bot Ready");
@@ -477,7 +482,12 @@ public class Discord extends Thread {
             if (!PermissionUtil.checkPermission(c, c.getGuild().getMember(jda.getSelfUser()), Permission.MANAGE_WEBHOOKS)) {
                 System.out.println("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
                 Configuration.instance().webhook.enable = false;
-                Configuration.instance().saveConfig();
+                try {
+                    Configuration.instance().saveConfig();
+                } catch (IOException e) {
+                    System.err.println("FAILED TO SAVE CONFIGURATION");
+                    e.printStackTrace();
+                }
                 return null;
             }
             for (final Webhook web : c.retrieveWebhooks().complete()) {
