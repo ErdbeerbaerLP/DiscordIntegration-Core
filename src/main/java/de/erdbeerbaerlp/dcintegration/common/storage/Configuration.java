@@ -58,7 +58,6 @@ public class Configuration {
 
         //First instance of the Config
         INSTANCE = new Configuration();
-        INSTANCE.loadConfig();
     }
 
     @TomlComment("General options for the bot")
@@ -107,7 +106,7 @@ public class Configuration {
         return INSTANCE;
     }
 
-    public void loadConfig() {
+    public void loadConfig() throws IOException, IllegalStateException {
         if (!configFile.exists()) {
             INSTANCE = new Configuration();
             INSTANCE.saveConfig();
@@ -117,8 +116,7 @@ public class Configuration {
         INSTANCE.saveConfig(); //Re-write the config so new values get added after updates
     }
 
-    public void saveConfig() {
-        try {
+    public void saveConfig() throws IOException {
             if (!configFile.exists()) {
                 if (!configFile.getParentFile().exists()) configFile.getParentFile().mkdirs();
                 configFile.createNewFile();
@@ -129,9 +127,6 @@ public class Configuration {
                     .padArrayDelimitersBy(2)
                     .build();
             w.write(this, configFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public static class General {
