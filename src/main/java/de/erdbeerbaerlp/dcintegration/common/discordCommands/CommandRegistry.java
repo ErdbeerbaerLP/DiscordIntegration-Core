@@ -7,6 +7,7 @@ import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
@@ -95,7 +96,7 @@ public class CommandRegistry {
 
     }
 
-    public static void updateSlashCommands() {
+    public static void updateSlashCommands() throws ErrorResponseException {
         cmdList.queue();
         cmdList.addCommands(commands).complete().forEach((cmd) -> {
             if (permissionsByName.containsKey(cmd.getName())) {

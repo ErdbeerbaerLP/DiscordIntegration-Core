@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -311,7 +312,13 @@ public class Discord extends Thread {
      * Starts all sub-threads
      */
     public void startThreads() {
-        new Thread(CommandRegistry::updateSlashCommands).start();
+        new Thread(()->{
+            try {
+                CommandRegistry.updateSlashCommands();
+            }catch (ErrorResponseException e){
+                System.err.println("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: "+jda.getInviteUrl(Permission.getPermissions(805399632)).replace("scope=", "scope=applications.commands%20"));
+            }
+        }).start();
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread();
         if (messageSender == null) messageSender = new MessageQueueThread();
         if (!messageSender.isAlive()) messageSender.start();
