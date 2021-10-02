@@ -88,7 +88,7 @@ dependencies {
     embed("net.dv8tion:JDA:4.3.0_331") {
         exclude group: 'okhttp3', module: "okhttp"
     }
-    embed "com.squareup.okhttp3:okhttp:4.9.1"
+    embed "com.squareup.okhttp3:okhttp:4.9.2"
     embed 'club.minnced:discord-webhooks:0.5.8'
 
     //GSON
