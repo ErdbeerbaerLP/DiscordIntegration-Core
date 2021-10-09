@@ -5,5 +5,6 @@ public enum GameType {
     PLAYING,
     LISTENING,
     STREAMING,
+    COMPETING,
     DISABLED
 }

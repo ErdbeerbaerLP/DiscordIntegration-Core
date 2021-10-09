@@ -1,6 +1,6 @@
-package de.erdbeerbaerlp.dcintegration.common.discordCommands;
+package de.erdbeerbaerlp.dcintegration.common.storage;
 
-import de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat.*;
+import de.erdbeerbaerlp.dcintegration.common.discordCommands.*;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
@@ -8,7 +8,9 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.apache.commons.lang3.ArrayUtils;

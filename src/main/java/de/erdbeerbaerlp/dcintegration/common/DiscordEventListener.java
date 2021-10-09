@@ -1,7 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common;
 
-import de.erdbeerbaerlp.dcintegration.common.discordCommands.CommandRegistry;
-import de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat.DiscordCommand;
+import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
+import de.erdbeerbaerlp.dcintegration.common.discordCommands.DiscordCommand;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
@@ -18,6 +18,7 @@ import dev.vankka.simpleast.core.parser.Rule;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -45,7 +46,7 @@ public class DiscordEventListener implements EventListener {
 
     static {
         List<Rule<Object, Node<Object>, Object>> rules = new ArrayList<>(DiscordMarkdownRules.createAllRulesForDiscord(false));
-        rules.add(new Rule<Object, Node<Object>, Object>(Pattern.compile("(.*)")) {
+        rules.add(new Rule<>(Pattern.compile("(.*)")) {
             @Override
             public ParseSpec<Object, Node<Object>, Object> parse(Matcher matcher, Parser<Object, Node<Object>, Object> parser, Object state) {
                 return ParseSpec.createTerminal(new TextNode<>(matcher.group()), state);
@@ -80,9 +81,13 @@ public class DiscordEventListener implements EventListener {
                         dc.srv.sendMCReaction(ev.getMember(), ev.retrieveMessage(), sender, ev.getReactionEmote());
                 }
         }
+        if(event instanceof GuildMemberRemoveEvent){
+            if(Configuration.instance().linking.unlinkOnLeave && PlayerLinkController.isDiscordLinked(((GuildMemberRemoveEvent) event).getUser().getId()) ){
+                PlayerLinkController.unlinkPlayer(((GuildMemberRemoveEvent) event).getUser().getId());
+            }
+        }
         if (event instanceof MessageReceivedEvent) {
             final MessageReceivedEvent ev = (MessageReceivedEvent) event;
-
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
                 if (!ev.isWebhookMessage() && !ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
                     if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;
@@ -146,11 +151,6 @@ public class DiscordEventListener implements EventListener {
     }
 
     private void processDiscordCommand(SlashCommandEvent ev, final String[] command, final TextChannel channel, User sender, final Discord dc) {
-        String argumentsRaw = "";
-        for (int i = 1; i < command.length; i++) {
-            argumentsRaw = argumentsRaw + command[i] + " ";
-        }
-        argumentsRaw = argumentsRaw.trim();
         boolean hasPermission = true;
         boolean executed = false;
         for (final DiscordCommand cmd : CommandRegistry.getCommandList()) {

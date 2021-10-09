@@ -4,8 +4,9 @@ import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import de.erdbeerbaerlp.dcintegration.common.addon.AddonLoader;
 import de.erdbeerbaerlp.dcintegration.common.api.DiscordEventHandler;
-import de.erdbeerbaerlp.dcintegration.common.discordCommands.CommandRegistry;
+import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLink;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
@@ -214,6 +215,20 @@ public class Discord extends Thread {
         t.setName("Discord Integration Addon-Loader");
         t.setDaemon(true);
         t.start();
+
+        final Thread unlink = new Thread(() -> {
+            for (PlayerLink p : PlayerLinkController.getAllLinks()) {
+                try {
+                    getChannel().getGuild().retrieveMemberById(p.discordID).submit();
+                } catch (ErrorResponseException e) {
+                    PlayerLinkController.unlinkPlayer(p.discordID);
+                }
+            }
+        });
+        unlink.setName("Discord Integration Link Check");
+        unlink.setDaemon(true);
+        if (Configuration.instance().linking.unlinkOnLeave) unlink.start();
+
     }
 
     /**
@@ -312,11 +327,11 @@ public class Discord extends Thread {
      * Starts all sub-threads
      */
     public void startThreads() {
-        new Thread(()->{
+        new Thread(() -> {
             try {
                 CommandRegistry.updateSlashCommands();
-            }catch (ErrorResponseException e){
-                System.err.println("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: "+jda.getInviteUrl(Permission.getPermissions(805399632)).replace("scope=", "scope=applications.commands%20"));
+            } catch (ErrorResponseException e) {
+                System.err.println("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(805399632)).replace("scope=", "scope=applications.commands%20"));
             }
         }).start();
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread();
@@ -453,26 +468,26 @@ public class Discord extends Thread {
      */
     public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, MessageChannel channel, boolean isChatMessage, @Nonnull String uuid) {
         if (jda == null || channel == null) return;
-        final Thread t = new Thread(()->{
-        try {
-            if (Configuration.instance().webhook.enable) {
-                final ArrayList<WebhookMessageBuilder> messages = message.buildWebhookMessages();
-                messages.forEach((builder) -> {
-                    builder.setUsername(name);
-                    builder.setAvatarUrl(avatarURL);
-                    getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> addRecentMessage(a.getId() + "", UUID.fromString(uuid)));
-                });
-            } else if (isChatMessage) {
-                message.setMessage(Configuration.instance().localization.discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
-                for (Message m : message.buildMessages())
-                    channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
-            } else {
-                for (Message m : message.buildMessages())
-                    channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
+        final Thread t = new Thread(() -> {
+            try {
+                if (Configuration.instance().webhook.enable) {
+                    final ArrayList<WebhookMessageBuilder> messages = message.buildWebhookMessages();
+                    messages.forEach((builder) -> {
+                        builder.setUsername(name);
+                        builder.setAvatarUrl(avatarURL);
+                        getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> addRecentMessage(a.getId() + "", UUID.fromString(uuid)));
+                    });
+                } else if (isChatMessage) {
+                    message.setMessage(Configuration.instance().localization.discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
+                    for (Message m : message.buildMessages())
+                        channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
+                } else {
+                    for (Message m : message.buildMessages())
+                        channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         });
         t.setDaemon(true);
         t.setName("Discord SendMessage");
@@ -522,7 +537,8 @@ public class Discord extends Thread {
 
     /**
      * Sends a message to discord
-     *  @param msg         the message to send
+     *
+     * @param msg         the message to send
      * @param textChannel the channel where the message should arrive
      */
     public void sendMessage(@Nonnull String msg, MessageChannel textChannel) {
@@ -531,7 +547,8 @@ public class Discord extends Thread {
 
     /**
      * Sends a message to discord
-     *  @param msg     the message to send
+     *
+     * @param msg     the message to send
      * @param channel the channel where the message should arrive
      */
     public void sendMessage(@Nonnull DiscordMessage msg, MessageChannel channel) {
@@ -793,6 +810,9 @@ public class Discord extends Thread {
                             break;
                         case WATCHING:
                             jda.getPresence().setActivity(Activity.watching(game));
+                            break;
+                        case COMPETING:
+                            jda.getPresence().setActivity(Activity.competing(game));
                             break;
                         case STREAMING:
                             jda.getPresence().setActivity(Activity.streaming(game, Configuration.instance().general.streamingURL)); //URL is required to show up as "Streaming"

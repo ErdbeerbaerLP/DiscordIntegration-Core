@@ -6,6 +6,7 @@ import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -245,7 +246,7 @@ public class PlayerLinkController {
         if (player == null && discordID == null) throw new IllegalArgumentException();
         else if (discordID == null) discordID = getDiscordFromPlayer(player);
         else if (player == null)
-            player = isDiscordLinkedJava(discordID) ? getPlayerFromDiscord(discordID) : (isDiscordLinkedBedrock(discordID) ? getBedrockPlayerFromDiscord(discordID):null);
+            player = isDiscordLinkedJava(discordID) ? getPlayerFromDiscord(discordID) : (isDiscordLinkedBedrock(discordID) ? getBedrockPlayerFromDiscord(discordID) : null);
         if (player == null || discordID == null) return new PlayerSettings();
         try {
             for (JsonElement e : getJson()) {
@@ -415,12 +416,11 @@ public class PlayerLinkController {
      * Unlinks an player and discord id
      *
      * @param discordID The discord ID to unlink
-     * @param player    The player's {@link UUID} to unlink
      * @return true, if unlinking was successful
      */
-    public static boolean unlinkPlayer(@Nonnull String discordID, @Nonnull UUID player) {
+    public static boolean unlinkPlayer(@Nonnull String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return false;
-        if (!isDiscordLinked(discordID) && !isPlayerLinked(player)) return false;
+        if (!isDiscordLinked(discordID)) return false;
         try {
             for (JsonElement e : getJson()) {
                 final PlayerLink o = gson.fromJson(e, PlayerLink.class);
@@ -430,11 +430,15 @@ public class PlayerLinkController {
                     try (Writer writer = new FileWriter(playerLinkedFile)) {
                         gson.toJson(json, writer);
                     }
-                    final Guild guild = discord_instance.getChannel().getGuild();
-                    final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
-                    final Member member = guild.getMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(o.mcPlayerUUID)));
-                    if (member.getRoles().contains(linkedRole))
-                        guild.removeRoleFromMember(member, linkedRole).queue();
+                    try {
+                        final Guild guild = discord_instance.getChannel().getGuild();
+                        guild.retrieveMemberById(discordID).submit().thenAccept((member) -> {
+                            final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
+                            if (member.getRoles().contains(linkedRole))
+                                guild.removeRoleFromMember(member, linkedRole).queue();
+                        });
+                    } catch (ErrorResponseException ignored) {
+                    }
                     return true;
                 }
             }

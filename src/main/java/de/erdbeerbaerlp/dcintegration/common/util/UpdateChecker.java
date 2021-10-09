@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UpdateChecker {
-    private static final JsonParser p = new JsonParser();
 
 
     /**
@@ -27,7 +26,7 @@ public class UpdateChecker {
                 final HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
                 conn.setRequestMethod("GET");
                 final InputStreamReader r = new InputStreamReader(conn.getInputStream());
-                final JsonArray parse = p.parse(r).getAsJsonArray();
+                final JsonArray parse = JsonParser.parseReader(r).getAsJsonArray();
                 if (parse == null) {
                     System.err.println("Could not check for updates");
                     return;

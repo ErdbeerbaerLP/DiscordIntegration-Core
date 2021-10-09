@@ -139,7 +139,7 @@ public class Configuration {
         @TomlComment({"The bot's status message", "", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
         public String botStatusName = "%online% players Online";
 
-        @TomlComment({"Type of the bot's status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING"})
+        @TomlComment({"Type of the bot's status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING,COMPETING"})
         public GameType botStatusType = GameType.PLAYING;
 
         @TomlComment({"URL of the bot's stream when using the status type 'STREAMING'", "Has to start with https://twitch.tv/ or https://www.youtube.com/watch?v="})
@@ -153,6 +153,9 @@ public class Configuration {
 
         @TomlComment({"Set to false to disable config migration from other mods/plugins to this one","This does not prevent updating of this config after mod updates"})
         public boolean allowConfigMigration = true;
+
+        @TomlComment("Attempt to parse id-based mentions to names in in-game chat")
+        public boolean parseMentionsIngame = true;
     }
 
     public static class Messages {
@@ -499,6 +502,9 @@ public class Configuration {
     }
 
     public static class Linking {
+
+        @TomlComment("Unlink players when they leave the discord server for whatever reason (ex. leave,kick,ban)?")
+        public boolean unlinkOnLeave = true;
         @TomlComment({"Should discord linking be enabled?", "If whitelist is on, this can NOT be disabled", "DOES NOT WORK IN OFFLINE MODE!"})
         public boolean enableLinking = true;
 
