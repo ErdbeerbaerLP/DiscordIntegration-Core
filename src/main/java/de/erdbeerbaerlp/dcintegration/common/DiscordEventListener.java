@@ -6,6 +6,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
+import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import dev.vankka.mcdiscordreserializer.minecraft.MinecraftSerializer;
 import dev.vankka.mcdiscordreserializer.minecraft.MinecraftSerializerOptions;
@@ -24,6 +25,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.PatternReplacementResult;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -32,10 +34,12 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -97,14 +101,14 @@ public class DiscordEventListener implements EventListener {
                         msg = MessageUtils.formatEmoteMessage(ev.getMessage().getEmotes(), msg);
                         Component attachmentComponent = Component.newline();
                         if (!ev.getMessage().getAttachments().isEmpty())
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("Attachments:").decorate(TextDecoration.UNDERLINED));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.attachment+":").decorate(TextDecoration.UNDERLINED));
                         for (Message.Attachment a : ev.getMessage().getAttachments()) {
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n"));
                         }
                         for (MessageEmbed e : embeds) {
                             if (e.isEmpty()) continue;
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----[Embed]-----\n"));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----["+Configuration.instance().localization.embed +"]-----\n"));
                             if (e.getAuthor() != null && e.getAuthor().getName() != null && !e.getAuthor().getName().trim().isEmpty()) {
                                 attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getAuthor().getName() + "\n").decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC));
                             }
@@ -112,13 +116,16 @@ public class DiscordEventListener implements EventListener {
                                 attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getTitle() + "\n").decorate(TextDecoration.BOLD));
                             }
                             if (e.getDescription() != null && !e.getDescription().trim().isEmpty()) {
-                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("Message:\n" + e.getDescription() + "\n"));
+                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.embedMessage+":\n" + e.getDescription() + "\n"));
                             }
                             if (e.getImage() != null && e.getImage().getUrl() != null && !e.getImage().getUrl().isEmpty()) {
-                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("Image: " + e.getImage().getUrl() + "\n"));
+                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.embedImage+": " + e.getImage().getUrl() + "\n"));
                             }
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
                         }
+                        for(MessageSticker s : ev.getMessage().getStickers())
+                            attachmentComponent = ComponentUtils.append(attachmentComponent,Component.text(Configuration.instance().localization.sticker+": "+s.getName()+ "\n"));
+
                         Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), mcSerializerOptions);
                         final Message reply = ev.getMessage().getReferencedMessage();
                         final boolean hasReply = reply != null;
@@ -126,10 +133,12 @@ public class DiscordEventListener implements EventListener {
                         final int memberColor = (ev.getMember() != null ? ev.getMember().getColorRaw() : 0);
                         final TextReplacementConfig msgReplacer = ComponentUtils.replaceLiteral("%msg%", ComponentUtils.makeURLsClickable(outMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline()))));
                         final TextReplacementConfig idReplacer = ComponentUtils.replaceLiteral("%id%", ev.getAuthor().getId());
-                        final Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName()))
-                                .style(Style.style(TextColor.color(memberColor))
+                        Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName())).style(Style.style(TextColor.color(memberColor))
                                         .clickEvent(ClickEvent.suggestCommand("<@" + ev.getAuthor().getId() + ">"))
                                         .hoverEvent(HoverEvent.showText(Component.text(Configuration.instance().localization.discordUserHover.replace("%user#tag%", ev.getAuthor().getAsTag()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
+                        if(ev.getAuthor().isBot()){
+                            user = ComponentUtils.append(user,Component.text("[BOT]").style(Style.style(TextColors.DISCORD_BLURPLE).hoverEvent(HoverEvent.showText(Component.text(Configuration.instance().localization.bot)))));
+                        }
                         final TextReplacementConfig userReplacer = ComponentUtils.replaceLiteral("%user%", user);
                         out = out.replaceText(userReplacer).replaceText(idReplacer).replaceText(msgReplacer);
                         if (hasReply) {
@@ -141,7 +150,7 @@ public class DiscordEventListener implements EventListener {
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
                         }
-                        out = ComponentUtils.append(out, attachmentComponent);
+                        out = ComponentUtils.append(out, attachmentComponent).replaceText(TextReplacementConfig.builder().match("\n$").replacement("").build());
                         dc.srv.sendMCMessage(out);
                     }
                     dc.callEventC((e) -> e.onDiscordMessagePost(ev));

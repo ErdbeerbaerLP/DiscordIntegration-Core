@@ -304,7 +304,18 @@ public class Configuration {
         @TomlComment({"Sent to a player when someone reacts to his messages", "PLACEHOLDERS:", "%name% - (Nick-)Name of the user who reacted (format: 'SomeNickName')", "%name2% - Name of the user who reacted with discord discriminator (format: 'SomeName#0123')", "%msg% - Content of the message which got the reaction", "%emote% - The reacted emote"})
         public String reactionMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r\u00a77 %name% reacted to your message \"\u00a79%msg%\u00a77\" with '%emote%'";
 
-
+        @TomlComment("Message shown for attachments")
+        public String attachment = "Attachment";
+        @TomlComment("Message shown for stickers")
+        public String sticker = "Sticker";
+        @TomlComment("Header for Embeds")
+        public String embed = "Embed";
+        @TomlComment("Message shown for embed images")
+        public String embedImage = "Image";
+        @TomlComment("Message shown for embed messages")
+        public String embedMessage = "Message";
+        @TomlComment("Hover message for the bot tag ingame")
+        public String bot = "This user is an bot";
 
         @TomlComment("Strings about the discord commands")
         public Commands commands = new Commands();
