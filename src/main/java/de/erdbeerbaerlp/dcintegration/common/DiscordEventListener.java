@@ -124,7 +124,7 @@ public class DiscordEventListener implements EventListener {
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
                         }
                         for(MessageSticker s : ev.getMessage().getStickers())
-                            attachmentComponent = ComponentUtils.append(attachmentComponent,Component.text(Configuration.instance().localization.sticker+": "+s.getName()+ "\n"));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent,Component.text("\n"+Configuration.instance().localization.sticker+": "+s.getName()));
 
                         Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), mcSerializerOptions);
                         final Message reply = ev.getMessage().getReferencedMessage();
