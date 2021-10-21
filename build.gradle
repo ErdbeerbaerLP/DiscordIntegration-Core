@@ -48,6 +48,7 @@ configurations {
 shadowJar {
     classifier = ""
     configurations = [project.configurations.embed]
+    exclude('META-INF/services/**')
     relocate 'okhttp3', 'dcshadow.okhttp'
     relocate 'okio', 'dcshadow.okio'
     relocate 'club.minnced', 'dcshadow.club.minnced'
@@ -85,7 +86,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed("net.dv8tion:JDA:4.3.0_331") {
+    embed("net.dv8tion:JDA:4.3.0_335") {
         exclude group: 'okhttp3', module: "okhttp"
     }
     embed "com.squareup.okhttp3:okhttp:4.9.2"
