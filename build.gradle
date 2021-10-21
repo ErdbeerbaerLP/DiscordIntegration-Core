@@ -48,6 +48,7 @@ configurations {
 shadowJar {
     classifier = ""
     configurations = [project.configurations.embed]
+    exclude('META-INF/services/**')
     relocate 'okhttp3', 'dcshadow.okhttp'
     relocate 'okio', 'dcshadow.okio'
     relocate 'club.minnced', 'dcshadow.club.minnced'
