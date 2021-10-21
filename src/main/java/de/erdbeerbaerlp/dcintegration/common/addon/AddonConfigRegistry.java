@@ -7,8 +7,7 @@ import de.erdbeerbaerlp.dcintegration.common.Discord;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 
 public class AddonConfigRegistry {
@@ -29,6 +28,7 @@ public class AddonConfigRegistry {
         conf.setConfigFile(cfgFile);
         saveConfig(conf); //Re-write the config so new values get added after updates
         return conf;
+
     }
 
     /**
@@ -65,7 +65,7 @@ public class AddonConfigRegistry {
             final T conf = cfg.getDeclaredConstructor().newInstance();
             conf.setConfigFile(new File(AddonLoader.getAddonDir(), AddonLoader.getAddonMeta(inst).getName() + ".toml"));
             return loadConfig(conf);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (RuntimeException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             System.err.println("An exception occurred while loading addon configuration " +cfg.getName() );
             e.printStackTrace();
         }

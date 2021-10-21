@@ -1,16 +1,11 @@
-package de.erdbeerbaerlp.dcintegration.common.discordCommands.inChat;
+package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
