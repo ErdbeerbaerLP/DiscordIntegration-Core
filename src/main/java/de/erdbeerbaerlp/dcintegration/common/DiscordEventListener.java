@@ -106,7 +106,6 @@ public class DiscordEventListener implements EventListener {
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n"));
                         }
-                        System.out.println(attachmentComponent);
                         for (MessageEmbed e : embeds) {
                             if (e.isEmpty()) continue;
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----["+Configuration.instance().localization.embed +"]-----\n"));
@@ -151,7 +150,12 @@ public class DiscordEventListener implements EventListener {
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
                         }
-                        out = ComponentUtils.append(out, attachmentComponent).replaceText(TextReplacementConfig.builder().match("\n$").replacement("").build());
+
+                        System.out.println(attachmentComponent);
+                        out = ComponentUtils.append(out, attachmentComponent);
+                        System.out.println(out);
+                        out = out.replaceText(TextReplacementConfig.builder().match("\n$").replacement("").build());
+                        System.out.println(out);
                         dc.srv.sendMCMessage(out);
                     }
                     dc.callEventC((e) -> e.onDiscordMessagePost(ev));
