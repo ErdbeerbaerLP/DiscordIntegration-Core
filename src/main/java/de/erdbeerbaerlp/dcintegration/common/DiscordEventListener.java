@@ -106,6 +106,7 @@ public class DiscordEventListener implements EventListener {
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n"));
                         }
+                        System.out.println(attachmentComponent);
                         for (MessageEmbed e : embeds) {
                             if (e.isEmpty()) continue;
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----["+Configuration.instance().localization.embed +"]-----\n"));

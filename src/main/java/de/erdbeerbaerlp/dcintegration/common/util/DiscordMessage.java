@@ -1,5 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
+import club.minnced.discord.webhook.send.AllowedMentions;
 import club.minnced.discord.webhook.send.WebhookEmbed;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
@@ -7,6 +8,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.internal.utils.AllowedMentionsImpl;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -58,8 +60,12 @@ public final class DiscordMessage {
     @Nonnull
     public Queue<Message> buildMessages() {
         final MessageBuilder out = new MessageBuilder();
+        final ArrayList<Message.MentionType> mentions = new ArrayList<>();
+        mentions.add(Message.MentionType.USER);
+        mentions.add(Message.MentionType.CHANNEL);
+        mentions.add(Message.MentionType.EMOTE);
+        out.setAllowedMentions(mentions);
         if (!message.isEmpty()) {
-            message = message.replace("<@&","<@ &");
             if (isNotRaw) {
                 if (Configuration.instance().messages.formattingCodesToDiscord)
                     out.setContent(MessageUtils.convertMCToMarkdown(message));
@@ -70,7 +76,7 @@ public final class DiscordMessage {
             }
         }
         if (embed != null)
-            out.setEmbed(embed);
+            out.setEmbeds(embed);
         return out.buildAll(MessageBuilder.SplitPolicy.NEWLINE, MessageBuilder.SplitPolicy.SPACE);
     }
 
@@ -108,7 +114,7 @@ public final class DiscordMessage {
                 content = message;
             }
             for (String msg : splitMessages(content)) {
-                out.add(new WebhookMessageBuilder().setContent(msg));
+                out.add(new WebhookMessageBuilder().setContent(msg).setAllowedMentions(AllowedMentions.none().withParseUsers(true)));
             }
         }
         if (embed != null) {
