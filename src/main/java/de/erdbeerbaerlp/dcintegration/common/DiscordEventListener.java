@@ -99,7 +99,7 @@ public class DiscordEventListener implements EventListener {
                         final List<MessageEmbed> embeds = ev.getMessage().getEmbeds();
                         String msg = ev.getMessage().getContentDisplay();
                         msg = MessageUtils.formatEmoteMessage(ev.getMessage().getEmotes(), msg);
-                        Component attachmentComponent = Component.newline();
+                        Component attachmentComponent = Component.empty();
                         if (!ev.getMessage().getAttachments().isEmpty())
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.attachment+":").decorate(TextDecoration.UNDERLINED));
                         for (Message.Attachment a : ev.getMessage().getAttachments()) {
@@ -150,12 +150,8 @@ public class DiscordEventListener implements EventListener {
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
                         }
-
-                        System.out.println(attachmentComponent);
+                        out = ComponentUtils.append(out, Component.newline());
                         out = ComponentUtils.append(out, attachmentComponent);
-                        System.out.println(out);
-                        out = out.replaceText(TextReplacementConfig.builder().match("\n$").replacement("").build());
-                        System.out.println(out);
                         dc.srv.sendMCMessage(out);
                     }
                     dc.callEventC((e) -> e.onDiscordMessagePost(ev));
