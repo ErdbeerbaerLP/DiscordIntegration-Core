@@ -100,11 +100,13 @@ public class DiscordEventListener implements EventListener {
                         String msg = ev.getMessage().getContentDisplay();
                         msg = MessageUtils.formatEmoteMessage(ev.getMessage().getEmotes(), msg);
                         Component attachmentComponent = Component.empty();
-                        if (!ev.getMessage().getAttachments().isEmpty())
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.attachment+":").decorate(TextDecoration.UNDERLINED));
+                        if (!ev.getMessage().getAttachments().isEmpty()) {
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.attachment + ":").decorate(TextDecoration.UNDERLINED));
+                        }
                         for (Message.Attachment a : ev.getMessage().getAttachments()) {
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n"));
                         }
                         for (MessageEmbed e : embeds) {
                             if (e.isEmpty()) continue;
@@ -150,7 +152,6 @@ public class DiscordEventListener implements EventListener {
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
                         }
-                        out = ComponentUtils.append(out, Component.newline());
                         out = ComponentUtils.append(out, attachmentComponent);
                         dc.srv.sendMCMessage(out);
                     }
