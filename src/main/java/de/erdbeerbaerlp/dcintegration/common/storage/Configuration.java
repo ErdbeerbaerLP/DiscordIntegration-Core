@@ -96,7 +96,7 @@ public class Configuration {
     @TomlComment("Configure Dynmap integration here")
     public Dynmap dynmap = new Dynmap();
 
-    @TomlComment({"Configure some plugin-specific BStats settings here", "Everything can be seen here: https://bstats.org/plugin/bukkit/DiscordIntegration/9765", "", "Only applies to spigot as there is no BStats for Forge"})
+    @TomlComment({"Configure some plugin-specific BStats settings here", "Everything can be seen here: https://bstats.org/plugin/bukkit/DiscordIntegration/9765", "","Does not apply to fabric yet, as there is no bstats for it"})
     public BStats bstats = new BStats();
 
     @TomlComment({"Settings for servers running as Bungeecord-suberver"})
@@ -184,25 +184,8 @@ public class Configuration {
         @TomlComment({"The Role IDs of your Admin Roles", "Now supports multiple roles which can access admin commands"})
         public String[] adminRoleIDs = new String[0];
 
-        @TomlComment("Set to true to require an space after the prefix (e.g. 'mc help')")
-        public boolean spaceAfterPrefix = false;
-
-        @TomlComment("[BETA] Add your custom commands here")
+        @TomlComment({"Add your custom commands here", "You can also generate some on https://erdbeerbaerlp.de/dcintegration-commands/"})
         public ConfigCommand[] customCommands = defaultCommands;
-        /*
-        @TomlComment({"Add your Custom commands to this JSON",
-                "You can copy-paste it to https://jsoneditoronline.org  Make sure when pasting here, that the json is NOT mulitlined.",
-                "You can click on \"Compact JSON Data\" on the website",
-                "NOTE: The JSON string must be escaped. You can use this website to escape or unescape: https://www.freeformatter.com/java-dotnet-escape.html",
-                "",
-                "mcCommand   -   The command to execute on the server. use %args% to place the arguments inside of the command",
-                "adminOnly   -   True: Only allows users with the Admin role to use this command. False: @everyone can use the command",
-                "description -   Description shown in /help",
-                "aliases     -   Aliases for the command in a string array",
-                "useArgs     -   Shows argument text after the command in the help command",
-                "argText     -   Defines custom arg text. Default is <args>",
-                "channelIDs  -   Allows you to set specific text channels outside of the server channel to use this command (make it an string array), Set to [\"00\"] to allow from all channels"})
-        public String customCommandJSON = defaultCommandJson;*/
 
         @TomlComment("You must op this UUID in the ops.txt or some custom commands won't work!")
         public String senderUUID = "8d8982a5-8cf9-4604-8feb-3dd5ee1f83a3";
