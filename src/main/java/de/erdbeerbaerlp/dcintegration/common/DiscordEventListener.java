@@ -99,14 +99,15 @@ public class DiscordEventListener implements EventListener {
                         final List<MessageEmbed> embeds = ev.getMessage().getEmbeds();
                         String msg = ev.getMessage().getContentDisplay();
                         msg = MessageUtils.formatEmoteMessage(ev.getMessage().getEmotes(), msg);
-                        Component attachmentComponent = Component.newline();
-                        if (!ev.getMessage().getAttachments().isEmpty())
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.attachment+":").decorate(TextDecoration.UNDERLINED));
-                        for (Message.Attachment a : ev.getMessage().getAttachments()) {
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n"));
+                        Component attachmentComponent = Component.empty();
+                        if (!ev.getMessage().getAttachments().isEmpty()) {
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.attachment + ":").decorate(TextDecoration.UNDERLINED));
                         }
-                        System.out.println(attachmentComponent);
+                        for (Message.Attachment a : ev.getMessage().getAttachments()) {
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
+                        }
                         for (MessageEmbed e : embeds) {
                             if (e.isEmpty()) continue;
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----["+Configuration.instance().localization.embed +"]-----\n"));
@@ -151,7 +152,7 @@ public class DiscordEventListener implements EventListener {
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
                         }
-                        out = ComponentUtils.append(out, attachmentComponent).replaceText(TextReplacementConfig.builder().match("\n$").replacement("").build());
+                        out = ComponentUtils.append(out, attachmentComponent);
                         dc.srv.sendMCMessage(out);
                     }
                     dc.callEventC((e) -> e.onDiscordMessagePost(ev));

@@ -104,7 +104,6 @@ public final class DiscordMessage {
         final ArrayList<WebhookMessageBuilder> out = new ArrayList<>();
         String content;
         if (!message.isEmpty()) {
-            message = message.replace("<@&","<@ &");
             if (isNotRaw) {
                 if (Configuration.instance().messages.formattingCodesToDiscord)
                     content = MessageUtils.convertMCToMarkdown(message);
