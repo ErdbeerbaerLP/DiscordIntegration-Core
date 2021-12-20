@@ -10,6 +10,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLink;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
+import de.erdbeerbaerlp.dcintegration.common.util.FieldHelper;
 import de.erdbeerbaerlp.dcintegration.common.util.ServerInterface;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.JDA;
@@ -21,6 +22,7 @@ import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.internal.requests.Requester;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
@@ -30,6 +32,7 @@ import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -84,6 +87,16 @@ public class Discord extends Thread {
         this.srv = srv;
         setDaemon(true);
         setName("Discord Integration Launch Thread");
+        if(!Configuration.instance().advanced.baseAPIUrl.equals("https://discord.com"))
+            try {
+                Field field = Requester.class.getDeclaredField("DISCORD_API_PREFIX");
+                field.setAccessible(true);
+                FieldHelper.makeNonFinal(field);
+                field.set(null, Configuration.instance().advanced.baseAPIUrl);
+                System.out.println("Now using "+Configuration.instance().advanced.baseAPIUrl+" as target Discord!");
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         start();
     }
 
@@ -144,6 +157,7 @@ public class Discord extends Thread {
     @Override
     public void run() {
         while (true) {
+
             final JDABuilder b = JDABuilder.createDefault(Configuration.instance().general.botToken);
             b.setAutoReconnect(true);
             b.setEnableShutdownHook(false);
