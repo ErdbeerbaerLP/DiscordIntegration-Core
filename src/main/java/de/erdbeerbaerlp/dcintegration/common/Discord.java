@@ -161,9 +161,6 @@ public class Discord extends Thread {
             final JDABuilder b = JDABuilder.createDefault(Configuration.instance().general.botToken);
             b.setAutoReconnect(true);
             b.setEnableShutdownHook(false);
-            b.enableIntents(GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES);
-            b.setMemberCachePolicy(MemberCachePolicy.ALL);
-            b.setChunkingFilter(ChunkingFilter.ALL);
             try {
                 jda = b.build();
                 jda.awaitReady();
