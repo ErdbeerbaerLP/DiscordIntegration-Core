@@ -12,6 +12,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.GameType;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
 import net.dv8tion.jda.api.entities.Webhook;
+import net.dv8tion.jda.internal.requests.Requester;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -216,6 +217,11 @@ public class Configuration {
 
         @TomlComment({"Custom channel where messages get sent to minecraft", "Leave 'default' to use default channel"})
         public String chatInputChannelID = "default";
+
+        @TomlComment({"Allows you to change the target URL for the API to make it usable with custom discord instances like fosscord","DO NOT CHANGE if you don't know what you are doing!!"})
+        public String baseAPIUrl = "https://discord.com";
+
+
     }
 
     public static class ForgeSpecific {
