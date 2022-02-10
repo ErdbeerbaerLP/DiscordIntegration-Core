@@ -77,9 +77,6 @@ shadowJar {
     relocate "kotlin", "dcshadow.kotlin"
     relocate "com.vdurmont", "dcshadow.com.vdurmont"
 }
-artifacts {
-    archives tasks.shadowJar
-}
 //Dependencies
 dependencies {
 
@@ -120,6 +117,11 @@ dependencies {
 
 }
 tasks.build.dependsOn(tasks.shadowJar)
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
 //Manifest attributes
 jar {
     manifest {
@@ -129,11 +131,31 @@ jar {
         ])
     }
 }
-
+javadoc {
+    options.author()
+    options.encoding = 'UTF-8'
+    options.addBooleanOption('html5', true)
+    options.addBooleanOption('Xdoclint:none', true)
+    failOnError = false
+}
+artifacts {
+    archives tasks.shadowJar
+}
 publishing {
     publications {
         maven(MavenPublication) {
+            groupId = 'de.erdbeerbaerlp'
+            artifactId = 'dcintegration.common'
             from components.java
+        }
+    }
+    repositories {
+        maven {
+            credentials {// $GRADLE_USER_HOME/gradle.properties
+                username = project.nexusUser
+                password = project.nexusPass
+            }
+            url = "https://repo.erdbeerbaerlp.de/repository/maven-releases"
         }
     }
 }
