@@ -2,13 +2,11 @@ package de.erdbeerbaerlp.dcintegration.common;
 
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
+import com.moandjiezana.toml.Toml;
+import com.moandjiezana.toml.TomlWriter;
 import de.erdbeerbaerlp.dcintegration.common.addon.AddonLoader;
 import de.erdbeerbaerlp.dcintegration.common.api.DiscordEventHandler;
-import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLink;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
+import de.erdbeerbaerlp.dcintegration.common.storage.*;
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
 import de.erdbeerbaerlp.dcintegration.common.util.ServerInterface;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
@@ -38,6 +36,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
+import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
 
 
 public class Discord extends Thread {
@@ -174,7 +175,7 @@ public class Discord extends Thread {
             kill(true);
             return;
         }
-        if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().getMember(jda.getSelfUser()), Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
+        if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().getMember(jda.getSelfUser()), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
             System.err.println("ERROR! Bot does not have all permissions to work!");
             kill(true);
             throw new PermissionException("Bot requires message read, message write, embed links and manage messages");
@@ -246,8 +247,12 @@ public class Discord extends Thread {
      * Kills the discord bot
      */
     public void kill(boolean instant) {
+        System.out.println("Unloading addons...");
         AddonLoader.unloadAddons(this);
+        System.out.println("Unloaded addons");
+        System.out.println(jda);
         if (jda != null) {
+            System.out.println(listener);
             if (listener != null)
                 jda.removeEventListener(listener);
             stopThreads();
@@ -330,8 +335,9 @@ public class Discord extends Thread {
         new Thread(() -> {
             try {
                 CommandRegistry.updateSlashCommands();
-            } catch (ErrorResponseException e) {
-                System.err.println("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(805399632)).replace("scope=", "scope=applications.commands%20"));
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
             }
         }).start();
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread();
@@ -457,6 +463,37 @@ public class Discord extends Thread {
     }
 
     /**
+     * Loads all configuration files
+     *
+     * @throws IOException
+     */
+    public static void loadConfigs() throws IOException {
+        // === Migration ===
+
+        // Migrate localization to new file
+        final Toml toml = new Toml().read(configFile).getTable("localization");
+
+        if (toml != null) {
+            final Localization localization = toml.to(Localization.class);
+            System.out.println("Starting Translation migration");
+            final TomlWriter w = new TomlWriter.Builder()
+                    .indentValuesBy(2)
+                    .indentTablesBy(4)
+                    .padArrayDelimitersBy(2)
+                    .build();
+            w.write(localization, messagesFile);
+            System.out.println("Translation migration complete");
+
+        }
+
+
+        // === Load everything ===
+
+        Localization.instance().loadConfig();
+        Configuration.instance().loadConfig();
+    }
+
+    /**
      * Sends an discord message
      *
      * @param name          Player name or Webhook user name
@@ -475,10 +512,12 @@ public class Discord extends Thread {
                     messages.forEach((builder) -> {
                         builder.setUsername(name);
                         builder.setAvatarUrl(avatarURL);
-                        getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> addRecentMessage(a.getId() + "", UUID.fromString(uuid)));
+                        getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> {
+                            addRecentMessage(a.getId() + "", UUID.fromString(uuid));
+                        });
                     });
                 } else if (isChatMessage) {
-                    message.setMessage(Configuration.instance().localization.discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
+                    message.setMessage(Localization.instance().discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
                     for (Message m : message.buildMessages())
                         channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
                 } else {
@@ -513,11 +552,11 @@ public class Discord extends Thread {
                 return null;
             }
             for (final Webhook web : c.retrieveWebhooks().complete()) {
-                if (web.getName().equals("MC_DISCORD_INTEGRATION")) {
+                if (web.getName().equals(Configuration.instance().webhook.webhookName)) {
                     return web;
                 }
             }
-            return c.createWebhook("MC_DISCORD_INTEGRATION").complete();
+            return c.createWebhook(Configuration.instance().webhook.webhookName).complete();
         });
     }
 
@@ -560,8 +599,8 @@ public class Discord extends Thread {
      */
     public boolean restart() {
         try {
-            kill();
             if (Variables.discord_instance.isAlive()) Variables.discord_instance.interrupt();
+            kill();
             Variables.discord_instance = new Discord(srv);
             CommandRegistry.reRegisterAllCommands();
             CommandRegistry.registerConfigCommands();

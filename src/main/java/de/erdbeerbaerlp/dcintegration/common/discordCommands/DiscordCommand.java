@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -118,7 +119,7 @@ public abstract class DiscordCommand extends CommandData {
      * @return The message
      */
     public final String getPlayerNotFoundMsg(String playerName) {
-        return Configuration.instance().localization.commands.playerNotFound.replace("%player%", playerName);
+        return Localization.instance().commands.playerNotFound.replace("%player%", playerName);
     }
 
     public final boolean isConfigCommand() {

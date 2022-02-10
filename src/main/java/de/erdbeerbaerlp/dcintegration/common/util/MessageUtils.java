@@ -3,6 +3,7 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 import com.google.gson.JsonArray;
 import com.vdurmont.emoji.EmojiParser;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
 import dev.vankka.mcdiscordreserializer.discord.DiscordSerializer;
@@ -86,7 +87,7 @@ public class MessageUtils {
     }
 
     /**
-     * Gets the full server uptime formatted as specified in the config at {@link Configuration.Localization.Commands#uptimeFormat}
+     * Gets the full server uptime formatted as specified in the config at {@link Localization.Commands#uptimeFormat}
      * @return Uptime String
      */
     @Nonnull
@@ -95,7 +96,7 @@ public class MessageUtils {
             return "?????";
         }
         final Duration duration = Duration.between(Instant.ofEpochMilli(Variables.started), Instant.now());
-        return DurationFormatUtils.formatDuration(duration.toMillis(), Configuration.instance().localization.commands.uptimeFormat);
+        return DurationFormatUtils.formatDuration(duration.toMillis(), Localization.instance().commands.uptimeFormat);
     }
 
     /**

@@ -3,6 +3,7 @@ package de.erdbeerbaerlp.dcintegration.common;
 import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.DiscordCommand;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
@@ -69,11 +70,15 @@ public class DiscordEventListener implements EventListener {
         if (jda == null) return;
         if (event instanceof SlashCommandEvent) {
             SlashCommandEvent ev = (SlashCommandEvent) event;
+
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
-                //ev.reply(Configuration.instance().localization.commands.executing).queue();
-                String cmd = ev.getName();
-                String args = ev.getOption("args") != null ? ev.getOption("args").getAsString() : "";
-                processDiscordCommand(ev,ArrayUtils.addAll(new String[]{cmd}, args.split(" ")), ev.getTextChannel(), ev.getUser(), dc);
+                if (CommandRegistry.registeredCMDs.containsKey(ev.getCommandIdLong())) {
+                    final DiscordCommand cfCommand = CommandRegistry.registeredCMDs.get(ev.getCommandIdLong());
+                    String cmd = cfCommand.getName();
+                    String args = ev.getOption("args") != null ? ev.getOption("args").getAsString() : "";
+                    processDiscordCommand(ev,ArrayUtils.addAll(new String[]{cmd}, args.split(" ")), ev.getTextChannel(), ev.getUser(), dc);
+
+                }
             }
         }
         if (event instanceof MessageReactionAddEvent) {
@@ -102,7 +107,7 @@ public class DiscordEventListener implements EventListener {
                         Component attachmentComponent = Component.empty();
                         if (!ev.getMessage().getAttachments().isEmpty()) {
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.attachment + ":").decorate(TextDecoration.UNDERLINED));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().attachment + ":").decorate(TextDecoration.UNDERLINED));
                         }
                         for (Message.Attachment a : ev.getMessage().getAttachments()) {
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
@@ -110,7 +115,7 @@ public class DiscordEventListener implements EventListener {
                         }
                         for (MessageEmbed e : embeds) {
                             if (e.isEmpty()) continue;
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----["+Configuration.instance().localization.embed +"]-----\n"));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----["+Localization.instance().embed +"]-----\n"));
                             if (e.getAuthor() != null && e.getAuthor().getName() != null && !e.getAuthor().getName().trim().isEmpty()) {
                                 attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getAuthor().getName() + "\n").decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC));
                             }
@@ -118,28 +123,28 @@ public class DiscordEventListener implements EventListener {
                                 attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getTitle() + "\n").decorate(TextDecoration.BOLD));
                             }
                             if (e.getDescription() != null && !e.getDescription().trim().isEmpty()) {
-                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.embedMessage+":\n" + e.getDescription() + "\n"));
+                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().embedMessage+":\n" + e.getDescription() + "\n"));
                             }
                             if (e.getImage() != null && e.getImage().getUrl() != null && !e.getImage().getUrl().isEmpty()) {
-                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Configuration.instance().localization.embedImage+": " + e.getImage().getUrl() + "\n"));
+                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().embedImage+": " + e.getImage().getUrl() + "\n"));
                             }
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
                         }
                         for(MessageSticker s : ev.getMessage().getStickers())
-                            attachmentComponent = ComponentUtils.append(attachmentComponent,Component.text("\n"+Configuration.instance().localization.sticker+": "+s.getName()));
+                            attachmentComponent = ComponentUtils.append(attachmentComponent,Component.text("\n"+Localization.instance().sticker+": "+s.getName()));
 
                         Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), mcSerializerOptions);
                         final Message reply = ev.getMessage().getReferencedMessage();
                         final boolean hasReply = reply != null;
-                        Component out = LegacyComponentSerializer.legacySection().deserialize(hasReply ? Configuration.instance().localization.ingame_discordReplyMessage : Configuration.instance().localization.ingame_discordMessage);
+                        Component out = LegacyComponentSerializer.legacySection().deserialize(hasReply ? Localization.instance().ingame_discordReplyMessage : Localization.instance().ingame_discordMessage);
                         final int memberColor = (ev.getMember() != null ? ev.getMember().getColorRaw() : 0);
                         final TextReplacementConfig msgReplacer = ComponentUtils.replaceLiteral("%msg%", ComponentUtils.makeURLsClickable(outMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline()))));
                         final TextReplacementConfig idReplacer = ComponentUtils.replaceLiteral("%id%", ev.getAuthor().getId());
                         Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName())).style(Style.style(TextColor.color(memberColor))
                                         .clickEvent(ClickEvent.suggestCommand("<@" + ev.getAuthor().getId() + ">"))
-                                        .hoverEvent(HoverEvent.showText(Component.text(Configuration.instance().localization.discordUserHover.replace("%user#tag%", ev.getAuthor().getAsTag()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
+                                        .hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%user#tag%", ev.getAuthor().getAsTag()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
                         if(ev.getAuthor().isBot()){
-                            user = ComponentUtils.append(user,Component.text("[BOT]").style(Style.style(TextColors.DISCORD_BLURPLE).hoverEvent(HoverEvent.showText(Component.text(Configuration.instance().localization.bot)))));
+                            user = ComponentUtils.append(user,Component.text("[BOT]").style(Style.style(TextColors.DISCORD_BLURPLE).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().bot)))));
                         }
                         final TextReplacementConfig userReplacer = ComponentUtils.replaceLiteral("%user%", user);
                         out = out.replaceText(userReplacer).replaceText(idReplacer).replaceText(msgReplacer);
@@ -179,12 +184,12 @@ public class DiscordEventListener implements EventListener {
         if (!executed)
             if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, null))) return;
         if (!hasPermission) {
-            dc.sendMessage(Configuration.instance().localization.commands.noPermission, channel);
+            dc.sendMessage(Localization.instance().commands.noPermission, channel);
             return;
         }
         if (!executed && (Configuration.instance().commands.showUnknownCommandEverywhere || channel.getId().equals(dc.getChannel().getId())) && Configuration.instance().commands.showUnknownCommandMessage) {
             if (Configuration.instance().commands.helpCmdEnabled)
-                dc.sendMessage(Configuration.instance().localization.commands.unknownCommand.replace("%prefix%", "/"), channel);
+                dc.sendMessage(Localization.instance().commands.unknownCommand.replace("%prefix%", "/"), channel);
         }
 
     }

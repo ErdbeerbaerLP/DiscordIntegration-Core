@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
 import java.util.HashMap;
@@ -12,7 +13,7 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 
 public class CommandList extends DiscordCommand {
     public CommandList() {
-        super("list", Configuration.instance().localization.commands.descriptions.list);
+        super("list", Localization.instance().commands.descriptions.list);
     }
 
 
@@ -21,11 +22,11 @@ public class CommandList extends DiscordCommand {
     public void execute(SlashCommandEvent ev) {
         final HashMap<UUID, String> players = discord_instance.srv.getPlayers();
         if (players.isEmpty()) {
-            ev.reply(Configuration.instance().localization.commands.cmdList_empty).queue();
+            ev.reply(Localization.instance().commands.cmdList_empty).queue();
             return;
         }
-        StringBuilder out = new StringBuilder((players.size() == 1 ? Configuration.instance().localization.commands.cmdList_one
-                : Configuration.instance().localization.commands.cmdList_header.replace("%amount%", "" + players.size())) + "\n```\n");
+        StringBuilder out = new StringBuilder((players.size() == 1 ? Localization.instance().commands.cmdList_one
+                : Localization.instance().commands.cmdList_header.replace("%amount%", "" + players.size())) + "\n```\n");
 
         for (Map.Entry<UUID, String> p : players.entrySet()) {
             out.append(discord_instance.srv.getNameFromUUID(p.getKey())).append(",");

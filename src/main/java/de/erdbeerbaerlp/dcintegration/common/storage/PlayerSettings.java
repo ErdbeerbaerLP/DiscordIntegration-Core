@@ -12,10 +12,10 @@ public class PlayerSettings {
      */
     @SuppressWarnings("unused")
     public static final class Descriptions {
-        private final String useDiscordNameInChannel = Configuration.instance().localization.personalSettings.descriptons.useDiscordNameInChannel;
-        private final String ignoreDiscordChatIngame = Configuration.instance().localization.personalSettings.descriptons.ignoreDiscordChatIngame;
-        private final String ignoreReactions = Configuration.instance().localization.personalSettings.descriptons.ignoreReactions;
-        private final String pingSound = Configuration.instance().localization.personalSettings.descriptons.pingSound;
-        private final String hideFromDiscord = Configuration.instance().localization.personalSettings.descriptons.hideFromDiscord;
+        private final String useDiscordNameInChannel = Localization.instance().personalSettings.descriptons.useDiscordNameInChannel;
+        private final String ignoreDiscordChatIngame = Localization.instance().personalSettings.descriptons.ignoreDiscordChatIngame;
+        private final String ignoreReactions = Localization.instance().personalSettings.descriptons.ignoreReactions;
+        private final String pingSound = Localization.instance().personalSettings.descriptons.pingSound;
+        private final String hideFromDiscord = Localization.instance().personalSettings.descriptons.hideFromDiscord;
     }
 }

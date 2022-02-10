@@ -1,5 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.storage;
 
+import de.erdbeerbaerlp.dcintegration.common.Discord;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.*;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
@@ -7,10 +8,12 @@ import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.apache.commons.lang3.ArrayUtils;
@@ -23,11 +26,53 @@ public class CommandRegistry {
      * Registered commands
      */
     private static List<DiscordCommand> commands = new ArrayList<>();
+    public static final HashMap<Long, DiscordCommand> registeredCMDs = new HashMap<>();
 
-    public static final CommandListUpdateAction cmdList = Variables.discord_instance.getChannel().getGuild().updateCommands();
 
     private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByName = new HashMap<>();
     private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByID = new HashMap<>();
+
+    /**
+     * Registers all commands to discord if changed
+     */
+    public static void updateSlashCommands() {
+        final TextChannel channel = Variables.discord_instance.getChannel();
+        final List<Command> cmds = channel.getGuild().retrieveCommands().complete();
+        boolean regenCommands = false;
+        if (commands.size() == cmds.size())
+            for (DiscordCommand cmd : commands) {
+                for (Command c : cmds) {
+                    if (((CommandData) cmd).getName().equals(c.getName())) {
+                        if (!optionsEqual(cmd.getOptions(), c.getOptions())) {
+                            regenCommands = true;
+                        }
+                    }
+                }
+            }
+        else regenCommands = true;
+        if (regenCommands) {
+            System.out.println("Regenerating commands...");
+            CommandListUpdateAction commandListUpdateAction = channel.getGuild().updateCommands();
+            for (DiscordCommand cmd : commands) {
+                commandListUpdateAction = commandListUpdateAction.addCommands(cmd);
+            }
+            commandListUpdateAction.submit().thenAccept(CommandRegistry::addCmds);
+        } else {
+            System.out.println("No need to regenerate commands");
+            addCmds(cmds);
+        }
+        Variables.discord_instance.getChannel().getGuild().updateCommandPrivileges(permissionsByID).queue();
+    }
+
+    private static boolean optionsEqual(List<OptionData> data, List<Command.Option> options) {
+        if (data.size() != options.size()) return false;
+        for (int i = 0; i < data.size(); i++) {
+            final OptionData optionData = data.get(i);
+            final Command.Option option = options.get(i);
+            return option.getName().equals(optionData.getName()) && option.getChoices().equals(optionData.getChoices()) && option.getDescription().equals(optionData.getDescription()) && option.isRequired() == optionData.isRequired() && option.getType().equals(optionData.getType());
+        }
+        return true;
+    }
 
     /**
      * Registers all default commands and custom commands from config
@@ -52,6 +97,7 @@ public class CommandRegistry {
      * Registers all custom commands from config
      */
     public static void registerConfigCommands() {
+
         for (ConfigCommand cmd : Configuration.instance().commands.customCommands) {
             try {
                 final DiscordCommand regCmd = new CommandFromCFG(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden);
@@ -66,14 +112,22 @@ public class CommandRegistry {
     }
 
     /**
-     * Registers an {@link DiscordCommand}
+     * Registers an {@link DiscordCommand}<br>
+     * This has to be done before the server is fully started!
      *
      * @param cmd command
      * @return true if the registration was successful
      */
-    public static boolean registerCommand(@Nonnull DiscordCommand cmd) {
-        final ArrayList<Role> adminRoles = getAdminRoles(Variables.discord_instance.getChannel().getGuild());
-        final Member owner = Variables.discord_instance.getChannel().getGuild().retrieveOwner().complete();
+    public static boolean registerCommand(@Nonnull DiscordCommand cmd) throws IllegalStateException {
+        if (Variables.started != -1) {
+            System.out.println("Attempted to register command " + cmd.getName() + "after server finished loading");
+            return false;
+        }
+        final TextChannel channel = Variables.discord_instance.getChannel();
+        if (channel == null) throw new IllegalStateException("Channel does not exist");
+        final Guild guild = channel.getGuild();
+        final ArrayList<Role> adminRoles = getAdminRoles(guild);
+        final Member owner = guild.retrieveOwner().complete();
 
         final ArrayList<DiscordCommand> toRemove = new ArrayList<>();
         for (DiscordCommand c : commands) {
@@ -83,12 +137,11 @@ public class CommandRegistry {
         for (DiscordCommand cm : toRemove)
             commands.remove(cm);
         boolean ret = commands.add(cmd);
-        if (ret && cmdList != null && cmd instanceof CommandFromCFG) {
+        if (ret && cmd instanceof CommandFromCFG) {
             if (cmd.isUsingArgs()) cmd.addOption(OptionType.STRING, "args", cmd.getArgText());
         }
         if (cmd.adminOnly()) {
             cmd.setDefaultEnabled(false);
-            final HashMap<String, Collection<? extends CommandPrivilege>> perm = new HashMap<>();
             final ArrayList<CommandPrivilege> privileges = new ArrayList<>();
             adminRoles.forEach((r) -> privileges.add(new CommandPrivilege(CommandPrivilege.Type.ROLE, true, r.getIdLong())));
             privileges.add(new CommandPrivilege(CommandPrivilege.Type.USER, true, owner.getIdLong()));
@@ -98,15 +151,20 @@ public class CommandRegistry {
 
     }
 
-    public static void updateSlashCommands() throws ErrorResponseException {
-        cmdList.queue();
-        cmdList.addCommands(commands).complete().forEach((cmd) -> {
-            if (permissionsByName.containsKey(cmd.getName())) {
-                permissionsByID.put(cmd.getId(), permissionsByName.get(cmd.getName()));
+    private static void addCmds(List<Command> cmds) {
+        for (Command cmd : cmds) {
+            for (DiscordCommand cfcmd : commands) {
+                if (cmd.getName().equals(((CommandData) cfcmd).getName())) {
+                    registeredCMDs.put(cmd.getIdLong(), cfcmd);
+                    if (permissionsByName.containsKey(cmd.getName())) {
+                        permissionsByID.put(cmd.getId(), permissionsByName.get(cmd.getName()));
+                    }
+                    System.out.println("Added command " + cmd.getName() + " with ID " + cmd.getIdLong());
+                }
             }
-        });
-        Variables.discord_instance.getChannel().getGuild().updateCommandPrivileges(permissionsByID).queue();
+        }
     }
+
 
     private static ArrayList<Role> getAdminRoles(Guild g) {
         final List<Role> gRoles = g.getRoles();

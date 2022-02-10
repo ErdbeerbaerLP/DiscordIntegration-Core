@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -23,9 +24,9 @@ import java.util.concurrent.CompletableFuture;
 public class CommandLinkcheck extends DiscordCommand {
 
     public CommandLinkcheck() {
-        super("linkcheck", Configuration.instance().localization.commands.descriptions.linkcheck);
-        addOption(OptionType.USER, "discorduser", Configuration.instance().localization.commands.cmdLinkcheck_userargDesc, false);
-        addOption(OptionType.STRING, "mcplayer", Configuration.instance().localization.commands.cmdLinkcheck_mcargDesc, false);
+        super("linkcheck", Localization.instance().commands.descriptions.linkcheck);
+        addOption(OptionType.USER, "discorduser", Localization.instance().commands.cmdLinkcheck_userargDesc, false);
+        addOption(OptionType.STRING, "mcplayer", Localization.instance().commands.cmdLinkcheck_mcargDesc, false);
     }
 
     @Override
@@ -34,15 +35,15 @@ public class CommandLinkcheck extends DiscordCommand {
         final OptionMapping discorduser = ev.getOption("discorduser");
         final OptionMapping mcplayer = ev.getOption("mcplayer");
         if (discorduser == null && mcplayer == null) {
-            reply.thenAccept((i) -> i.editOriginal(Configuration.instance().localization.commands.notEnoughArguments).queue());
+            reply.thenAccept((i) -> i.editOriginal(Localization.instance().commands.notEnoughArguments).queue());
         } else if (discorduser != null && mcplayer != null) {
-            reply.thenAccept((i) -> i.editOriginal(Configuration.instance().localization.commands.tooManyArguments).queue());
+            reply.thenAccept((i) -> i.editOriginal(Localization.instance().commands.tooManyArguments).queue());
         } else {
             if (discorduser != null) {
                 if (PlayerLinkController.isDiscordLinked(discorduser.getAsUser().getId())) {
                     reply.thenAccept((i) -> i.editOriginalEmbeds(buildEmbed(PlayerLinkController.getPlayerFromDiscord(discorduser.getAsUser().getId()), discorduser.getAsUser())).queue());
                 } else {
-                    reply.thenAccept((i) -> i.editOriginal(Configuration.instance().localization.commands.cmdLinkcheck_notlinked).queue());
+                    reply.thenAccept((i) -> i.editOriginal(Localization.instance().commands.cmdLinkcheck_notlinked).queue());
                 }
             } else {
                 UUID uuid;
@@ -65,13 +66,13 @@ public class CommandLinkcheck extends DiscordCommand {
                         reader.close();
                         JSONObject mc_json = new JSONObject(buffer.toString());
                         if (mc_json.has("error")) {
-                            reply.thenAccept((i) -> i.editOriginal(new MessageBuilder().setContent(Configuration.instance().localization.commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
+                            reply.thenAccept((i) -> i.editOriginal(new MessageBuilder().setContent(Localization.instance().commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
                         }
                         System.out.println(mc_json);
                         uuid = UUID.fromString(mc_json.getString("id").replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)", "$1-$2-$3-$4-$5"));
                     } catch (Exception er) {
                         er.printStackTrace();
-                        reply.thenAccept((i) -> i.editOriginal(new MessageBuilder().setContent(Configuration.instance().localization.commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
+                        reply.thenAccept((i) -> i.editOriginal(new MessageBuilder().setContent(Localization.instance().commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
                         return;
                     }
                 }
@@ -79,7 +80,7 @@ public class CommandLinkcheck extends DiscordCommand {
                     final UUID Uuid = uuid;
                     reply.thenAccept((i) -> i.editOriginalEmbeds(buildEmbed(Uuid, Variables.discord_instance.getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(Uuid)))).queue());
                 } else {
-                    reply.thenAccept((i) -> i.editOriginal(Configuration.instance().localization.commands.cmdLinkcheck_notlinked).queue());
+                    reply.thenAccept((i) -> i.editOriginal(Localization.instance().commands.cmdLinkcheck_notlinked).queue());
                 }
             }
         }
@@ -92,9 +93,9 @@ public class CommandLinkcheck extends DiscordCommand {
 
     private MessageEmbed buildEmbed(UUID uuid, User user) {
         final EmbedBuilder b = new EmbedBuilder();
-        b.addField(Configuration.instance().localization.commands.cmdLinkcheck_discordAcc, "<@!" + user.getId() + ">", true);
+        b.addField(Localization.instance().commands.cmdLinkcheck_discordAcc, "<@!" + user.getId() + ">", true);
         final String mcname = Variables.discord_instance.srv.getNameFromUUID(uuid);
-        b.addField(Configuration.instance().localization.commands.cmdLinkcheck_minecraftAcc, mcname + "\n" + uuid, true);
+        b.addField(Localization.instance().commands.cmdLinkcheck_minecraftAcc, mcname + "\n" + uuid, true);
         return b.build();
     }
 }

@@ -14,7 +14,7 @@ public class CommandFromCFG extends DiscordCommand {
     private final String mcCmd;
     private final boolean admin;
     private final ConfigCommand.CommandArgument[] args;
-    private boolean hidden;
+    private final boolean hidden;
 
     public CommandFromCFG(@Nonnull String cmd, @Nonnull String description, @Nonnull String mcCommand, boolean adminOnly, ConfigCommand.CommandArgument[] args, boolean hidden) throws IllegalArgumentException {
         super(cmd, description);

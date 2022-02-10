@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -22,24 +23,24 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 
 public class CommandSettings extends DiscordCommand {
     public CommandSettings() {
-        super("settings", Configuration.instance().localization.commands.descriptions.settings);
+        super("settings", Localization.instance().commands.descriptions.settings);
         final ArrayList<Command.Choice> settings = new ArrayList<>();
         final Field[] settingsFields = PlayerSettings.class.getDeclaredFields();
         for (Field f : settingsFields)
             settings.add(new Command.Choice(f.getName(), f.getName()));
 
-        addSubcommands(new SubcommandData("get", Configuration.instance().localization.commands.cmdSett_get).addOptions(
-                new OptionData(OptionType.STRING, "key", Configuration.instance().localization.commands.cmdSett_key, false).addChoices(settings)),
-                new SubcommandData("set", Configuration.instance().localization.commands.cmdSett_set).addOptions(
-                        new OptionData(OptionType.STRING, "key", Configuration.instance().localization.commands.cmdSett_key, true).addChoices(settings),
-                        new OptionData(OptionType.BOOLEAN, "value", Configuration.instance().localization.commands.cmdSett_val)));
+        addSubcommands(new SubcommandData("get", Localization.instance().commands.cmdSett_get).addOptions(
+                new OptionData(OptionType.STRING, "key", Localization.instance().commands.cmdSett_key, false).addChoices(settings)),
+                new SubcommandData("set", Localization.instance().commands.cmdSett_set).addOptions(
+                        new OptionData(OptionType.STRING, "key", Localization.instance().commands.cmdSett_key, true).addChoices(settings),
+                        new OptionData(OptionType.BOOLEAN, "value", Localization.instance().commands.cmdSett_val)));
     }
 
     @Override
     public void execute(SlashCommandEvent ev) {
         final CompletableFuture<InteractionHook> reply = ev.deferReply(true).submit();
         if (!PlayerLinkController.isDiscordLinked(ev.getUser().getId())) {
-            reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Configuration.instance().localization.linking.linkMethodWhitelistCode.replace("%prefix%", "/")) : Configuration.instance().localization.linking.linkMethodIngame)).queue());
+            reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Localization.instance().linking.linkMethodWhitelistCode.replace("%prefix%", "/")) : Localization.instance().linking.linkMethodIngame)).queue());
             return;
         }
         final OptionMapping key = ev.getOption("key");
@@ -53,14 +54,14 @@ public class CommandSettings extends DiscordCommand {
                             final PlayerSettings settings = PlayerLinkController.getSettings(ev.getUser().getId(), null);
                             reply.thenAccept((c) -> {
                                 try {
-                                    c.sendMessage(Configuration.instance().localization.personalSettings.personalSettingGet.replace("%bool%", settings.getClass().getField(key.getAsString()).getBoolean(settings) ? "true" : "false")).queue();
+                                    c.sendMessage(Localization.instance().personalSettings.personalSettingGet.replace("%bool%", settings.getClass().getField(key.getAsString()).getBoolean(settings) ? "true" : "false")).queue();
                                 } catch (IllegalAccessException | NoSuchFieldException e) {
                                     e.printStackTrace();
                                 }
                             });
 
                         } else
-                            reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.personalSettings.invalidPersonalSettingKey.replace("%key%", key.getAsString())).queue());
+                            reply.thenAccept((c) -> c.sendMessage(Localization.instance().personalSettings.invalidPersonalSettingKey.replace("%key%", key.getAsString())).queue());
                     } else {
                         final EmbedBuilder b = new EmbedBuilder();
                         final PlayerSettings settings = PlayerLinkController.getSettings(ev.getUser().getId(), null);
@@ -73,7 +74,7 @@ public class CommandSettings extends DiscordCommand {
                                 }
                             }
                         });
-                        b.setAuthor(Configuration.instance().localization.personalSettings.personalSettingsHeader);
+                        b.setAuthor(Localization.instance().personalSettings.personalSettingsHeader);
                         reply.thenAccept((c) -> c.editOriginalEmbeds(b.build()).queue());
                     }
                     break;
@@ -82,7 +83,7 @@ public class CommandSettings extends DiscordCommand {
                         final String keyStr = key.getAsString();
                         if (discord_instance.getSettings().containsKey(keyStr)) {
                             if (ArrayUtils.contains(Configuration.instance().linking.settingsBlacklist, keyStr)) {
-                                reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.personalSettings.settingUpdateBlocked).queue());
+                                reply.thenAccept((c) -> c.sendMessage(Localization.instance().personalSettings.settingUpdateBlocked).queue());
                                 return;
                             }
                             final PlayerSettings settings = PlayerLinkController.getSettings(ev.getUser().getId(), null);
@@ -98,11 +99,11 @@ public class CommandSettings extends DiscordCommand {
                                 PlayerLinkController.updatePlayerSettings(ev.getUser().getId(), null, settings);
                             } catch (IllegalAccessException | NoSuchFieldException e) {
                                 e.printStackTrace();
-                                reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.personalSettings.settingUpdateFailed).queue());
+                                reply.thenAccept((c) -> c.sendMessage(Localization.instance().personalSettings.settingUpdateFailed).queue());
                             }
-                            reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.personalSettings.settingUpdateSuccessful).queue());
+                            reply.thenAccept((c) -> c.sendMessage(Localization.instance().personalSettings.settingUpdateSuccessful).queue());
                         } else
-                            reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.personalSettings.invalidPersonalSettingKey.replace("%key%", keyStr)).queue());
+                            reply.thenAccept((c) -> c.sendMessage(Localization.instance().personalSettings.invalidPersonalSettingKey.replace("%key%", keyStr)).queue());
 
                     }
                     break;

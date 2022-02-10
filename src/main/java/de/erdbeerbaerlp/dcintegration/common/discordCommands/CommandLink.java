@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import net.dv8tion.jda.api.entities.Member;
@@ -19,7 +20,7 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 public class CommandLink extends DiscordCommand {
 
     public CommandLink() {
-        super("link", Configuration.instance().localization.commands.descriptions.link);
+        super("link", Localization.instance().commands.descriptions.link);
         addOption(OptionType.INTEGER, "code", "Link Code", true);
     }
 
@@ -36,7 +37,7 @@ public class CommandLink extends DiscordCommand {
                 }
             });
             if (!ok.get()) {
-                reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.link_requiredRole).queue());
+                reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.link_requiredRole).queue());
                 return;
             }
         }
@@ -45,28 +46,28 @@ public class CommandLink extends DiscordCommand {
             try {
                 int num = Integer.parseInt(code.getAsString());
                 if (PlayerLinkController.isDiscordLinked(ev.getUser().getId()) && (discord_instance.pendingBedrockLinks.isEmpty() && PlayerLinkController.isDiscordLinkedBedrock(ev.getUser().getId()))) {
-                    reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.alreadyLinked.replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(ev.getUser().getId())))).queue());
+                    reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.alreadyLinked.replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(ev.getUser().getId())))).queue());
                     return;
                 }
                 if (discord_instance.pendingLinks.containsKey(num)) {
                     final boolean linked = PlayerLinkController.linkPlayer(ev.getUser().getId(), discord_instance.pendingLinks.get(num).getValue());
                     if (linked) {
-                        reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", "/").replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(ev.getUser().getId())))).queue());
-                        discord_instance.srv.sendMCMessage(Configuration.instance().localization.linking.linkSuccessfulIngame.replace("%name%", ev.getUser().getName()).replace("%name#tag%", ev.getUser().getAsTag()), discord_instance.pendingLinks.get(num).getValue());
+                        reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.linkSuccessful.replace("%prefix%", "/").replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getPlayerFromDiscord(ev.getUser().getId())))).queue());
+                        discord_instance.srv.sendMCMessage(Localization.instance().linking.linkSuccessfulIngame.replace("%name%", ev.getUser().getName()).replace("%name#tag%", ev.getUser().getAsTag()), discord_instance.pendingLinks.get(num).getValue());
                     } else
-                        reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkFailed).queue());
+                        reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.linkFailed).queue());
                 } else if (discord_instance.pendingBedrockLinks.containsKey(num)) {
                     final boolean linked = PlayerLinkController.linkBedrockPlayer(ev.getUser().getId(), discord_instance.pendingBedrockLinks.get(num).getValue());
                     if (linked) {
-                        reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkSuccessful.replace("%prefix%", "/").replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getBedrockPlayerFromDiscord(ev.getUser().getId())))).queue());
-                        discord_instance.srv.sendMCMessage(Configuration.instance().localization.linking.linkSuccessfulIngame.replace("%name%", ev.getUser().getName()).replace("%name#tag%", ev.getUser().getAsTag()), discord_instance.pendingBedrockLinks.get(num).getValue());
+                        reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.linkSuccessful.replace("%prefix%", "/").replace("%player%", MessageUtils.getNameFromUUID(PlayerLinkController.getBedrockPlayerFromDiscord(ev.getUser().getId())))).queue());
+                        discord_instance.srv.sendMCMessage(Localization.instance().linking.linkSuccessfulIngame.replace("%name%", ev.getUser().getName()).replace("%name#tag%", ev.getUser().getAsTag()), discord_instance.pendingBedrockLinks.get(num).getValue());
                     } else
-                        reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkFailed).queue());
+                        reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.linkFailed).queue());
                 } else {
-                    reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.invalidLinkNumber).queue());
+                    reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.invalidLinkNumber).queue());
                 }
             } catch (NumberFormatException nfe) {
-                reply.thenAccept((c) -> c.sendMessage(Configuration.instance().localization.linking.linkNumberNAN).queue());
+                reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.linkNumberNAN).queue());
             }
         }
 

@@ -11,7 +11,7 @@ public class Variables {
     /**
      * Mod/Plugin version
      */
-    public static final String VERSION = "2.3.5";
+    public static final String VERSION = "2.4.0";
     /**
      * Discord Integration data directory
      */
@@ -19,11 +19,12 @@ public class Variables {
     /**
      * Time in milliseconds when the server started
      */
-    public static long started;
+    public static long started = -1;
     /**
      * Path to the config file
      */
     public static File configFile = new File("./config/Discord-Integration.toml");
+    public static File messagesFile = new File(discordDataDir,"Messages.toml");
     /**
      * Message sent when the server is starting (in non-webhook mode!), stored for editing
      */

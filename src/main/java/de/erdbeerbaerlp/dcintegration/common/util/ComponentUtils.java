@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -32,7 +33,7 @@ public class ComponentUtils {
     }
     @Nonnull
     public static Style addUserHoverClick(@Nonnull final Style styleIn, @Nonnull String userID, @Nonnull String displayName, @Nonnull String tag){
-        return styleIn.clickEvent(ClickEvent.suggestCommand("<@" + userID + ">")).hoverEvent(HoverEvent.showText(Component.text(Configuration.instance().localization.discordUserHover.replace("%user#tag%", tag).replace("%user%",displayName))));
+        return styleIn.clickEvent(ClickEvent.suggestCommand("<@" + userID + ">")).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%user#tag%", tag).replace("%user%",displayName))));
     }
 
     /**
