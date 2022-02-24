@@ -160,6 +160,7 @@ public class Discord extends Thread {
         while (true) {
 
             final JDABuilder b = JDABuilder.createDefault(Configuration.instance().general.botToken);
+            b.enableIntents(GatewayIntent.GUILD_MEMBERS);
             b.setAutoReconnect(true);
             b.setEnableShutdownHook(false);
             try {
