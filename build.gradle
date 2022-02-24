@@ -83,10 +83,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed("net.dv8tion:JDA:5.0.0-alpha.8") {
-        exclude group: 'okhttp3', module: "okhttp"
-    }
-    embed "com.squareup.okhttp3:okhttp:4.9.3"
+    embed 'net.dv8tion:JDA:5.0.0-alpha.8'
     embed 'club.minnced:discord-webhooks:0.7.5'
 
     //GSON
@@ -108,9 +105,6 @@ dependencies {
 
     //Apache commons lang3
     embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-
-    //SLF4J Simple Binding
-    embed group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36'
 
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
