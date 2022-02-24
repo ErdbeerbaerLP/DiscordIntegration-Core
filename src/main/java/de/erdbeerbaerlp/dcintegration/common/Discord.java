@@ -262,11 +262,12 @@ public class Discord extends Thread {
         System.out.println("Unloading addons...");
         AddonLoader.unloadAddons(this);
         System.out.println("Unloaded addons");
-        System.out.println(jda);
         if (jda != null) {
-            System.out.println(listener);
-            if (listener != null)
+            System.out.println("Unloading instance: " + jda);
+            if (listener != null) {
+                System.out.println("Unloading listener: " + listener);
                 jda.removeEventListener(listener);
+            }
             stopThreads();
             unregisterAllEventHandlers();
             webhookClis.forEach((i, w) -> w.close());
