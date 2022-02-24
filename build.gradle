@@ -150,12 +150,12 @@ publishing {
         }
     }
     repositories {
-        maven {
-            credentials {// $GRADLE_USER_HOME/gradle.properties
-                username = project.nexusUser
-                password = project.nexusPass
-            }
-            url = "https://repo.erdbeerbaerlp.de/repository/maven-releases"
-        }
+        //maven {
+        //    credentials {// $GRADLE_USER_HOME/gradle.properties
+        //        username = project.nexusUser
+        //        password = project.nexusPass
+        //    }
+        //    url = "https://repo.erdbeerbaerlp.de/repository/maven-releases"
+        //}
     }
 }
