@@ -1,7 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
@@ -48,7 +48,7 @@ public class CommandFromCFG extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandEvent ev) {
+    public void execute(SlashCommandInteractionEvent ev) {
         String cmd = mcCmd;
         for (ConfigCommand.CommandArgument arg : args) {
             final OptionMapping option = ev.getOption(arg.name);

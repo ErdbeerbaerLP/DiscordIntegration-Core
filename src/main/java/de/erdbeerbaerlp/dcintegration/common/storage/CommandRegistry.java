@@ -29,8 +29,8 @@ public class CommandRegistry {
     public static final HashMap<Long, DiscordCommand> registeredCMDs = new HashMap<>();
 
 
-    private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByName = new HashMap<>();
-    private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByID = new HashMap<>();
+    private static final HashMap<String, Collection<CommandPrivilege>> permissionsByName = new HashMap<>();
+    private static final HashMap<String, Collection<CommandPrivilege>> permissionsByID = new HashMap<>();
 
     /**
      * Registers all commands to discord if changed

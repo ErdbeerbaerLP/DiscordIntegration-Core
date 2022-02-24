@@ -1,11 +1,10 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.internal.interactions.CommandDataImpl;
 
 import javax.annotation.Nonnull;
 
@@ -15,7 +14,7 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 /**
  * Abstract class used for discord commands
  */
-public abstract class DiscordCommand extends CommandData {
+public abstract class DiscordCommand extends CommandDataImpl {
 
     boolean isConfigCmd = false;
 
@@ -71,7 +70,7 @@ public abstract class DiscordCommand extends CommandData {
      * <p>
      *  @param ev the SlashCommandEvent
      */
-    public abstract void execute(SlashCommandEvent ev);
+    public abstract void execute(SlashCommandInteractionEvent ev);
 
     /**
      * Wether or not this command should be visible in help
