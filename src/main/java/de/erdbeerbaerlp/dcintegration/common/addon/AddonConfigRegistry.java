@@ -4,6 +4,7 @@ package de.erdbeerbaerlp.dcintegration.common.addon;
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
 import de.erdbeerbaerlp.dcintegration.common.Discord;
+import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -66,7 +67,7 @@ public class AddonConfigRegistry {
             conf.setConfigFile(new File(AddonLoader.getAddonDir(), AddonLoader.getAddonMeta(inst).getName() + ".toml"));
             return loadConfig(conf);
         } catch (RuntimeException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            System.err.println("An exception occurred while loading addon configuration " +cfg.getName() );
+            Variables.LOGGER.error("An exception occurred while loading addon configuration " +cfg.getName() );
             e.printStackTrace();
         }
         return null;

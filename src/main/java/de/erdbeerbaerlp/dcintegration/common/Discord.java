@@ -94,7 +94,7 @@ public class Discord extends Thread {
                 field.setAccessible(true);
                 FieldHelper.makeNonFinal(field);
                 field.set(null, Configuration.instance().advanced.baseAPIUrl);
-                System.out.println("Now using "+Configuration.instance().advanced.baseAPIUrl+" as target Discord!");
+                Variables.LOGGER.info("Now using "+Configuration.instance().advanced.baseAPIUrl+" as target Discord!");
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -162,17 +162,17 @@ public class Discord extends Thread {
             final JDABuilder b = JDABuilder.createDefault(Configuration.instance().general.botToken);
             b.enableIntents(GatewayIntent.GUILD_MEMBERS);
             b.setAutoReconnect(true);
-            b.setEnableShutdownHook(false);
+            b.setEnableShutdownHook(true);
             try {
                 jda = b.build();
                 jda.awaitReady();
                 break;
             } catch (LoginException e) {
                 if (e.getMessage().equals("The provided token is invalid!")) {
-                    System.err.println("Invalid token, please set correct token in the config file!");
+                    Variables.LOGGER.error("Invalid token, please set correct token in the config file!");
                     return;
                 }
-                System.err.println("Login failed, retrying");
+                Variables.LOGGER.error("Login failed, retrying");
                 try {
                     sleep(6000);
                 } catch (InterruptedException ignored) {
@@ -183,47 +183,47 @@ public class Discord extends Thread {
             }
         }
         if (getChannel() == null) {
-            System.err.println("ERROR! Channel ID of the default bot channel not valid!");
+            Variables.LOGGER.error("ERROR! Channel ID of the default bot channel not valid!");
             kill(true);
             return;
         }
         if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().getMember(jda.getSelfUser()), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
-            System.err.println("ERROR! Bot does not have all permissions to work!");
+            Variables.LOGGER.error("ERROR! Bot does not have all permissions to work!");
             kill(true);
             throw new PermissionException("Bot requires message read, message write, embed links and manage messages");
         }
         if (Configuration.instance().webhook.enable)
             if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().getMember(jda.getSelfUser()), Permission.MANAGE_WEBHOOKS)) {
-                System.err.println("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
+                Variables.LOGGER.error("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
                 Configuration.instance().webhook.enable = false;
                 try {
                     Configuration.instance().saveConfig();
                 } catch (IOException e) {
-                    System.err.println("FAILED TO SAVE CONFIG");
+                    Variables.LOGGER.error("FAILED TO SAVE CONFIG");
                     e.printStackTrace();
                 }
             }
 
-        System.out.println("Bot Ready");
+        Variables.LOGGER.info("Bot Ready");
         jda.addEventListener(listener = new DiscordEventListener());
         try {
             loadIgnoreList();
         } catch (IOException e) {
-            System.err.println("Error while loading the ignoring players list!");
+            Variables.LOGGER.error("Error while loading the ignoring players list!");
             e.printStackTrace();
         }
 
         //Cache all users and (nick-)names
-        System.out.println("Caching members...");
-        jda.getGuilds().forEach((g) -> g.loadMembers().onSuccess((m) -> System.out.println("All " + m.size() + " members cached for Guild " + g.getName())).onError((t) -> {
-            System.err.println("Encountered an error while caching members:");
+        Variables.LOGGER.info("Caching members...");
+        jda.getGuilds().forEach((g) -> g.loadMembers().onSuccess((m) -> Variables.LOGGER.info("All " + m.size() + " members cached for Guild " + g.getName())).onError((t) -> {
+            Variables.LOGGER.error("Encountered an error while caching members:");
             t.printStackTrace();
         }));
 
         final Thread t = new Thread(() -> {
-            System.out.println("Loading DiscordIntegration addons...");
+            Variables.LOGGER.info("Loading DiscordIntegration addons...");
             AddonLoader.loadAddons(this);
-            System.out.println("Addon loading complete!");
+            Variables.LOGGER.info("Addon loading complete!");
         });
         t.setName("Discord Integration - Addon-Loader");
         t.setDaemon(true);
@@ -259,13 +259,13 @@ public class Discord extends Thread {
      * Kills the discord bot
      */
     public void kill(boolean instant) {
-        System.out.println("Unloading addons...");
+        Variables.LOGGER.info("Unloading addons...");
         AddonLoader.unloadAddons(this);
-        System.out.println("Unloaded addons");
+        Variables.LOGGER.info("Unloaded addons");
         if (jda != null) {
-            System.out.println("Unloading instance: " + jda);
+            Variables.LOGGER.info("Unloading instance: " + jda);
             if (listener != null) {
-                System.out.println("Unloading listener: " + listener);
+                Variables.LOGGER.info("Unloading listener: " + listener);
                 jda.removeEventListener(listener);
             }
             stopThreads();
@@ -308,14 +308,14 @@ public class Discord extends Thread {
         final boolean deflt = id.equals("default") || id.equals(Configuration.instance().general.botChannel);
         if (deflt) id = Configuration.instance().general.botChannel;
         if (id.isEmpty()) {
-            System.err.println("Cannot get channel from empty ID! Check your config!");
+            Variables.LOGGER.error("Cannot get channel from empty ID! Check your config!");
             if (deflt) return null;
-            System.out.println("Falling back to default channel!");
+            Variables.LOGGER.info("Falling back to default channel!");
             return getChannel();
         }
         channel = channelCache.computeIfAbsent(id, (id2) -> jda.getTextChannelById(id2));
         if (channel == null) {
-            System.err.println("Failed to get channel with ID '" + id + "', falling back to default channel");
+            Variables.LOGGER.error("Failed to get channel with ID '" + id + "', falling back to default channel");
             channel = channelCache.computeIfAbsent(Configuration.instance().general.botChannel, jda::getTextChannelById);
         }
         return channel;
@@ -334,7 +334,7 @@ public class Discord extends Thread {
                 try {
                     ignoringPlayers.add(UUID.fromString(s));
                 } catch (IllegalArgumentException e) {
-                    System.err.println("Found invalid entry for ignoring player, skipping");
+                    Variables.LOGGER.error("Found invalid entry for ignoring player, skipping");
                 }
             });
             r.close();
@@ -350,7 +350,7 @@ public class Discord extends Thread {
                 CommandRegistry.updateSlashCommands();
             } catch (Exception e) {
                 e.printStackTrace();
-                System.err.println("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
+                Variables.LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
             }
         });
         t.setDaemon(true);
@@ -490,14 +490,14 @@ public class Discord extends Thread {
 
         if (toml != null) {
             final Localization localization = toml.to(Localization.class);
-            System.out.println("Starting Translation migration");
+            Variables.LOGGER.info("Starting Translation migration");
             final TomlWriter w = new TomlWriter.Builder()
                     .indentValuesBy(2)
                     .indentTablesBy(4)
                     .padArrayDelimitersBy(2)
                     .build();
             w.write(localization, messagesFile);
-            System.out.println("Translation migration complete");
+            Variables.LOGGER.info("Translation migration complete");
 
         }
 
@@ -556,12 +556,12 @@ public class Discord extends Thread {
         if (!Configuration.instance().webhook.enable || c == null) return null;
         return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
             if (!PermissionUtil.checkPermission(c, c.getGuild().getMember(jda.getSelfUser()), Permission.MANAGE_WEBHOOKS)) {
-                System.out.println("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
+                Variables.LOGGER.info("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
                 Configuration.instance().webhook.enable = false;
                 try {
                     Configuration.instance().saveConfig();
                 } catch (IOException e) {
-                    System.err.println("FAILED TO SAVE CONFIGURATION");
+                    Variables.LOGGER.error("FAILED TO SAVE CONFIGURATION");
                     e.printStackTrace();
                 }
                 return null;

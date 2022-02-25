@@ -27,7 +27,7 @@ public class DynmapListener extends DynmapCommonAPIListener {
         this.api = api;
         if (Variables.discord_instance != null)
             Variables.discord_instance.registerEventHandler(sender);
-        System.out.println("Dynmap listener registered");
+        Variables.LOGGER.info("Dynmap listener registered");
     }
 
     @Override
