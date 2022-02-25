@@ -87,7 +87,7 @@ public class Discord extends Thread {
     public Discord(@Nonnull ServerInterface srv) {
         this.srv = srv;
         setDaemon(true);
-        setName("Discord Integration Launch Thread");
+        setName("Discord Integration - Launch Thread");
         if(!Configuration.instance().advanced.baseAPIUrl.equals("https://discord.com"))
             try {
                 Field field = Requester.class.getDeclaredField("DISCORD_API_PREFIX");
@@ -225,7 +225,7 @@ public class Discord extends Thread {
             AddonLoader.loadAddons(this);
             System.out.println("Addon loading complete!");
         });
-        t.setName("Discord Integration Addon-Loader");
+        t.setName("Discord Integration - Addon-Loader");
         t.setDaemon(true);
         t.start();
 
@@ -345,14 +345,16 @@ public class Discord extends Thread {
      * Starts all sub-threads
      */
     public void startThreads() {
-        new Thread(() -> {
+        final Thread t = new Thread(() -> {
             try {
                 CommandRegistry.updateSlashCommands();
             } catch (Exception e) {
                 e.printStackTrace();
                 System.err.println("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread();
         if (messageSender == null) messageSender = new MessageQueueThread();
         if (!messageSender.isAlive()) messageSender.start();
@@ -542,7 +544,7 @@ public class Discord extends Thread {
             }
         });
         t.setDaemon(true);
-        t.setName("Discord SendMessage");
+        t.setName("Discord Integration - SendMessage");
         t.start();
     }
 
@@ -812,7 +814,7 @@ public class Discord extends Thread {
 
     private class MessageQueueThread extends Thread {
         MessageQueueThread() {
-            setName("[Discord Integration] Message Queue");
+            setName("Discord Integration - Message Queue");
             setDaemon(true);
         }
 
@@ -840,7 +842,7 @@ public class Discord extends Thread {
 
     private class StatusUpdateThread extends Thread {
         StatusUpdateThread() {
-            setName("[Discord Integration] Discord status updater and link cleanup");
+            setName("Discord Integration - Status updater and link cleanup");
             setDaemon(true);
         }
 

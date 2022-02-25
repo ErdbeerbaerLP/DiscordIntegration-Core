@@ -61,7 +61,7 @@ public class UpdateChecker {
             }
         });
         thread.setDaemon(true);
-        thread.setName("Discord Integration update checker");
+        thread.setName("Discord Integration - Update checker");
         thread.start();
 
     }
