@@ -46,7 +46,7 @@ configurations {
     compileOnly.extendsFrom(embed)
 }
 shadowJar {
-    classifier = ""
+    archiveClassifier = ""
     configurations = [project.configurations.embed]
     exclude('META-INF/services/**')
     relocate 'okhttp3', 'dcshadow.okhttp'
