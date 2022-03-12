@@ -332,7 +332,7 @@ public class Configuration {
         public String name = "Dynmap Web-Chat";
 
         @TomlComment("URL of the webhook avatar image")
-        public String avatarURL = "https://styles.redditmedia.com/t5_2kl3ct/styles/communityIcon_am5zopqnjhs41.png";
+        public String avatarURL = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/9/91/Map_Zoom_0.png/revision/latest?cb=20200311153330";
 
         @TomlComment({"The name format of the message forwarded to the dynmap webchat", "", "PLACEHOLDERS:", "%name% - The discord name of the sender (including nickname)", "%name#tag% - The discord name with tag of the sender (without nickname)"})
         public String webName = "%name% (discord)";
