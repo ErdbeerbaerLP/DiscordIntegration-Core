@@ -97,7 +97,7 @@ dependencies {
     embed('com.vdurmont:emoji-java:5.1.1')
 
     //Minecraft <==> Discord conversion
-    embed 'net.kyori:adventure-api:4.10.0'
+    embed 'net.kyori:adventure-api:4.10.1'
     embed('net.kyori:adventure-text-serializer-gson:4.9.3')
     embed "dev.vankka:MCDiscordReserializer:4.2.2"
     embed "dev.vankka:SimpleAST:2.2.7"
