@@ -150,7 +150,7 @@ public class DiscordEventListener implements EventListener {
                         out = out.replaceText(userReplacer).replaceText(idReplacer).replaceText(msgReplacer);
                         if (hasReply) {
                             final Component repUser = Component.text((reply.getMember() != null ? reply.getMember().getEffectiveName() : reply.getAuthor().getName()))
-                                    .style(ComponentUtils.addUserHoverClick(Style.style(TextColor.color(memberColor)), reply.getAuthor(), reply.getMember()));
+                                    .style(ComponentUtils.addUserHoverClick(Style.style(TextColor.color((reply.getMember() != null ? reply.getMember().getColorRaw() : 0))), reply.getAuthor(), reply.getMember()));
                             out = out.replaceText(ComponentUtils.replaceLiteral("%ruser%", repUser));
                             final String repMsg = MessageUtils.formatEmoteMessage(reply.getEmotes(), reply.getContentDisplay());
                             final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), mcSerializerOptions);
