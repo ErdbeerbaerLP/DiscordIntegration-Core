@@ -21,7 +21,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
@@ -68,8 +68,8 @@ public class DiscordEventListener implements EventListener {
         final Discord dc = Variables.discord_instance;
         final JDA jda = dc.getJDA();
         if (jda == null) return;
-        if (event instanceof SlashCommandEvent) {
-            SlashCommandEvent ev = (SlashCommandEvent) event;
+        if (event instanceof SlashCommandInteractionEvent) {
+            SlashCommandInteractionEvent ev = (SlashCommandInteractionEvent) event;
 
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
                 if (CommandRegistry.registeredCMDs.containsKey(ev.getCommandIdLong())) {
@@ -166,7 +166,7 @@ public class DiscordEventListener implements EventListener {
         }
     }
 
-    private void processDiscordCommand(SlashCommandEvent ev, final String[] command, final TextChannel channel, User sender, final Discord dc) {
+    private void processDiscordCommand(SlashCommandInteractionEvent ev, final String[] command, final TextChannel channel, User sender, final Discord dc) {
         boolean hasPermission = true;
         boolean executed = false;
         for (final DiscordCommand cmd : CommandRegistry.getCommandList()) {

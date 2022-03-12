@@ -1,15 +1,12 @@
 package de.erdbeerbaerlp.dcintegration.common.storage;
 
-import de.erdbeerbaerlp.dcintegration.common.Discord;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.*;
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -35,11 +32,11 @@ public class CommandRegistry {
     /**
      * Command permissions by command name
      */
-    private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByName = new HashMap<>();
+    private static final HashMap<String, ArrayList<CommandPrivilege>> permissionsByName = new HashMap<>();
     /**
      * Command permissions by command ID
      */
-    private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByID = new HashMap<>();
+    private static final HashMap<String, ArrayList<CommandPrivilege>> permissionsByID = new HashMap<>();
 
     /**
      * Registers all commands to discord if changed

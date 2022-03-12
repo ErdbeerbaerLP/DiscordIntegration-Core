@@ -6,7 +6,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -26,7 +26,7 @@ public class CommandLink extends DiscordCommand {
 
 
     @Override
-    public void execute(SlashCommandEvent ev) {
+    public void execute(SlashCommandInteractionEvent ev) {
         final CompletableFuture<InteractionHook> reply = ev.deferReply(true).submit();
         Member m = ev.getMember();
         if (Configuration.instance().linking.requiredRoles.length != 0) {

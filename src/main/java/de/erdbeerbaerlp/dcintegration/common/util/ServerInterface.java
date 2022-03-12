@@ -1,8 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.kyori.adventure.text.Component;

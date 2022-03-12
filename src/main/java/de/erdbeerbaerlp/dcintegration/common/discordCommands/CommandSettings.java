@@ -5,7 +5,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -37,7 +37,7 @@ public class CommandSettings extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandEvent ev) {
+    public void execute(SlashCommandInteractionEvent ev) {
         final CompletableFuture<InteractionHook> reply = ev.deferReply(true).submit();
         if (!PlayerLinkController.isDiscordLinked(ev.getUser().getId())) {
             reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Localization.instance().linking.linkMethodWhitelistCode.replace("%prefix%", "/")) : Localization.instance().linking.linkMethodIngame)).queue());

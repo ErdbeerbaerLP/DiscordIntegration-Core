@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -30,7 +30,7 @@ public class CommandLinkcheck extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandEvent ev) {
+    public void execute(SlashCommandInteractionEvent ev) {
         final CompletableFuture<InteractionHook> reply = ev.deferReply(true).submit();
         final OptionMapping discorduser = ev.getOption("discorduser");
         final OptionMapping mcplayer = ev.getOption("mcplayer");

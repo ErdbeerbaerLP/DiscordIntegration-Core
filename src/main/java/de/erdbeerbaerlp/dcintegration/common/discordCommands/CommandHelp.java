@@ -3,7 +3,7 @@ package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 
 public class CommandHelp extends DiscordCommand {
@@ -13,7 +13,7 @@ public class CommandHelp extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandEvent ev) {
+    public void execute(SlashCommandInteractionEvent ev) {
         StringBuilder out = new StringBuilder(Localization.instance().commands.cmdHelp_header + " \n```\n");
         for (final DiscordCommand cmd : CommandRegistry.getCommandList()) {
             if (cmd.canUserExecuteCommand(ev.getUser()) && cmd.includeInHelp())

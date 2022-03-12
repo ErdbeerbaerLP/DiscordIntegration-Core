@@ -44,7 +44,7 @@ public class TextColors {
     /**
      * Converts the given {@link Color} to an {@link TextColor}
      *
-     * @param c {@link} Color to convert
+     * @param c {@link Color} to convert
      * @return Converted {@link TextColor}
      */
     @Nonnull
