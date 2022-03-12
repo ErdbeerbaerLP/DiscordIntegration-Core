@@ -17,9 +17,11 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discordDataDi
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 public class PlayerLinkController {
+    /**
+     * Path to the json containing linked players
+     */
     private static final File playerLinkedFile = new File(discordDataDir, "LinkedPlayers.json");
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private static final JsonParser parser = new JsonParser();
 
 
     /**
@@ -544,7 +546,7 @@ public class PlayerLinkController {
             return new JsonArray();
         }
         final FileReader is = new FileReader(playerLinkedFile);
-        final JsonArray a = parser.parse(is).getAsJsonArray();
+        final JsonArray a = JsonParser.parseReader(is).getAsJsonArray();
         is.close();
         return a;
     }

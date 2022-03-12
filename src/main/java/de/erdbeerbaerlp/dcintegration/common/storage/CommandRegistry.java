@@ -26,10 +26,19 @@ public class CommandRegistry {
      * Registered commands
      */
     private static List<DiscordCommand> commands = new ArrayList<>();
+    /**
+     * Commands registered to Discord
+     */
     public static final HashMap<Long, DiscordCommand> registeredCMDs = new HashMap<>();
 
 
+    /**
+     * Command permissions by command name
+     */
     private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByName = new HashMap<>();
+    /**
+     * Command permissions by command ID
+     */
     private static final HashMap<String, Collection<? extends CommandPrivilege>> permissionsByID = new HashMap<>();
 
     /**

@@ -48,6 +48,9 @@ public class DynmapListener extends DynmapCommonAPIListener {
         Variables.discord_instance.sendMessage(Variables.discord_instance.getChannel(Configuration.instance().dynmap.dynmapChannelID), Configuration.instance().dynmap.dcMessage.replace("%msg%", message).replace("%sender%", name.isEmpty() ? Configuration.instance().dynmap.unnamed : name), Configuration.instance().dynmap.avatarURL, Configuration.instance().dynmap.name);
     }
 
+    /**
+     * Registers this class as an {@link DynmapCommonAPIListener}
+     */
     public void register() {
         DynmapCommonAPIListener.register(this);
     }

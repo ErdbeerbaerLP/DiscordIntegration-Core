@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.internal.requests.Requester;
@@ -43,7 +44,6 @@ import java.util.function.Function;
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
 
-
 public class Discord extends Thread {
 
     /**
@@ -54,6 +54,9 @@ public class Discord extends Thread {
      * Dummy UUID for unknown players or server messages
      */
     public static final UUID dummyUUID = new UUID(0L, 0L);
+    /**
+     * Instance of the ServerInterface
+     */
     public final ServerInterface srv;
     /**
      * Holds messages recently forwarded to discord in format MessageID,Sender UUID
@@ -68,6 +71,9 @@ public class Discord extends Thread {
      * Pending /discord link requests
      */
     public final HashMap<Integer, KeyValue<Instant, UUID>> pendingLinks = new HashMap<>();
+    /**
+     * Pending /discord link requests for floodgate users
+     */
     public final HashMap<Integer, KeyValue<Instant, UUID>> pendingBedrockLinks = new HashMap<>();
     final ArrayList<DiscordEventHandler> eventHandlers = new ArrayList<>();
     /**
@@ -99,6 +105,37 @@ public class Discord extends Thread {
                 e.printStackTrace();
             }
         start();
+    }
+
+    /**
+     * Checks if a Player can join (also checking roles)
+     * @param uuid Player UUID
+     * @return true if the player can join<br>
+     *         Also returns true if whitelist mode is off
+     */
+    public boolean canPlayerJoin(UUID uuid){
+        if(!Configuration.instance().linking.whitelistMode) return true;
+        if(PlayerLinkController.isPlayerLinked(uuid)){
+            if(Configuration.instance().linking.requiredRoles.length > 0){
+                final User usr = getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(uuid));
+                if(usr == null) return false;
+                final Guild g = getChannel().getGuild();
+                final Member mem = g.retrieveMember(usr).complete();
+                if(mem == null) return false;
+                boolean hasAllRoles = true;
+                for (String requiredRole : Configuration.instance().linking.requiredRoles) {
+                    final Role role = g.getRoleById(requiredRole);
+                    if(role == null) continue;
+                    if(!mem.getRoles().contains(role)){
+                        hasAllRoles = false;
+                        break;
+                    }
+                }
+                return hasAllRoles;
+            }else return true;
+        }
+
+        return false;
     }
 
     /**

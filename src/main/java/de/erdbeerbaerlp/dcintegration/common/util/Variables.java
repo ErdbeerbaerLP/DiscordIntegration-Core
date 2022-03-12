@@ -24,6 +24,9 @@ public class Variables {
      * Path to the config file
      */
     public static File configFile = new File("./config/Discord-Integration.toml");
+    /**
+     * Path to the message configuration
+     */
     public static File messagesFile = new File(discordDataDir,"Messages.toml");
     /**
      * Message sent when the server is starting (in non-webhook mode!), stored for editing

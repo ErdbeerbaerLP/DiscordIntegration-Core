@@ -44,6 +44,9 @@ public class MessageUtils {
         return out;
     }
 
+    /**
+     * Regex matching formatting codes like thos: §4
+     */
     private static final Pattern FORMATTING_CODE_PATTERN = Pattern.compile("(?i)\u00a7[0-9A-FK-OR]");
 
     /**

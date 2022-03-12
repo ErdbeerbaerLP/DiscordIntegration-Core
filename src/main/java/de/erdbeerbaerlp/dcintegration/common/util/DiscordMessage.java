@@ -21,6 +21,8 @@ public final class DiscordMessage {
     private String message = "";
 
     /**
+     * @param embed Embed to attach to message
+     * @param message Message to send
      * @param isNotRaw set to true to enable markdown escaping and mc color conversion (default: false)
      */
     public DiscordMessage(final MessageEmbed embed, @Nonnull final String message, boolean isNotRaw) {
@@ -28,35 +30,62 @@ public final class DiscordMessage {
         this.message = message;
         this.isNotRaw = isNotRaw;
     }
-
+    /**
+     * @param embed Embed to attach to message
+     * @param message Message to send
+     */
     public DiscordMessage(final MessageEmbed embed, @Nonnull final String message) {
         this(embed, message, false);
     }
-
+    /**
+     * @param message Message to send
+     */
     public DiscordMessage(@Nonnull final String message) {
         this(null, message, false);
     }
-
+    /**
+     * @param embed Embed to send
+     */
     public DiscordMessage(@Nonnull final MessageEmbed embed) {
         this(embed, "", false);
     }
 
+    /**
+     * Gets the raw message
+     * @return Message String
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Changes the raw message
+     * @param message Message to set
+     */
     public void setMessage(@Nonnull final String message) {
         this.message = message;
     }
 
+    /**
+     *
+     * @return The set embed
+     */
     public MessageEmbed getEmbed() {
         return embed;
     }
 
+    /**
+     * Sets the embed of this Message
+     * @param embed Embed to set
+     */
     public void setEmbed(@Nonnull final MessageEmbed embed) {
         this.embed = embed;
     }
 
+    /**
+     * Builds messages to send
+     * @return {@link Queue} of messages
+     */
     @Nonnull
     public Queue<Message> buildMessages() {
         final MessageBuilder out = new MessageBuilder();
@@ -80,6 +109,11 @@ public final class DiscordMessage {
         return out.buildAll(MessageBuilder.SplitPolicy.NEWLINE, MessageBuilder.SplitPolicy.SPACE);
     }
 
+    /**
+     * Splits messages for character limits of the webhook
+     * @param inMsg Message to split
+     * @return Split messages
+     */
     private String[] splitMessages(final String inMsg) {
         if (inMsg.length() <= 2000)
             return new String[]{inMsg};
@@ -99,6 +133,10 @@ public final class DiscordMessage {
         }
     }
 
+    /**
+     * Builds webhook messages
+     * @return List containing webhook messages
+     */
     @Nonnull
     public ArrayList<WebhookMessageBuilder> buildWebhookMessages() {
         final ArrayList<WebhookMessageBuilder> out = new ArrayList<>();

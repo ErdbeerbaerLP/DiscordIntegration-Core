@@ -16,7 +16,7 @@ public class UpdateChecker {
 
 
     /**
-     * Checks for updates and prints the
+     * Checks for updates and prints the update message to console
      */
     public static void runUpdateCheck(String url) {
         if (!Configuration.instance().general.enableUpdateChecker) return;
@@ -66,6 +66,9 @@ public class UpdateChecker {
 
     }
 
+    /**
+     * Types of releases
+     */
     public enum ReleaseType {
         alpha(0), beta(1), release(2);
         public final int value;

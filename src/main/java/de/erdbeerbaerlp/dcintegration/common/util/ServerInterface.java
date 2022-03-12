@@ -13,22 +13,22 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class ServerInterface {
+public interface ServerInterface {
 
     /**
      * @return Maximum player amount on this server
      */
-    public abstract int getMaxPlayers();
+    int getMaxPlayers();
     /**
      * @return Online player count on this server
      */
-    public abstract int getOnlinePlayers();
+    int getOnlinePlayers();
 
     /**
      * Sends an {@link Component} as ingame message to all players who are not ignoring messages
      * @param msg Message to send
      */
-    public abstract void sendMCMessage(@Nonnull Component msg);
+    void sendMCMessage(@Nonnull Component msg);
 
     /**
      * Sends an message for reactions from discord
@@ -37,33 +37,33 @@ public abstract class ServerInterface {
      * @param targetUUID Original sender's {@link UUID}
      * @param reactionEmote Emote that was added to the message
      */
-    public abstract void sendMCReaction(Member member, @Nonnull RestAction<Message> retrieveMessage, @Nonnull UUID targetUUID, @Nonnull MessageReaction.ReactionEmote reactionEmote);
+    void sendMCReaction(Member member, @Nonnull RestAction<Message> retrieveMessage, @Nonnull UUID targetUUID, @Nonnull MessageReaction.ReactionEmote reactionEmote);
 
     /**
      * Runs an command on the server
      * @param cmd Command to execute
-     * @param ev the SlashCommandEvent of the executed command
+     * @param cmdMsg the message to edit the command output in
      */
-    public abstract void runMcCommand(@Nonnull String cmd, final CompletableFuture<InteractionHook> cmdMsg, User user);
+    void runMcCommand(@Nonnull String cmd, final CompletableFuture<InteractionHook> cmdMsg, User user);
 
     /**
      * @return all online players on this server in format <{@link UUID}, PlayerName>
      */
     @Nonnull
-    public abstract HashMap<UUID, String> getPlayers();
+    HashMap<UUID, String> getPlayers();
 
     /**
      * Sends an message to that specific player
      * @param msg Message
      * @param player Target player's {@link UUID}
      */
-    public abstract void sendMCMessage(String msg, UUID player);
+    void sendMCMessage(String msg, UUID player);
 
     /**
      * Checks if the server is running in online mode
      * @return online mode status
      */
-    public abstract boolean isOnlineMode();
+    boolean isOnlineMode();
 
     /**
      * Gets the display name of the player's UUID
@@ -71,5 +71,5 @@ public abstract class ServerInterface {
      * @return The player's name, or null if the player was not found
      */
     @Nullable
-    public abstract String getNameFromUUID(@Nonnull UUID uuid);
+    String getNameFromUUID(@Nonnull UUID uuid);
 }
