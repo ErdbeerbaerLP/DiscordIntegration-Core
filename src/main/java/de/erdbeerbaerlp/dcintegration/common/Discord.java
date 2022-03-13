@@ -197,7 +197,7 @@ public class Discord extends Thread {
         while (true) {
 
             final JDABuilder b = JDABuilder.createDefault(Configuration.instance().general.botToken);
-            b.setEnabledIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.GUILD_VOICE_STATES);
+            b.setEnabledIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_EMOJIS);
             b.setAutoReconnect(true);
             b.setEnableShutdownHook(false);
             try {
