@@ -2,6 +2,8 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 
 import de.erdbeerbaerlp.dcintegration.common.Discord;
 import net.dv8tion.jda.api.entities.Message;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
@@ -36,4 +38,8 @@ public class Variables {
      * The currently active {@link Discord} instance
      */
     public static Discord discord_instance;
+    /**
+     * The primary {@link Logger} instance
+     */
+    public static final Logger LOGGER = LogManager.getLogger("Discord-Integration-Core");
 }

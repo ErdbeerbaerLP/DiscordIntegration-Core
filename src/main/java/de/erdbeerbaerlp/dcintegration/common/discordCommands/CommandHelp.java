@@ -1,7 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 

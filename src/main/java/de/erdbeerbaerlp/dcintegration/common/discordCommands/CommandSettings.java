@@ -4,6 +4,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
+import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -109,7 +110,7 @@ public class CommandSettings extends DiscordCommand {
                     break;
             }
         } else {
-            System.err.println("SUBCOMMAND == NULL");
+            Variables.LOGGER.error("SUBCOMMAND == NULL");
         }
     }
 }

@@ -28,7 +28,7 @@ public class UpdateChecker {
                 final InputStreamReader r = new InputStreamReader(conn.getInputStream());
                 final JsonArray parse = JsonParser.parseReader(r).getAsJsonArray();
                 if (parse == null) {
-                    System.err.println("Could not check for updates");
+                    Variables.LOGGER.error("Could not check for updates");
                     return;
                 }
                 final AtomicBoolean shouldNotify = new AtomicBoolean(false);
@@ -53,15 +53,15 @@ public class UpdateChecker {
                 });
                 final String changelogString = changelog.toString();
                 if (shouldNotify.get()) {
-                    System.out.println("[Discord Integration] Updates available! You are " + versionsBehind.get() + " version" + (versionsBehind.get() == 1 ? "" : "s") + " behind\nChangelog since last update:\n" + changelogString);
+                    Variables.LOGGER.info("[Discord Integration] Updates available! You are " + versionsBehind.get() + " version" + (versionsBehind.get() == 1 ? "" : "s") + " behind\nChangelog since last update:\n" + changelogString);
                 }
             } catch (IOException e) {
-                System.out.println("Could not check for updates");
+                Variables.LOGGER.info("Could not check for updates");
                 e.printStackTrace();
             }
         });
         thread.setDaemon(true);
-        thread.setName("Discord Integration update checker");
+        thread.setName("Discord Integration - Update checker");
         thread.start();
 
     }

@@ -57,14 +57,14 @@ public class CommandRegistry {
             }
         else regenCommands = true;
         if (regenCommands) {
-            System.out.println("Regenerating commands...");
+            Variables.LOGGER.info("Regenerating commands...");
             CommandListUpdateAction commandListUpdateAction = channel.getGuild().updateCommands();
             for (DiscordCommand cmd : commands) {
                 commandListUpdateAction = commandListUpdateAction.addCommands(cmd);
             }
             commandListUpdateAction.submit().thenAccept(CommandRegistry::addCmds);
         } else {
-            System.out.println("No need to regenerate commands");
+            Variables.LOGGER.info("No need to regenerate commands");
             addCmds(cmds);
         }
         Variables.discord_instance.getChannel().getGuild().updateCommandPrivileges(permissionsByID).queue();
@@ -108,13 +108,13 @@ public class CommandRegistry {
             try {
                 final DiscordCommand regCmd = new CommandFromCFG(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden);
                 if (!registerCommand(regCmd))
-                    System.err.println("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
+                    Variables.LOGGER.error("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
             } catch (IllegalArgumentException e) {
-                System.err.println("Failed Registering command \"" + cmd.name + "\":");
+                Variables.LOGGER.error("Failed Registering command \"" + cmd.name + "\":");
                 e.printStackTrace();
             }
         }
-        System.out.println("Finished registering! Registered " + commands.size() + " commands");
+        Variables.LOGGER.info("Finished registering! Registered " + commands.size() + " commands");
     }
 
     /**
@@ -126,7 +126,7 @@ public class CommandRegistry {
      */
     public static boolean registerCommand(@Nonnull DiscordCommand cmd) throws IllegalStateException {
         if (Variables.started != -1) {
-            System.out.println("Attempted to register command " + cmd.getName() + "after server finished loading");
+            Variables.LOGGER.info("Attempted to register command " + cmd.getName() + "after server finished loading");
             return false;
         }
         final TextChannel channel = Variables.discord_instance.getChannel();
@@ -165,7 +165,7 @@ public class CommandRegistry {
                     if (permissionsByName.containsKey(cmd.getName())) {
                         permissionsByID.put(cmd.getId(), permissionsByName.get(cmd.getName()));
                     }
-                    System.out.println("Added command " + cmd.getName() + " with ID " + cmd.getIdLong());
+                    Variables.LOGGER.info("Added command " + cmd.getName() + " with ID " + cmd.getIdLong());
                 }
             }
         }
@@ -189,7 +189,7 @@ public class CommandRegistry {
      */
     public static void reRegisterAllCommands() {
         final List<DiscordCommand> cmds = commands;
-        System.out.println("Reloading " + cmds.size() + " commands");
+        Variables.LOGGER.info("Reloading " + cmds.size() + " commands");
         commands = new ArrayList<>();
 
         for (DiscordCommand cmd : cmds) {
@@ -197,7 +197,7 @@ public class CommandRegistry {
             commands.add(cmd);
         }
 
-        System.out.println("Registered " + commands.size() + " commands");
+        Variables.LOGGER.info("Registered " + commands.size() + " commands");
     }
 
     /**

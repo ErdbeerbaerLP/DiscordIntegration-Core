@@ -1,6 +1,5 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
@@ -15,8 +14,6 @@ public class CommandList extends DiscordCommand {
     public CommandList() {
         super("list", Localization.instance().commands.descriptions.list);
     }
-
-
 
     @Override
     public void execute(SlashCommandInteractionEvent ev) {

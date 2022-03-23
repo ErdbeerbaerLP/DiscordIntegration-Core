@@ -34,7 +34,7 @@ public class AddonLoader {
                 final DiscordAddonMeta addonMeta = new Toml().read(is).to(DiscordAddonMeta.class);
                 is.close();
                 if (addonMeta.getClassPath() == null || addonMeta.getName() == null || addonMeta.getVersion() == null) {
-                    System.err.println("Failed to load Addon '" + jar.getName() + "'! Toml is missing parameters! (Required are name, version, classPath)");
+                    Variables.LOGGER.error("Failed to load Addon '" + jar.getName() + "'! Toml is missing parameters! (Required are name, version, classPath)");
                 }
                 try {
                     final URLClassLoader child = new URLClassLoader(new URL[] {jar.toURI().toURL()}, AddonLoader.class.getClassLoader());
@@ -44,18 +44,18 @@ public class AddonLoader {
                     try {
                         addon.load(dc);
                     }catch (Exception e){
-                        System.err.println("An exception occurred while loading addon "+addonMeta.getName());
+                        Variables.LOGGER.error("An exception occurred while loading addon "+addonMeta.getName());
                         e.printStackTrace();
                     }
                 } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                    System.err.println("Failed to load Addon '" + addonMeta.getName() + "' version '" + addonMeta.getVersion() + "'!");
+                    Variables.LOGGER.error("Failed to load Addon '" + addonMeta.getName() + "' version '" + addonMeta.getVersion() + "'!");
                     e.printStackTrace();
                 }
             } else {
-                System.err.println("Found non-addon jar file " + jar.getName());
+                Variables.LOGGER.error("Found non-addon jar file " + jar.getName());
             }
         } catch (IOException e) {
-            System.err.println("Failed to load addon "+jar.getName());
+            Variables.LOGGER.error("Failed to load addon "+jar.getName());
             e.printStackTrace();
         }
     }
@@ -74,7 +74,7 @@ public class AddonLoader {
             try {
                 addon.unload(discord);
             }catch (Exception e){
-                System.err.println("An exception occurred while unloading addon class "+addon.getClass().getName());
+                Variables.LOGGER.error("An exception occurred while unloading addon class "+addon.getClass().getName());
                 e.printStackTrace();
             }
         }

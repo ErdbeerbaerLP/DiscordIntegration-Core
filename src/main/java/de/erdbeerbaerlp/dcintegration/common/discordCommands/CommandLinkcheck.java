@@ -1,6 +1,5 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
@@ -68,7 +67,7 @@ public class CommandLinkcheck extends DiscordCommand {
                         if (mc_json.has("error")) {
                             reply.thenAccept((i) -> i.editOriginal(new MessageBuilder().setContent(Localization.instance().commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
                         }
-                        System.out.println(mc_json);
+                        //Variables.LOGGER.info(mc_json);
                         uuid = UUID.fromString(mc_json.getString("id").replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)", "$1-$2-$3-$4-$5"));
                     } catch (Exception er) {
                         er.printStackTrace();

@@ -46,7 +46,7 @@ configurations {
     compileOnly.extendsFrom(embed)
 }
 shadowJar {
-    classifier = ""
+    archiveClassifier = ""
     configurations = [project.configurations.embed]
     exclude('META-INF/services/**')
     relocate 'okhttp3', 'dcshadow.okhttp'
@@ -83,11 +83,8 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed("net.dv8tion:JDA:5.0.0-alpha.9") {
-        exclude group: 'okhttp3', module: "okhttp"
-    }
-    embed "com.squareup.okhttp3:okhttp:4.9.3"
-    embed 'club.minnced:discord-webhooks:0.8.0'
+    embed 'net.dv8tion:JDA:5.0.0-alpha.8'
+    embed 'club.minnced:discord-webhooks:0.7.5'
 
     //GSON
     embed group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
@@ -109,11 +106,13 @@ dependencies {
     //Apache commons lang3
     embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
 
-    //SLF4J Simple Binding
-    embed group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.36'
-
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
+
+    //Logger
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.1'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j18-impl', version: '2.15.0'
 
 }
 tasks.build.dependsOn(tasks.shadowJar)

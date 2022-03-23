@@ -1,5 +1,9 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.RestAction;
