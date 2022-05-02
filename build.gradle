@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "2.4.0"
+version = "2.4.0-SNAPSHOT"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -83,7 +83,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-alpha.8'
+    embed 'net.dv8tion:JDA:5.0.0-alpha.11'
     embed 'club.minnced:discord-webhooks:0.7.5'
 
     //GSON
@@ -154,7 +154,11 @@ publishing {
                 username = project.nexusUser
                 password = project.nexusPass
             }
-            url = "https://repo.erdbeerbaerlp.de/repository/maven-releases"
+            if(project.version.endsWith('-SNAPSHOT')) {
+                url = "https://repo.erdbeerbaerlp.de/repository/maven-snapshots"
+            }else{
+                url = "https://repo.erdbeerbaerlp.de/repository/maven-releases"
+            }
         }
     }
 }

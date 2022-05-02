@@ -4,7 +4,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.internal.interactions.CommandDataImpl;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.internal.interactions.CommandDataImpl;
 
 import javax.annotation.Nonnull;
@@ -69,9 +69,10 @@ public abstract class DiscordCommand extends CommandDataImpl {
     /**
      * Method called when executing this command
      * <p>
-     *  @param ev the SlashCommandInteractionEvent
+     * @param ev the SlashCommandInteractionEvent
+     * @param reply
      */
-    public abstract void execute(SlashCommandInteractionEvent ev);
+    public abstract void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply);
 
     /**
      * Wether or not this command should be visible in help

@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.PatternReplacementResult;
 import net.kyori.adventure.text.TextReplacementConfig;
@@ -70,14 +71,12 @@ public class DiscordEventListener implements EventListener {
         if (jda == null) return;
         if (event instanceof SlashCommandInteractionEvent) {
             SlashCommandInteractionEvent ev = (SlashCommandInteractionEvent) event;
-
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
                 if (CommandRegistry.registeredCMDs.containsKey(ev.getCommandIdLong())) {
                     final DiscordCommand cfCommand = CommandRegistry.registeredCMDs.get(ev.getCommandIdLong());
                     String cmd = cfCommand.getName();
                     String args = ev.getOption("args") != null ? ev.getOption("args").getAsString() : "";
                     processDiscordCommand(ev,ArrayUtils.addAll(new String[]{cmd}, args.split(" ")), ev.getTextChannel(), ev.getUser(), dc);
-
                 }
             }
         }
@@ -169,11 +168,12 @@ public class DiscordEventListener implements EventListener {
     private void processDiscordCommand(SlashCommandInteractionEvent ev, final String[] command, final TextChannel channel, User sender, final Discord dc) {
         boolean hasPermission = true;
         boolean executed = false;
+        ReplyCallbackAction replyCallbackAction = ev.deferReply();
         for (final DiscordCommand cmd : CommandRegistry.getCommandList()) {
             if (cmd.getName().equals(command[0])) {
                 if (cmd.canUserExecuteCommand(sender)) {
                     if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, cmd))) return;
-                    cmd.execute(ev);
+                    cmd.execute(ev,replyCallbackAction);
                     executed = true;
                 } else {
                     hasPermission = false;
@@ -184,12 +184,12 @@ public class DiscordEventListener implements EventListener {
         if (!executed)
             if (dc.callEvent((e) -> e.onDiscordCommand(channel, sender, null))) return;
         if (!hasPermission) {
-            dc.sendMessage(Localization.instance().commands.noPermission, channel);
+            replyCallbackAction.setContent(Localization.instance().commands.noPermission).setEphemeral(true).queue();
             return;
         }
         if (!executed && (Configuration.instance().commands.showUnknownCommandEverywhere || channel.getId().equals(dc.getChannel().getId())) && Configuration.instance().commands.showUnknownCommandMessage) {
             if (Configuration.instance().commands.helpCmdEnabled)
-                dc.sendMessage(Localization.instance().commands.unknownCommand.replace("%prefix%", "/"), channel);
+                replyCallbackAction.setContent(Localization.instance().commands.unknownCommand.replace("%prefix%", "/")).setEphemeral(true).queue();
         }
 
     }

@@ -3,6 +3,7 @@ package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 
 public class CommandHelp extends DiscordCommand {
@@ -12,13 +13,13 @@ public class CommandHelp extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent ev) {
+    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
         StringBuilder out = new StringBuilder(Localization.instance().commands.cmdHelp_header + " \n```\n");
         for (final DiscordCommand cmd : CommandRegistry.getCommandList()) {
             if (cmd.canUserExecuteCommand(ev.getUser()) && cmd.includeInHelp())
                 out.append(cmd.getCommandUsage()).append(" - ").append(cmd.getDescription()).append("\n");
         }
-        ev.reply(out + "\n```").queue();
+        reply.setContent(out + "\n```").setEphemeral(true).queue();
 
     }
 }

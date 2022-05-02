@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -29,8 +30,8 @@ public class CommandLinkcheck extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent ev) {
-        final CompletableFuture<InteractionHook> reply = ev.deferReply(true).submit();
+    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
+        final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
         final OptionMapping discorduser = ev.getOption("discorduser");
         final OptionMapping mcplayer = ev.getOption("mcplayer");
         if (discorduser == null && mcplayer == null) {

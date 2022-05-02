@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,8 +27,8 @@ public class CommandLink extends DiscordCommand {
 
 
     @Override
-    public void execute(SlashCommandInteractionEvent ev) {
-        final CompletableFuture<InteractionHook> reply = ev.deferReply(true).submit();
+    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
+        final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
         Member m = ev.getMember();
         if (Configuration.instance().linking.requiredRoles.length != 0) {
             AtomicBoolean ok = new AtomicBoolean(false);

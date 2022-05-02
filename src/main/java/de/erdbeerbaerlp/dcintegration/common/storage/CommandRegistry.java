@@ -30,15 +30,6 @@ public class CommandRegistry {
 
 
     /**
-     * Command permissions by command name
-     */
-    private static final HashMap<String, ArrayList<CommandPrivilege>> permissionsByName = new HashMap<>();
-    /**
-     * Command permissions by command ID
-     */
-    private static final HashMap<String, ArrayList<CommandPrivilege>> permissionsByID = new HashMap<>();
-
-    /**
      * Registers all commands to discord if changed
      */
     public static void updateSlashCommands() {
@@ -67,7 +58,6 @@ public class CommandRegistry {
             Variables.LOGGER.info("No need to regenerate commands");
             addCmds(cmds);
         }
-        Variables.discord_instance.getChannel().getGuild().updateCommandPrivileges(permissionsByID).queue();
     }
 
     private static boolean optionsEqual(List<OptionData> data, List<Command.Option> options) {
@@ -146,13 +136,6 @@ public class CommandRegistry {
         if (ret && cmd instanceof CommandFromCFG) {
             if (cmd.isUsingArgs()) cmd.addOption(OptionType.STRING, "args", cmd.getArgText());
         }
-        if (cmd.adminOnly()) {
-            cmd.setDefaultEnabled(false);
-            final ArrayList<CommandPrivilege> privileges = new ArrayList<>();
-            adminRoles.forEach((r) -> privileges.add(new CommandPrivilege(CommandPrivilege.Type.ROLE, true, r.getIdLong())));
-            privileges.add(new CommandPrivilege(CommandPrivilege.Type.USER, true, owner.getIdLong()));
-            permissionsByName.put(cmd.getName(), privileges);
-        }
         return ret;
 
     }
@@ -162,9 +145,6 @@ public class CommandRegistry {
             for (DiscordCommand cfcmd : commands) {
                 if (cmd.getName().equals(((CommandData) cfcmd).getName())) {
                     registeredCMDs.put(cmd.getIdLong(), cfcmd);
-                    if (permissionsByName.containsKey(cmd.getName())) {
-                        permissionsByID.put(cmd.getId(), permissionsByName.get(cmd.getName()));
-                    }
                     Variables.LOGGER.info("Added command " + cmd.getName() + " with ID " + cmd.getIdLong());
                 }
             }

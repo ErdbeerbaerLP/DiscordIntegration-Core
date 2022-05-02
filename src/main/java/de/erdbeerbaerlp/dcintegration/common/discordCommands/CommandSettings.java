@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.Field;
@@ -38,8 +39,8 @@ public class CommandSettings extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent ev) {
-        final CompletableFuture<InteractionHook> reply = ev.deferReply(true).submit();
+    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
+        final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
         if (!PlayerLinkController.isDiscordLinked(ev.getUser().getId())) {
             reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Localization.instance().linking.linkMethodWhitelistCode.replace("%prefix%", "/")) : Localization.instance().linking.linkMethodIngame)).queue());
             return;

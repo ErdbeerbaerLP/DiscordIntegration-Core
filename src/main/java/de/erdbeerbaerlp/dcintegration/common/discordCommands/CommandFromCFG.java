@@ -4,6 +4,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import javax.annotation.Nonnull;
 
@@ -48,14 +49,14 @@ public class CommandFromCFG extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent ev) {
+    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
         String cmd = mcCmd;
         for (ConfigCommand.CommandArgument arg : args) {
             final OptionMapping option = ev.getOption(arg.name);
                 cmd = cmd.replace("%" + arg.name + "%", option == null? "":option.getAsString());
 
         }
-        discord_instance.srv.runMcCommand(cmd, ev.deferReply(hidden).submit(), ev.getUser());
+        discord_instance.srv.runMcCommand(cmd, reply.setEphemeral(hidden).submit(), ev.getUser());
     }
 
 }

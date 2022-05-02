@@ -2,6 +2,7 @@ package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ public class CommandList extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent ev) {
+    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
         final HashMap<UUID, String> players = discord_instance.srv.getPlayers();
         if (players.isEmpty()) {
             ev.reply(Localization.instance().commands.cmdList_empty).queue();
@@ -31,6 +32,6 @@ public class CommandList extends DiscordCommand {
 
 
         out = new StringBuilder(out.substring(0, out.length() - 1));
-        ev.reply(out + "\n```").queue();
+        reply.setContent(out + "\n```").queue();
     }
 }
