@@ -38,12 +38,20 @@ public class CommandRegistry {
         boolean regenCommands = false;
         if (commands.size() == cmds.size())
             for (DiscordCommand cmd : commands) {
+                Command cm = null;
                 for (Command c : cmds) {
                     if (((CommandData) cmd).getName().equals(c.getName())) {
-                        if (!optionsEqual(cmd.getOptions(), c.getOptions())) {
-                            regenCommands = true;
-                        }
-                    }else regenCommands = true;
+                        cm = c;
+                        break;
+                    }
+                }
+                if(cm == null){
+                    regenCommands = true;
+                    break;
+                }
+                if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
+                    regenCommands = true;
+                    break;
                 }
             }
         else regenCommands = true;
