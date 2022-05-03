@@ -43,7 +43,7 @@ public class CommandRegistry {
                         if (!optionsEqual(cmd.getOptions(), c.getOptions())) {
                             regenCommands = true;
                         }
-                    }
+                    }else regenCommands = true;
                 }
             }
         else regenCommands = true;
