@@ -84,7 +84,7 @@ dependencies {
 
     //Discord libraries
     embed 'net.dv8tion:JDA:5.0.0-alpha.11'
-    embed 'club.minnced:discord-webhooks:0.7.5'
+    embed 'club.minnced:discord-webhooks:0.8.0'
 
     //GSON
     embed group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
