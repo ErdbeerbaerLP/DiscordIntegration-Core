@@ -522,22 +522,23 @@ public class Discord extends Thread {
     public static void loadConfigs() throws IOException {
         // === Migration ===
 
-        // Migrate localization to new file
-        final Toml toml = new Toml().read(configFile).getTable("localization");
+        if(configFile.exists()) {
+            // Migrate localization to new file
+            final Toml toml = new Toml().read(configFile).getTable("localization");
 
-        if (toml != null) {
-            final Localization localization = toml.to(Localization.class);
-            Variables.LOGGER.info("Starting Translation migration");
-            final TomlWriter w = new TomlWriter.Builder()
-                    .indentValuesBy(2)
-                    .indentTablesBy(4)
-                    .padArrayDelimitersBy(2)
-                    .build();
-            w.write(localization, messagesFile);
-            Variables.LOGGER.info("Translation migration complete");
+            if (toml != null) {
+                final Localization localization = toml.to(Localization.class);
+                Variables.LOGGER.info("Starting Translation migration");
+                final TomlWriter w = new TomlWriter.Builder()
+                        .indentValuesBy(2)
+                        .indentTablesBy(4)
+                        .padArrayDelimitersBy(2)
+                        .build();
+                w.write(localization, messagesFile);
+                Variables.LOGGER.info("Translation migration complete");
 
+            }
         }
-
 
         // === Load everything ===
 
