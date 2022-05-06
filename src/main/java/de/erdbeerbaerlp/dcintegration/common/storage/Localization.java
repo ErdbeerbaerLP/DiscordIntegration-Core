@@ -147,6 +147,8 @@ public class Localization {
 
         @TomlComment({"Message shown to players who are not whitelisted using discord", "No effect if discord whitelist is off"})
         public String notWhitelistedCode = "\u00a7cYou are not whitelisted.\nJoin the discord server for more information\nhttps://discord.gg/someserver\nYour Whitelist-Code is: \u00a76%code%";
+        @TomlComment({"Message shown to players who are whitelisted using discord but don't have the required role anymore", "No effect if discord whitelist is off"})
+        public String notWhitelistedRole = "\u00a7cYou are whitelisted, but you need an role to join.\nSee the discord server for more information";
 
         @TomlComment("Sent when trying to link without an required role")
         public String link_requiredRole = "You need to have an role to use this";
