@@ -52,7 +52,7 @@ public class DiscordEventListener implements EventListener {
 
     static {
         List<Rule<Object, Node<Object>, Object>> rules = new ArrayList<>(DiscordMarkdownRules.createAllRulesForDiscord(false));
-        rules.add(new Rule<>(Pattern.compile("(.*)")) {
+        rules.add(new Rule<Object, Node<Object>, Object>(Pattern.compile("(.*)")) {
             @Override
             public ParseSpec<Object, Node<Object>, Object> parse(Matcher matcher, Parser<Object, Node<Object>, Object> parser, Object state) {
                 return ParseSpec.createTerminal(new TextNode<>(matcher.group()), state);

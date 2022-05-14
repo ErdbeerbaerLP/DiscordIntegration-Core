@@ -1,27 +1,17 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 public final class FieldHelper {
 
-    private static final VarHandle MODIFIERS;
 
-    static {
-        try {
-            var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
-            MODIFIERS = lookup.findVarHandle(Field.class, "modifiers", int.class);
-        } catch (IllegalAccessException | NoSuchFieldException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public static void makeNonFinal(Field field) {
+    public static void makeNonFinal(Field field) throws NoSuchFieldException, IllegalAccessException {
         int mods = field.getModifiers();
         if (Modifier.isFinal(mods)) {
-            MODIFIERS.set(field, mods & ~Modifier.FINAL);
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
         }
     }
 

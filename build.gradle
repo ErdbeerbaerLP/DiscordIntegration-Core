@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "2.4.1"
+version = "2.4.1-j8"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -101,7 +101,7 @@ dependencies {
     embed "net.kyori:adventure-text-serializer-legacy:4.10.0"
 
     //Toml4j
-    embed("de.erdbeerbaerlp:toml4j:cf5b4655")
+    embed("de.erdbeerbaerlp:toml4j:2073e86")
 
     //Apache commons lang3
     embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
