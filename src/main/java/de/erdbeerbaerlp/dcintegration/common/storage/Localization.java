@@ -158,7 +158,7 @@ public class Localization {
         @TomlComment({"Sent to the user when he linked his discord successfully", "PLACEHOLDERS:", "%name% - The linked discord name", "%name#tag% - The linked discord name with tag"})
         public String linkSuccessfulIngame = "Your account is now linked with discord-user %name#tag%";
         @TomlComment({"Message shown to players who want to link their discord account ingame", "", "PLACEHOLDERS:", "%num% - The link number"})
-        public String linkMsgIngame = "Send this command as a direct message to the bot to link your account: /link %num%\nThis number will expire after 10 minutes";
+        public String linkMsgIngame = "Send this command to the server channel to link your account: /link %num%\nThis number will expire after 10 minutes";
 
         @TomlComment("Shown when hovering over the link message")
         public String hoverMsg_copyClipboard = "Click to copy command to clipboard";
