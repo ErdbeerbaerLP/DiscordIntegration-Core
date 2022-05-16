@@ -13,7 +13,7 @@ public class Variables {
     /**
      * Mod/Plugin version
      */
-    public static final String VERSION = "2.4.0";
+    public static final String VERSION = "2.4.2";
     /**
      * Discord Integration data directory
      */
@@ -29,7 +29,7 @@ public class Variables {
     /**
      * Path to the message configuration
      */
-    public static File messagesFile = new File(discordDataDir,"Messages.toml");
+    public static File messagesFile = new File("./DiscordIntegration-Data/Messages.toml");
     /**
      * Message sent when the server is starting (in non-webhook mode!), stored for editing
      */
