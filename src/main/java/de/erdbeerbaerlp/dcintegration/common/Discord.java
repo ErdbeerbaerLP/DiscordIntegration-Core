@@ -524,7 +524,7 @@ public class Discord extends Thread {
 
         if(configFile.exists()) {
 
-            if(messagesFile.exists()) messagesFile.createNewFile();
+            if(!messagesFile.exists()) messagesFile.createNewFile();
 
             // Migrate localization to new file
             final Toml toml = new Toml().read(configFile).getTable("localization");
