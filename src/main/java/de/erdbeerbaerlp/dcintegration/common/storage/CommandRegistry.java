@@ -32,7 +32,7 @@ public class CommandRegistry {
     /**
      * Registers all commands to discord if changed
      */
-    public static void updateSlashCommands() {
+    public static void updateSlashCommands() throws IllegalStateException{
         final TextChannel channel = Variables.discord_instance.getChannel();
         if (channel == null) throw new IllegalStateException("Channel does not exist, check channel ID and bot permissions on both channel and category");
         final List<Command> cmds = channel.getGuild().retrieveCommands().complete();
@@ -123,7 +123,7 @@ public class CommandRegistry {
      * @param cmd command
      * @return true if the registration was successful
      */
-    public static boolean registerCommand(@Nonnull DiscordCommand cmd) throws IllegalStateException {
+    public static boolean registerCommand(@Nonnull DiscordCommand cmd) {
         if (Variables.started != -1) {
             Variables.LOGGER.info("Attempted to register command " + cmd.getName() + "after server finished loading");
             return false;
