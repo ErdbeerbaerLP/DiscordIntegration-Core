@@ -34,7 +34,7 @@ public class CommandRegistry {
      */
     public static void updateSlashCommands() {
         final TextChannel channel = Variables.discord_instance.getChannel();
-        if (channel == null) throw new IllegalStateException("Channel does not exist");
+        if (channel == null) throw new IllegalStateException("Channel does not exist, check channel ID and bot permissions on both channel and category");
         final List<Command> cmds = channel.getGuild().retrieveCommands().complete();
         boolean regenCommands = false;
         if (commands.size() == cmds.size())
