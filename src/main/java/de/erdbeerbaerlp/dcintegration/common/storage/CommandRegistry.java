@@ -130,8 +130,6 @@ public class CommandRegistry {
         final TextChannel channel = Variables.discord_instance.getChannel();
         if (channel == null) throw new IllegalStateException("Channel does not exist");
         final Guild guild = channel.getGuild();
-        final ArrayList<Role> adminRoles = getAdminRoles(guild);
-        final Member owner = guild.retrieveOwner().complete();
 
         final ArrayList<DiscordCommand> toRemove = new ArrayList<>();
         for (DiscordCommand c : commands) {
