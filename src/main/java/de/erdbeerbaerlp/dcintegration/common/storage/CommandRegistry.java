@@ -34,6 +34,7 @@ public class CommandRegistry {
      */
     public static void updateSlashCommands() {
         final TextChannel channel = Variables.discord_instance.getChannel();
+        if (channel == null) throw new IllegalStateException("Channel does not exist");
         final List<Command> cmds = channel.getGuild().retrieveCommands().complete();
         boolean regenCommands = false;
         if (commands.size() == cmds.size())
@@ -127,9 +128,6 @@ public class CommandRegistry {
             Variables.LOGGER.info("Attempted to register command " + cmd.getName() + "after server finished loading");
             return false;
         }
-        final TextChannel channel = Variables.discord_instance.getChannel();
-        if (channel == null) throw new IllegalStateException("Channel does not exist");
-        final Guild guild = channel.getGuild();
 
         final ArrayList<DiscordCommand> toRemove = new ArrayList<>();
         for (DiscordCommand c : commands) {
