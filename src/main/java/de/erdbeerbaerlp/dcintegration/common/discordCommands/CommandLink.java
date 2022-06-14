@@ -30,20 +30,22 @@ public class CommandLink extends DiscordCommand {
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
         final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
         Member m = ev.getMember();
-        if (Configuration.instance().linking.requiredRoles.length != 0) {
-            AtomicBoolean ok = new AtomicBoolean(false);
-            m.getRoles().forEach((role) -> {
-                for (String s : Configuration.instance().linking.requiredRoles) {
-                    if (s.equals(role.getId())) ok.set(true);
+        if(m == null) m = ev.getGuild().retrieveMember(ev.getUser()).complete();
+        if (m != null)
+            if (Configuration.instance().linking.requiredRoles.length != 0) {
+                AtomicBoolean ok = new AtomicBoolean(false);
+                m.getRoles().forEach((role) -> {
+                    for (String s : Configuration.instance().linking.requiredRoles) {
+                        if (s.equals(role.getId())) ok.set(true);
+                    }
+                });
+                if (!ok.get()) {
+                    reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.link_requiredRole).queue());
+                    return;
                 }
-            });
-            if (!ok.get()) {
-                reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.link_requiredRole).queue());
-                return;
             }
-        }
         final OptionMapping code = ev.getOption("code");
-        if(code != null){
+        if (code != null) {
             try {
                 int num = Integer.parseInt(code.getAsString());
                 if (PlayerLinkController.isDiscordLinked(ev.getUser().getId()) && (discord_instance.pendingBedrockLinks.isEmpty() && PlayerLinkController.isDiscordLinkedBedrock(ev.getUser().getId()))) {

@@ -313,7 +313,7 @@ public class PlayerLinkController {
             discord_instance.callEventC((e) -> e.onPlayerLink(player, discordID));
             final Guild guild = discord_instance.getChannel().getGuild();
             final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
-            final Member member = guild.getMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID)));
+            final Member member = guild.retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID))).complete();
             if (linkedRole != null && !member.getRoles().contains(linkedRole))
                 guild.addRoleToMember(member, linkedRole).queue();
             return true;
@@ -354,7 +354,7 @@ public class PlayerLinkController {
             discord_instance.callEventC((e) -> e.onBedrockPlayerLink(bedrockPlayer, discordID));
             final Guild guild = discord_instance.getChannel().getGuild();
             final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
-            final Member member = guild.getMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID)));
+            final Member member = guild.retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID))).complete();
             if (linkedRole != null && !member.getRoles().contains(linkedRole))
                 guild.addRoleToMember(member, linkedRole).queue();
             return true;

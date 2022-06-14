@@ -94,14 +94,14 @@ public class Discord extends Thread {
         this.srv = srv;
         setDaemon(true);
         setName("Discord Integration - Launch Thread");
-        if(!Configuration.instance().advanced.baseAPIUrl.equals("https://discord.com"))
+        if (!Configuration.instance().advanced.baseAPIUrl.equals("https://discord.com"))
             try {
                 Field field = Requester.class.getDeclaredField("DISCORD_API_PREFIX");
                 field.setAccessible(true);
                 FieldHelper.makeNonFinal(field);
                 field.set(null, Configuration.instance().advanced.baseAPIUrl);
-                Variables.LOGGER.info("Now using "+Configuration.instance().advanced.baseAPIUrl+" as target Discord!");
-            }catch (Exception e){
+                Variables.LOGGER.info("Now using " + Configuration.instance().advanced.baseAPIUrl + " as target Discord!");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         start();
@@ -109,32 +109,30 @@ public class Discord extends Thread {
 
     /**
      * Checks if a Player can join (also checking roles)
+     *
      * @param uuid Player UUID
      * @return true if the player can join<br>
-     *         Also returns true if whitelist mode is off
+     * Also returns true if whitelist mode is off
      */
-    public boolean canPlayerJoin(UUID uuid){
-        if(!Configuration.instance().linking.whitelistMode) return true;
-        if(PlayerLinkController.isPlayerLinked(uuid)){
-            if(Configuration.instance().linking.requiredRoles.length > 0){
+    public boolean canPlayerJoin(UUID uuid) {
+        if (!Configuration.instance().linking.whitelistMode) return true;
+        if (PlayerLinkController.isPlayerLinked(uuid)) {
+            if (Configuration.instance().linking.requiredRoles.length != 0) {
                 final User usr = getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(uuid));
-                if(usr == null) return false;
+                if (usr == null) return false;
                 final Guild g = getChannel().getGuild();
                 final Member mem = g.retrieveMember(usr).complete();
-                if(mem == null) return false;
-                boolean hasAllRoles = true;
+                if (mem == null) return false;
                 for (String requiredRole : Configuration.instance().linking.requiredRoles) {
                     final Role role = g.getRoleById(requiredRole);
-                    if(role == null) continue;
-                    if(!mem.getRoles().contains(role)){
-                        hasAllRoles = false;
-                        break;
+                    if (role == null) continue;
+                    if (mem.getRoles().contains(role)) {
+                        return true;
                     }
                 }
-                return hasAllRoles;
-            }else return true;
+                return false;
+            } else return true;
         }
-
         return false;
     }
 
@@ -197,7 +195,7 @@ public class Discord extends Thread {
         while (true) {
 
             final JDABuilder b = JDABuilder.createDefault(Configuration.instance().general.botToken);
-            b.enableIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_EMOJIS);
+            b.enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_EMOJIS);
             b.setAutoReconnect(true);
             b.setEnableShutdownHook(true);
             try {
@@ -522,9 +520,9 @@ public class Discord extends Thread {
     public static void loadConfigs() throws IOException {
         // === Migration ===
 
-        if(configFile.exists()) {
+        if (configFile.exists()) {
 
-            if(!messagesFile.exists()) messagesFile.createNewFile();
+            if (!messagesFile.exists()) messagesFile.createNewFile();
 
             // Migrate localization to new file
             final Toml toml = new Toml().read(configFile).getTable("localization");
@@ -709,11 +707,12 @@ public class Discord extends Thread {
         if (!isServerMessage && uUUID != null) {
             if (PlayerLinkController.isPlayerLinked(uUUID)) {
                 final PlayerSettings s = PlayerLinkController.getSettings(null, uUUID);
-                final Member dc = getChannel().getGuild().getMemberById(PlayerLinkController.getDiscordFromPlayer(uUUID));
-                if (s.useDiscordNameInChannel) {
-                    playerName = dc.getEffectiveName();
-                    avatarURL = dc.getUser().getAvatarUrl();
-                }
+                final Member dc = getChannel().getGuild().retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(uUUID)).complete();
+                if (dc != null)
+                    if (s.useDiscordNameInChannel) {
+                        playerName = dc.getEffectiveName();
+                        avatarURL = dc.getUser().getAvatarUrl();
+                    }
             }
             if (avatarURL != null && avatarURL.isEmpty())
                 avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", uUUID.toString()).replace("%uuid_dashless%", uUUID.toString().replace("-", "")).replace("%name%", playerName).replace("%randomUUID%", UUID.randomUUID().toString());
