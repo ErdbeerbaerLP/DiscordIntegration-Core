@@ -13,6 +13,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -235,9 +236,8 @@ public class MessageUtils {
      * @param uuid {@link UUID} to get the name from
      * @return The player's name, or null if the player was not found
      */
-    @Nullable
-    public static String getNameFromUUID(@Nonnull UUID uuid) {
+    public static @NotNull String getNameFromUUID(@Nonnull UUID uuid) {
         final String name = discord_instance.srv.getNameFromUUID(uuid);
-        return name == null || name.isEmpty() ? null : name;
+        return name == null || name.isEmpty() ? uuid.toString() : name;
     }
 }
