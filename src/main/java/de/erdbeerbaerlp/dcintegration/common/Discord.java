@@ -109,7 +109,6 @@ public class Discord extends Thread {
 
     /**
      * Checks if a Player can join (also checking roles)
-     *
      * @param uuid Player UUID
      * @return true if the player can join<br>
      * Also returns true if whitelist mode is off
