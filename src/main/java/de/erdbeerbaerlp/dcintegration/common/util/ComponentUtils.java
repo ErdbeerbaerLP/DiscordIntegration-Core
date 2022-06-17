@@ -153,7 +153,7 @@ public class ComponentUtils {
             return PatternReplacementResult.REPLACE;
         }).build());
         if (!hasPing.get() && PlayerLinkController.isPlayerLinked(uuid)) {
-            String dcname = Variables.discord_instance.getChannel().getGuild().getMember(Variables.discord_instance.getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(uuid))).getEffectiveName();
+            String dcname = Variables.discord_instance.getChannel().getGuild().retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(uuid)).complete().getEffectiveName();
             msg = msg.replaceText(TextReplacementConfig.builder().matchLiteral("@" + dcname).replacement(Component.text("@" + dcname).style(Style.style(TextColors.PING).decorate(TextDecoration.BOLD))).condition((a, b) -> {
                 hasPing.set(true);
                 return PatternReplacementResult.REPLACE;
