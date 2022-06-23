@@ -86,7 +86,7 @@ public class DiscordEventListener implements EventListener {
             if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatOutputChannelID.equals("default") ? Configuration.instance().general.botChannel : Configuration.instance().advanced.chatOutputChannelID))
                 if (sender != Discord.dummyUUID) {
                     if (!PlayerLinkController.getSettings(ev.getUserId(), null).ignoreReactions)
-                        dc.srv.sendMCReaction(ev.getMember(), ev.retrieveMessage(), sender, ev.getReactionEmote());
+                        dc.srv.sendMCReaction(ev.retrieveMember().complete(), ev.retrieveMessage(), sender, ev.getReactionEmote());
                 }
         }
         if(event instanceof GuildMemberRemoveEvent){

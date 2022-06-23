@@ -89,13 +89,7 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * @return wether or not the user can execute this command
      */
     public boolean canUserExecuteCommand(@Nonnull User user) {
-        Member m = null;
-        for (final Member me : discord_instance.getChannel().getMembers()) {
-            if (me.getUser().equals(user)) {
-                m = me;
-                break;
-            }
-        }
+        Member m =  discord_instance.getChannel().getGuild().retrieveMember(user).complete();
         if (m == null) return false;
         return !this.adminOnly() || discord_instance.hasAdminRole(m.getRoles());
     }
