@@ -221,13 +221,13 @@ public class Discord extends Thread {
             kill(true);
             return;
         }
-        if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().getMember(jda.getSelfUser()), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
+        if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().retrieveMember(jda.getSelfUser()).complete(), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
             Variables.LOGGER.error("ERROR! Bot does not have all permissions to work!");
             kill(true);
             throw new PermissionException("Bot requires message read, message write, embed links and manage messages");
         }
         if (Configuration.instance().webhook.enable)
-            if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().getMember(jda.getSelfUser()), Permission.MANAGE_WEBHOOKS)) {
+            if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().retrieveMember(jda.getSelfUser()).complete(), Permission.MANAGE_WEBHOOKS)) {
                 Variables.LOGGER.error("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
                 Configuration.instance().webhook.enable = false;
                 try {
