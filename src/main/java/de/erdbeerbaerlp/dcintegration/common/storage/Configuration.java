@@ -271,6 +271,9 @@ public class Configuration {
         @TomlComment({"Should discord linking be enabled?", "If whitelist is on, this can NOT be disabled", "DOES NOT WORK IN OFFLINE MODE!"})
         public boolean enableLinking = true;
 
+        @TomlComment({"Set Discord nicknames to match Minecraft usernames when linked"})
+        public boolean shouldNickname = false;
+
         @TomlComment({"Role ID of an role an player should get when he links his discord account", "Leave as 0 to disable"})
         public String linkedRoleID = "0";
 
