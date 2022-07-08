@@ -316,6 +316,8 @@ public class PlayerLinkController {
             final Member member = guild.retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID))).complete();
             if (linkedRole != null && !member.getRoles().contains(linkedRole))
                 guild.addRoleToMember(member, linkedRole).queue();
+            if (Configuration.instance().linking.shouldNickname)
+                member.modifyNickname(MessageUtils.getNameFromUUID(player)).queue();
             return true;
         } catch (IOException e) {
             e.printStackTrace();
