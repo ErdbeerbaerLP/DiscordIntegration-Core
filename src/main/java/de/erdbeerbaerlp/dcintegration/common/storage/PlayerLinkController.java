@@ -7,14 +7,15 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.util.UUID;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discordDataDir;
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
+import static de.erdbeerbaerlp.dcintegration.common.util.Variables.*;
 
 public class PlayerLinkController {
     /**
@@ -316,8 +317,17 @@ public class PlayerLinkController {
             final Member member = guild.retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID))).complete();
             if (linkedRole != null && !member.getRoles().contains(linkedRole))
                 guild.addRoleToMember(member, linkedRole).queue();
-            if (Configuration.instance().linking.shouldNickname)
-                member.modifyNickname(MessageUtils.getNameFromUUID(player)).queue();
+            if (Configuration.instance().linking.shouldNickname) {
+                String playerName = MessageUtils.getNameFromUUID(player);
+                String discordName = MessageUtils.getDiscordName(player);
+                try {
+                    member.modifyNickname(MessageUtils.getNameFromUUID(player)).queue();
+                } catch (HierarchyException e) {
+                    LOGGER.info("Unable to change nickname of player {} ({}) with higher or equal highest role.", playerName, discordName);
+                } catch (InsufficientPermissionException e) {
+                    LOGGER.error("Insufficient Permissions. 'Manage Nicknames' permissions required.");
+                }
+            }
             return true;
         } catch (IOException e) {
             e.printStackTrace();
