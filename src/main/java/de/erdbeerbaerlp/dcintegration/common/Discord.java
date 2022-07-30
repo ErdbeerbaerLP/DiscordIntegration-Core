@@ -18,9 +18,6 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.utils.ChunkingFilter;
-import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.internal.requests.Requester;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.apache.commons.collections4.KeyValue;
@@ -28,10 +25,13 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.net.ssl.HttpsURLConnection;
 import javax.security.auth.login.LoginException;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -109,6 +109,7 @@ public class Discord extends Thread {
 
     /**
      * Checks if a Player can join (also checking roles)
+     *
      * @param uuid Player UUID
      * @return true if the player can join<br>
      * Also returns true if whitelist mode is off
@@ -542,8 +543,31 @@ public class Discord extends Thread {
 
         // === Load everything ===
 
-        Localization.instance().loadConfig();
         Configuration.instance().loadConfig();
+
+        if (!Configuration.instance().messages.language.equals("local")) {
+            final File backupFile = new File(messagesFile, ".bak");
+            if (backupFile.exists()) backupFile.delete();
+            try {
+                final URL langURL = new URL("https://raw.githubusercontent.com/ErdbeerbaerLP/Discord-Integration-Translations/main/" + Configuration.instance().messages.language + ".toml");
+                final HttpsURLConnection urlConnection = (HttpsURLConnection) langURL.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+                if (urlConnection.getResponseCode() == 200) {
+                    messagesFile.renameTo(backupFile);
+                    try (InputStream in = urlConnection.getInputStream()) {
+                        Files.copy(in, messagesFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } else {
+                    Localization.instance().loadConfig();
+                }
+            } catch (IOException ex) {
+                if (backupFile.exists())
+                    backupFile.renameTo(messagesFile);
+                Localization.instance().loadConfig();
+            }
+        } else
+            Localization.instance().loadConfig();
     }
 
     /**

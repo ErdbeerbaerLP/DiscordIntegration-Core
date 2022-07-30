@@ -21,7 +21,7 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 public class CommandLink extends DiscordCommand {
 
     public CommandLink() {
-        super("link", Localization.instance().commands.descriptions.link);
+        super("link", Configuration.instance().linking.whitelistMode?Localization.instance().commands.descriptions.whitelist:Localization.instance().commands.descriptions.link);
         addOption(OptionType.INTEGER, "code", "Link Code", true);
     }
 

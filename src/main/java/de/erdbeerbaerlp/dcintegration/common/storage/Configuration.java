@@ -154,9 +154,14 @@ public class Configuration {
 
         @TomlComment("Attempt to parse id-based mentions to names in in-game chat")
         public boolean parseMentionsIngame = true;
+        @TomlComment("Set to true to supress warning of unsafe mod download location")
+        public boolean ignoreFileSource = false;
+
     }
 
     public static class Messages {
+        @TomlComment({"Changing this to an language key (like en-US, de-DE) will always attempt to download the latest language file from https://github.com/ErdbeerbaerLP/Discord-Integration-Translations", "Setting to 'local' disables downloading"})
+        public String language = "local";
         @TomlComment("Enable formatting conversion (Markdown <==> Minecraft)")
         public boolean convertCodes = true;
 

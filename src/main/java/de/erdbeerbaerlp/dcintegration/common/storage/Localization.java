@@ -137,10 +137,10 @@ public class Localization {
         public String linkMethodIngame = "`/discord link` ingame";
 
         @TomlComment({"Sent when attempting to whitelist-link with an non uuid string", "PLACEHOLDERS:", "%arg% - The provided argument"})
-        public String link_argumentNotUUID = "Argument \"%arg%\" is not an valid UUID or Name. Use `/whitelist <Name-or-UUID>`";
+        public String link_argumentNotUUID = "Argument \"%arg%\" is not an valid UUID or Name.";
 
         @TomlComment("Sent when attempting to link with an unknown number")
-        public String invalidLinkNumber = "Invalid link number! Use `/discord link` ingame to get your link number";
+        public String invalidLinkNumber = "Invalid link number!";
 
         @TomlComment("Sent when attempting to link with an invalid number")
         public String linkNumberNAN = "This is not a number!";
