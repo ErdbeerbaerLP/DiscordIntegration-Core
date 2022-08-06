@@ -9,6 +9,8 @@ import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
 import dev.vankka.mcdiscordreserializer.discord.DiscordSerializer;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -222,9 +224,9 @@ public class MessageUtils {
      * @return Formatted message
      */
     @Nonnull
-    public static String formatEmoteMessage(@Nonnull List<Emote> emotes, @Nonnull String msg) {
+    public static String formatEmoteMessage(@Nonnull List<CustomEmoji> emotes, @Nonnull String msg) {
         msg = EmojiParser.parseToAliases(msg);
-        for (final Emote e : emotes) {
+        for (final Emoji e : emotes) {
             msg = msg.replace(e.toString(), ":" + e.getName() + ":");
         }
         return msg;

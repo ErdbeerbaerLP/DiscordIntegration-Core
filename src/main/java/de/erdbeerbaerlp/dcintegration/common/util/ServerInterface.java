@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.kyori.adventure.text.Component;
@@ -39,7 +40,7 @@ public interface ServerInterface {
      * @param targetUUID Original sender's {@link UUID}
      * @param reactionEmote Emote that was added to the message
      */
-    void sendMCReaction(Member member, @Nonnull RestAction<Message> retrieveMessage, @Nonnull UUID targetUUID, @Nonnull MessageReaction.ReactionEmote reactionEmote);
+    void sendMCReaction(Member member, @Nonnull RestAction<Message> retrieveMessage, @Nonnull UUID targetUUID, @Nonnull EmojiUnion reactionEmote);
 
     /**
      * Runs an command on the server

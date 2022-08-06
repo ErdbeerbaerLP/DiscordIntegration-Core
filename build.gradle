@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "2.4.6"
+version = "2.4.7"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -38,6 +38,7 @@ repositories {
         name = 'howaner'
         url = "https://repo.howaner.de/"
     }
+    mavenCentral()
 
 }
 //ShadowJar
@@ -83,8 +84,8 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-alpha.11'
-    embed 'club.minnced:discord-webhooks:0.7.5'
+    embed 'net.dv8tion:JDA:5.0.0-alpha.17'
+    embed 'club.minnced:discord-webhooks:0.8.2'
 
     //GSON
     embed group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
@@ -94,11 +95,11 @@ dependencies {
     embed('com.vdurmont:emoji-java:5.1.1')
 
     //Minecraft <==> Discord conversion
-    embed 'net.kyori:adventure-api:4.10.1'
-    embed('net.kyori:adventure-text-serializer-gson:4.10.1')
+    embed 'net.kyori:adventure-api:4.11.0'
+    embed('net.kyori:adventure-text-serializer-gson:4.11.0')
     embed "dev.vankka:MCDiscordReserializer:4.2.2"
-    embed "dev.vankka:SimpleAST:2.2.7"
-    embed "net.kyori:adventure-text-serializer-legacy:4.10.0"
+    embed 'dev.vankka:SimpleAST:2.2.8'
+    embed 'net.kyori:adventure-text-serializer-legacy:4.11.0'
 
     //Toml4j
     embed("de.erdbeerbaerlp:toml4j:cf5b4655")

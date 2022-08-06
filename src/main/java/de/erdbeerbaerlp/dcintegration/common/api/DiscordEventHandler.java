@@ -1,8 +1,8 @@
 package de.erdbeerbaerlp.dcintegration.common.api;
 
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.DiscordCommand;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import javax.annotation.Nonnull;
@@ -31,12 +31,12 @@ public abstract class DiscordEventHandler {
     /**
      * Gets called when an command was entered, invalid or not
      *
-     * @param command the executed command or null if the command was invalid, or the user had no permission for any command
      * @param channel Text channel where command was executed
      * @param sender Command sender
+     * @param command the executed command or null if the command was invalid, or the user had no permission for any command
      * @return true to cancel default code execution
      */
-    public boolean onDiscordCommand(final TextChannel channel, User sender, @Nullable final DiscordCommand command){
+    public boolean onDiscordCommand(final MessageChannelUnion channel, User sender, @Nullable final DiscordCommand command){
         return false;
     }
 

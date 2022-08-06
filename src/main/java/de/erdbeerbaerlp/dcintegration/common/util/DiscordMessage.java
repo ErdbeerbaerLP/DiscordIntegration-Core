@@ -92,7 +92,7 @@ public final class DiscordMessage {
         final ArrayList<Message.MentionType> mentions = new ArrayList<>();
         mentions.add(Message.MentionType.USER);
         mentions.add(Message.MentionType.CHANNEL);
-        mentions.add(Message.MentionType.EMOTE);
+        mentions.add(Message.MentionType.EMOJI);
         out.setAllowedMentions(mentions);
         if (!message.isEmpty()) {
             if (isNotRaw) {

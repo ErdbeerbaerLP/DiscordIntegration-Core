@@ -19,6 +19,11 @@ import dev.vankka.simpleast.core.parser.Parser;
 import dev.vankka.simpleast.core.parser.Rule;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
+import net.dv8tion.jda.api.entities.sticker.Sticker;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -76,7 +81,7 @@ public class DiscordEventListener implements EventListener {
                     final DiscordCommand cfCommand = CommandRegistry.registeredCMDs.get(ev.getCommandIdLong());
                     String cmd = cfCommand.getName();
                     String args = ev.getOption("args") != null ? ev.getOption("args").getAsString() : "";
-                    processDiscordCommand(ev,ArrayUtils.addAll(new String[]{cmd}, args.split(" ")), ev.getTextChannel(), ev.getUser(), dc);
+                    processDiscordCommand(ev,ArrayUtils.addAll(new String[]{cmd}, args.split(" ")), ev.getChannel(), ev.getUser(), dc);
                 }
             }
         }
@@ -86,7 +91,7 @@ public class DiscordEventListener implements EventListener {
             if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatOutputChannelID.equals("default") ? Configuration.instance().general.botChannel : Configuration.instance().advanced.chatOutputChannelID))
                 if (sender != Discord.dummyUUID) {
                     if (!PlayerLinkController.getSettings(ev.getUserId(), null).ignoreReactions)
-                        dc.srv.sendMCReaction(ev.retrieveMember().complete(), ev.retrieveMessage(), sender, ev.getReactionEmote());
+                        dc.srv.sendMCReaction(ev.retrieveMember().complete(), ev.retrieveMessage(), sender, ev.getEmoji());
                 }
         }
         if(event instanceof GuildMemberRemoveEvent){
@@ -102,7 +107,7 @@ public class DiscordEventListener implements EventListener {
                     if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatInputChannelID.equals("default") ? dc.getChannel().getId() : Configuration.instance().advanced.chatInputChannelID)) {
                         final List<MessageEmbed> embeds = ev.getMessage().getEmbeds();
                         String msg = ev.getMessage().getContentDisplay();
-                        msg = MessageUtils.formatEmoteMessage(ev.getMessage().getEmotes(), msg);
+                        msg = MessageUtils.formatEmoteMessage(ev.getMessage().getMentions().getCustomEmojis(), msg);
                         Component attachmentComponent = Component.empty();
                         if (!ev.getMessage().getAttachments().isEmpty()) {
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
@@ -129,7 +134,7 @@ public class DiscordEventListener implements EventListener {
                             }
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
                         }
-                        for(MessageSticker s : ev.getMessage().getStickers())
+                        for(Sticker s : ev.getMessage().getStickers())
                             attachmentComponent = ComponentUtils.append(attachmentComponent,Component.text("\n"+Localization.instance().sticker+": "+s.getName()));
 
                         Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), mcSerializerOptions);
@@ -151,7 +156,7 @@ public class DiscordEventListener implements EventListener {
                             final Component repUser = Component.text((reply.getMember() != null ? reply.getMember().getEffectiveName() : reply.getAuthor().getName()))
                                     .style(ComponentUtils.addUserHoverClick(Style.style(TextColor.color((reply.getMember() != null ? reply.getMember().getColorRaw() : 0))), reply.getAuthor(), reply.getMember()));
                             out = out.replaceText(ComponentUtils.replaceLiteral("%ruser%", repUser));
-                            final String repMsg = MessageUtils.formatEmoteMessage(reply.getEmotes(), reply.getContentDisplay());
+                            final String repMsg = MessageUtils.formatEmoteMessage(reply.getMentions().getCustomEmojis(), reply.getContentDisplay());
                             final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), mcSerializerOptions);
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
@@ -165,7 +170,7 @@ public class DiscordEventListener implements EventListener {
         }
     }
 
-    private void processDiscordCommand(SlashCommandInteractionEvent ev, final String[] command, final TextChannel channel, User sender, final Discord dc) {
+    private void processDiscordCommand(SlashCommandInteractionEvent ev, final String[] command, final MessageChannelUnion channel, User sender, final Discord dc) {
         boolean hasPermission = true;
         boolean executed = false;
         ReplyCallbackAction replyCallbackAction = ev.deferReply();
