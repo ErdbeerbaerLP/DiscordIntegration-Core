@@ -266,7 +266,7 @@ public class Configuration {
         @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache"})
         public String playerAvatarURL = "https://minotar.net/avatar/%uuid%?randomuuid=%randomUUID%";
 
-        public String webhookName = "MC_DISCORD_INTEGRATION";
+        public String webhookName = "MC_DC_INTEGRATION";
     }
 
     public static class Linking {
