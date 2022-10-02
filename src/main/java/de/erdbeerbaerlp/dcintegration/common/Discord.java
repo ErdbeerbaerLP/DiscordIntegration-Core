@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common;
 
 import club.minnced.discord.webhook.WebhookClient;
+import club.minnced.discord.webhook.external.JDAWebhookClient;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
@@ -41,8 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
+import static de.erdbeerbaerlp.dcintegration.common.util.Variables.*;
 
 public class Discord extends Thread {
 
@@ -82,7 +82,7 @@ public class Discord extends Thread {
     private final HashMap<String, ArrayList<String>> messages = new HashMap<>();
 
     private final HashMap<String, Webhook> webhookHashMap = new HashMap<>();
-    private final HashMap<String, WebhookClient> webhookClis = new HashMap<>();
+    private final HashMap<String, JDAWebhookClient> webhookClis = new HashMap<>();
     /**
      * Current JDA instance
      */
@@ -286,8 +286,8 @@ public class Discord extends Thread {
      * @return Webhook Client for the Channel ID
      */
     @Nullable
-    public WebhookClient getWebhookCli(@Nonnull String channel) {
-        return webhookClis.computeIfAbsent(channel, (id) -> WebhookClient.withUrl(getWebhook(getChannel(id)).getUrl()));
+    public JDAWebhookClient getWebhookCli(@Nonnull String channel) {
+        return webhookClis.computeIfAbsent(channel, (id) -> JDAWebhookClient.from(getWebhook(getChannel(id))));
     }
 
     /**
