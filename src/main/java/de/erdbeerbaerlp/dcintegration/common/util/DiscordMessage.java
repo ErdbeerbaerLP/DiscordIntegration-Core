@@ -160,7 +160,7 @@ public final class DiscordMessage {
                 content = message;
             }
             for (String msg : splitMessages(content)) {
-                out.add(new WebhookMessageBuilder().setContent(msg).setAllowedMentions(AllowedMentions.none().withParseUsers(true)));
+                out.add(new WebhookMessageBuilder().setContent(msg).setAllowedMentions(isSystemMessage?AllowedMentions.all():AllowedMentions.none().withParseUsers(true)));
             }
         }
         if (embed != null) {
