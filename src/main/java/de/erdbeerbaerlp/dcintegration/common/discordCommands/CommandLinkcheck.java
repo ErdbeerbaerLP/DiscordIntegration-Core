@@ -4,7 +4,6 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -12,6 +11,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -66,18 +66,19 @@ public class CommandLinkcheck extends DiscordCommand {
                         reader.close();
                         JSONObject mc_json = new JSONObject(buffer.toString());
                         if (mc_json.has("error")) {
-                            reply.thenAccept((i) -> i.editOriginal(new MessageBuilder().setContent(Localization.instance().commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
+                            reply.thenAccept((i) -> i.editOriginal(new MessageEditBuilder().setContent(Localization.instance().commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
                         }
                         //Variables.LOGGER.info(mc_json);
                         uuid = UUID.fromString(mc_json.getString("id").replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)", "$1-$2-$3-$4-$5"));
                     } catch (Exception er) {
                         er.printStackTrace();
-                        reply.thenAccept((i) -> i.editOriginal(new MessageBuilder().setContent(Localization.instance().commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
+                        reply.thenAccept((i) -> i.editOriginal(new MessageEditBuilder().setContent(Localization.instance().commands.cmdLinkcheck_cannotGetPlayer).build()).queue());
                         return;
                     }
                 }
                 if (PlayerLinkController.isPlayerLinked(uuid)) {
                     final UUID Uuid = uuid;
+                    //noinspection ConstantConditions
                     reply.thenAccept((i) -> i.editOriginalEmbeds(buildEmbed(Uuid, Variables.discord_instance.getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(Uuid)))).queue());
                 } else {
                     reply.thenAccept((i) -> i.editOriginal(Localization.instance().commands.cmdLinkcheck_notlinked).queue());

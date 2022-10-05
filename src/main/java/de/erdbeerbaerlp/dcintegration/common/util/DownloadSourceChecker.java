@@ -3,8 +3,8 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 
 import java.io.*;
-import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class DownloadSourceChecker {
 
     /**
@@ -25,7 +25,7 @@ public class DownloadSourceChecker {
         if(Configuration.instance().general.ignoreFileSource) return true;
         final File file = new File(f.getAbsolutePath()+":Zone.Identifier:$DATA");
         try (BufferedReader bf = new BufferedReader( new FileReader(file))) {
-            for (String line : bf.lines().collect(Collectors.toList())) {
+            for (String line : bf.lines().toList()) {
                 if (line.contains("HostUrl=")) {
                     for (final String s : trustedSources) {
                         if (line.contains(s)) return true;

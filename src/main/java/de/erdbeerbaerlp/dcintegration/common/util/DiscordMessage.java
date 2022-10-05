@@ -5,20 +5,21 @@ import club.minnced.discord.webhook.send.WebhookEmbed;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.internal.utils.AllowedMentionsImpl;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Queue;
 
+@SuppressWarnings("unused")
 public final class DiscordMessage {
     private final boolean isNotRaw;
     private MessageEmbed embed;
-
-    private String message = "";
+    private boolean isSystemMessage = true;
+    private String message;
 
     /**
      * @param embed Embed to attach to message
@@ -66,6 +67,9 @@ public final class DiscordMessage {
         this.message = message;
     }
 
+    public void setIsChatMessage(){
+        this.isSystemMessage = false;
+    }
     /**
      *
      * @return The set embed
@@ -84,16 +88,20 @@ public final class DiscordMessage {
 
     /**
      * Builds messages to send
+     *
      * @return {@link Queue} of messages
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Nonnull
-    public Queue<Message> buildMessages() {
-        final MessageBuilder out = new MessageBuilder();
-        final ArrayList<Message.MentionType> mentions = new ArrayList<>();
-        mentions.add(Message.MentionType.USER);
-        mentions.add(Message.MentionType.CHANNEL);
-        mentions.add(Message.MentionType.EMOJI);
-        out.setAllowedMentions(mentions);
+    public MessageCreateData buildMessages() {
+        final MessageCreateBuilder out = new MessageCreateBuilder();
+        if(isSystemMessage) {
+            final ArrayList<Message.MentionType> mentions = new ArrayList<>();
+            mentions.add(Message.MentionType.USER);
+            mentions.add(Message.MentionType.CHANNEL);
+            mentions.add(Message.MentionType.EMOJI);
+            out.setAllowedMentions(mentions);
+        }
         if (!message.isEmpty()) {
             if (isNotRaw) {
                 if (Configuration.instance().messages.formattingCodesToDiscord)
@@ -106,7 +114,7 @@ public final class DiscordMessage {
         }
         if (embed != null)
             out.setEmbeds(embed);
-        return out.buildAll(MessageBuilder.SplitPolicy.NEWLINE, MessageBuilder.SplitPolicy.SPACE);
+        return out.build();
     }
 
     /**
@@ -120,15 +128,15 @@ public final class DiscordMessage {
         else {
             String[] split = inMsg.split(" ");
             final ArrayList<String> outStrings = new ArrayList<>();
-            String bufferString = "";
+            StringBuilder bufferString = new StringBuilder();
             for (String s : split) {
                 if ((bufferString + " " + s).length() > 2000) {
-                    outStrings.add(bufferString);
-                    bufferString = " ";
+                    outStrings.add(bufferString.toString());
+                    bufferString = new StringBuilder(" ");
                 } else
-                    bufferString += s;
+                    bufferString.append(s);
             }
-            outStrings.add(bufferString);
+            outStrings.add(bufferString.toString());
             return outStrings.toArray(new String[0]);
         }
     }
@@ -137,6 +145,7 @@ public final class DiscordMessage {
      * Builds webhook messages
      * @return List containing webhook messages
      */
+    @SuppressWarnings("ConstantConditions")
     @Nonnull
     public ArrayList<WebhookMessageBuilder> buildWebhookMessages() {
         final ArrayList<WebhookMessageBuilder> out = new ArrayList<>();

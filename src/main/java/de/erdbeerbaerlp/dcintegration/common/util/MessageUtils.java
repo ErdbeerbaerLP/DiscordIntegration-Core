@@ -8,7 +8,11 @@ import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
 import dev.vankka.mcdiscordreserializer.discord.DiscordSerializer;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.CustomEmoji;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.kyori.adventure.text.Component;
@@ -29,9 +33,11 @@ import java.util.regex.Pattern;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
+@SuppressWarnings("unused")
 public class MessageUtils {
 
 
+    @SuppressWarnings({"RegExpRedundantEscape", "RegExpUnnecessaryNonCapturingGroup", "RegExpSimplifiable"})
     static final Pattern URL_PATTERN = Pattern.compile(
             //              schema                          ipv4            OR        namespace                 port     path         ends
             //        |-----------------|        |-------------------------|  |-------------------------|    |---------| |--|   |---------------|
@@ -58,6 +64,7 @@ public class MessageUtils {
      * @param p Player UUID
      * @return Discord name, or null of the player did not link his discord account OR disabled useDiscordNameInChannel
      */
+    @SuppressWarnings("ConstantConditions")
     @Nullable
     public static String getDiscordName(@Nonnull final UUID p) {
         if (Variables.discord_instance == null) return null;

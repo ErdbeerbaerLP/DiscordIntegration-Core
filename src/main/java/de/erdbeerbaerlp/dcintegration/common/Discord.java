@@ -16,7 +16,10 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.internal.requests.Requester;
@@ -27,7 +30,6 @@ import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
-import javax.security.auth.login.LoginException;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -42,8 +44,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.*;
+import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
+import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
 
+@SuppressWarnings("unused")
 public class Discord extends Thread {
 
     /**
@@ -114,6 +118,7 @@ public class Discord extends Thread {
      * @return true if the player can join<br>
      * Also returns true if whitelist mode is off
      */
+    @SuppressWarnings("ConstantConditions")
     public boolean canPlayerJoin(UUID uuid) {
         if (!Configuration.instance().linking.whitelistMode) return true;
         if (PlayerLinkController.isPlayerLinked(uuid)) {
@@ -202,13 +207,14 @@ public class Discord extends Thread {
                 jda = b.build();
                 jda.awaitReady();
                 break;
-            } catch (LoginException e) {
+            } catch (InvalidTokenException e) {
                 if (e.getMessage().equals("The provided token is invalid!")) {
                     Variables.LOGGER.error("Invalid token, please set correct token in the config file!");
                     return;
                 }
                 Variables.LOGGER.error("Login failed, retrying");
                 try {
+                    //noinspection BusyWait
                     sleep(6000);
                 } catch (InterruptedException ignored) {
                     return;
@@ -285,6 +291,7 @@ public class Discord extends Thread {
      * @param channel Channel ID
      * @return Webhook Client for the Channel ID
      */
+    @SuppressWarnings("ConstantConditions")
     @Nullable
     public JDAWebhookClient getWebhookCli(@Nonnull String channel) {
         return webhookClis.computeIfAbsent(channel, (id) -> JDAWebhookClient.from(getWebhook(getChannel(id))));
@@ -360,7 +367,6 @@ public class Discord extends Thread {
     /**
      * Loads the last known players who ignored discord messages from file
      *
-     * @throws IOException
      */
     public void loadIgnoreList() throws IOException {
         if (IGNORED_PLAYERS.exists()) {
@@ -515,8 +521,8 @@ public class Discord extends Thread {
     /**
      * Loads all configuration files
      *
-     * @throws IOException
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void loadConfigs() throws IOException {
         // === Migration ===
 
@@ -580,6 +586,7 @@ public class Discord extends Thread {
      * @param isChatMessage true to send it as chat message (when not using webhook)
      * @param uuid          UUID of the player (required for in-game pinging)
      */
+    @SuppressWarnings("ConstantConditions")
     public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, MessageChannel channel, boolean isChatMessage, @Nonnull String uuid) {
         if (jda == null || channel == null) return;
         final Thread t = new Thread(() -> {
@@ -589,17 +596,14 @@ public class Discord extends Thread {
                     messages.forEach((builder) -> {
                         builder.setUsername(name);
                         builder.setAvatarUrl(avatarURL);
-                        getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> {
-                            addRecentMessage(a.getId() + "", UUID.fromString(uuid));
-                        });
+                        getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> addRecentMessage(a.getId() + "", UUID.fromString(uuid)));
                     });
                 } else if (isChatMessage) {
                     message.setMessage(Localization.instance().discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
-                    for (Message m : message.buildMessages())
-                        channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
+                    message.setIsChatMessage();
+                    channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
                 } else {
-                    for (Message m : message.buildMessages())
-                        channel.sendMessage(m).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
+                        channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -613,6 +617,7 @@ public class Discord extends Thread {
     /**
      * @return an instance of the webhook or null
      */
+    @SuppressWarnings("ConstantConditions")
     @Nullable
     public Webhook getWebhook(final TextChannel c) {
         if (!Configuration.instance().webhook.enable || c == null) return null;
@@ -781,17 +786,7 @@ public class Discord extends Thread {
      * @return Link number for this player
      */
     public int genLinkNumber(@Nonnull UUID uniqueID) {
-        final AtomicInteger r = new AtomicInteger(-1);
-        pendingLinks.forEach((k, v) -> {
-            if (v.getValue().equals(uniqueID))
-                r.set(k);
-        });
-        if (r.get() != -1) return r.get();
-        do {
-            r.set(new Random().nextInt(99999));
-        } while (pendingLinks.containsKey(r.get()));
-        pendingLinks.put(r.get(), new DefaultKeyValue<>(Instant.now(), uniqueID));
-        return r.get();
+        return genLinkNumber(uniqueID, pendingLinks);
     }
 
     /**
@@ -801,6 +796,10 @@ public class Discord extends Thread {
      * @return Link number for this player
      */
     public int genBedrockLinkNumber(@Nonnull UUID uniqueID) {
+        return genLinkNumber(uniqueID, pendingBedrockLinks);
+    }
+
+    private int genLinkNumber(@Nonnull UUID uniqueID, HashMap<Integer, KeyValue<Instant, UUID>> pendingBedrockLinks) {
         final AtomicInteger r = new AtomicInteger(-1);
         pendingBedrockLinks.forEach((k, v) -> {
             if (v.getValue().equals(uniqueID))
@@ -815,10 +814,9 @@ public class Discord extends Thread {
     }
 
     /**
-     * Saves the ignore list for unlinked players
-     *
-     * @throws IOException
+     * Saves the ignore-list for unlinked players
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void saveIgnoreList() throws IOException {
         if (!IGNORED_PLAYERS.exists() && !ignoringPlayers.isEmpty()) IGNORED_PLAYERS.createNewFile();
         if (!IGNORED_PLAYERS.exists() && ignoringPlayers.isEmpty()) {
@@ -894,6 +892,7 @@ public class Discord extends Thread {
                     messages.clear();
                 }
                 try {
+                    //noinspection BusyWait
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     return;
@@ -938,28 +937,27 @@ public class Discord extends Thread {
                 }
                 // Removing of expired numbers
                 final ArrayList<Integer> remove = new ArrayList<>();
-                pendingLinks.forEach((k, v) -> {
-                    final Instant now = Instant.now();
-                    Duration d = Duration.between(v.getKey(), now);
-                    if (d.toMinutes() > 10) remove.add(k);
-                });
-                for (int i : remove)
-                    pendingLinks.remove(i);
+                clearLinks(remove, pendingLinks);
+                clearLinks(remove, pendingBedrockLinks);
                 remove.clear();
-                pendingBedrockLinks.forEach((k, v) -> {
-                    final Instant now = Instant.now();
-                    Duration d = Duration.between(v.getKey(), now);
-                    if (d.toMinutes() > 10) remove.add(k);
-                });
-                for (int i : remove)
-                    pendingBedrockLinks.remove(i);
                 try {
+                    //noinspection BusyWait
                     sleep(1000);
                 } catch (InterruptedException e) {
                     return;
                 }
 
             }
+        }
+
+        private void clearLinks(ArrayList<Integer> remove, HashMap<Integer, KeyValue<Instant, UUID>> pendingLinks) {
+            pendingLinks.forEach((k, v) -> {
+                final Instant now = Instant.now();
+                Duration d = Duration.between(v.getKey(), now);
+                if (d.toMinutes() > 10) remove.add(k);
+            });
+            for (int i : remove)
+                pendingLinks.remove(i);
         }
     }
 

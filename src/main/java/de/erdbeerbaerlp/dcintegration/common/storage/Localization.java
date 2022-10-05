@@ -7,9 +7,9 @@ import com.moandjiezana.toml.TomlWriter;
 
 import java.io.IOException;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
 
+@SuppressWarnings("unused")
 public class Localization {
 
     @TomlIgnore
@@ -35,6 +35,7 @@ public class Localization {
         INSTANCE.saveConfig(); //Re-write the config so new values get added after updates
     }
 
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "DuplicatedCode"})
     public void saveConfig() throws IOException {
         if (!messagesFile.exists()) {
             if (!messagesFile.getParentFile().exists()) messagesFile.getParentFile().mkdirs();

@@ -15,6 +15,7 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 /**
  * Abstract class used for discord commands
  */
+@SuppressWarnings("unused")
 public abstract class DiscordCommand extends CommandDataImpl {
 
     boolean isConfigCmd = false;
@@ -70,7 +71,6 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * Method called when executing this command
      * <p>
      * @param ev the SlashCommandInteractionEvent
-     * @param reply
      */
     public abstract void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply);
 
@@ -88,6 +88,7 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * @param user The user being handled
      * @return wether or not the user can execute this command
      */
+    @SuppressWarnings("ConstantConditions")
     public boolean canUserExecuteCommand(@Nonnull User user) {
         Member m =  discord_instance.getChannel().getGuild().retrieveMember(user).complete();
         if (m == null) return false;

@@ -5,6 +5,7 @@ import net.kyori.adventure.text.format.TextColor;
 import javax.annotation.Nonnull;
 import java.awt.*;
 
+@SuppressWarnings("unused")
 public class TextColors {
 
 
@@ -13,23 +14,23 @@ public class TextColors {
      */
     public static final TextColor PING = TextColor.color(209, 170, 63);
     /**
-     * Official discord color, see https://discord.com/branding
+     * Official discord color, see <a href="https://discord.com/branding">https://discord.com/branding</a>
      */
     public static final TextColor DISCORD_BLURPLE = TextColor.color(0x58, 0x65, 0xF2);
     /**
-     * Official discord color, see https://discord.com/branding
+     * Official discord color, see <a href="https://discord.com/branding">https://discord.com/branding</a>
      */
     public static final TextColor DISCORD_GREEN = TextColor.color(0x57, 0xF2, 0x87);
     /**
-     * Official discord color, see https://discord.com/branding
+     * Official discord color, see <a href="https://discord.com/branding">https://discord.com/branding</a>
      */
     public static final TextColor DISCORD_YELLOW = TextColor.color(0xFE, 0xE7, 0x5C);
     /**
-     * Official discord color, see https://discord.com/branding
+     * Official discord color, see <a href="https://discord.com/branding">https://discord.com/branding</a>
      */
     public static final TextColor DISCORD_FUCHSIA = TextColor.color(0xEB, 0x45, 0x9E);
     /**
-     * Official discord color, see https://discord.com/branding
+     * Official discord color, see <a href="https://discord.com/branding">https://discord.com/branding</a>
      */
     public static final TextColor DISCORD_RED = TextColor.color(0xED, 0x42, 0x45);
     /**

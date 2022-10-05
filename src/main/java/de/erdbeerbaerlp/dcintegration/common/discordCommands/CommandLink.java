@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,6 +27,7 @@ public class CommandLink extends DiscordCommand {
     }
 
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
         final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
@@ -78,7 +80,7 @@ public class CommandLink extends DiscordCommand {
     }
 
     @Override
-    public boolean canUserExecuteCommand(User user) {
+    public boolean canUserExecuteCommand(@NotNull User user) {
         return true;
     }
 }

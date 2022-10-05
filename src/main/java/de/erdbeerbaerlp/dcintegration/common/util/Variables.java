@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
+@SuppressWarnings("unused")
 public class Variables {
 
     /**

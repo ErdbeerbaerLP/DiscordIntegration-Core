@@ -1,5 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.storage;
 
+@SuppressWarnings("unused")
 public class PlayerSettings {
     public boolean useDiscordNameInChannel = Configuration.instance().linking.personalSettingsDefaults.default_useDiscordNameInChannel;
     public boolean ignoreDiscordChatIngame = false;

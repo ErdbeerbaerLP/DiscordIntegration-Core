@@ -6,7 +6,9 @@ import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.dynmap.DynmapCommonAPI;
 import org.dynmap.DynmapCommonAPIListener;
+import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public class DynmapListener extends DynmapCommonAPIListener {
 
     private final boolean workaroundEnabled;
@@ -57,7 +59,7 @@ public class DynmapListener extends DynmapCommonAPIListener {
 
     public class DynmapSender extends DiscordEventHandler {
         @Override
-        public void onDiscordMessagePost(MessageReceivedEvent event) {
+        public void onDiscordMessagePost(@NotNull MessageReceivedEvent event) {
             if (event.getChannel().getId().equals(Configuration.instance().dynmap.dynmapChannelID.equals("default") ? Configuration.instance().general.botChannel : Configuration.instance().dynmap.dynmapChannelID)) {
                 api.sendBroadcastToWeb(Configuration.instance().dynmap.webName.replace("%name#tag%", event.getAuthor().getAsTag()).replace("%name%", event.getMember() != null ? event.getMember().getEffectiveName() : event.getAuthor().getName()), event.getMessage().getContentDisplay());
             }

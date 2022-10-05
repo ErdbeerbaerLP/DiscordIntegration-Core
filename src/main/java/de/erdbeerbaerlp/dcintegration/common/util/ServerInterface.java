@@ -2,9 +2,7 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -66,6 +64,7 @@ public interface ServerInterface {
      * Checks if the server is running in online mode
      * @return online mode status
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean isOnlineMode();
 
     /**

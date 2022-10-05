@@ -1,6 +1,5 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
 import net.dv8tion.jda.api.entities.Member;
@@ -14,6 +13,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.collections4.keyvalue.DefaultMapEntry;
+import org.intellij.lang.annotations.RegExp;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("unused")
 public class ComponentUtils {
     @Nonnull
     public static Style addUserHoverClick(@Nonnull final Style styleIn, @Nonnull Member m){
@@ -53,7 +54,7 @@ public class ComponentUtils {
      * @return Configured {@link TextReplacementConfig}
      */
     @Nonnull
-    public static TextReplacementConfig replace(@Nonnull String a, @Nonnull String b) {
+    public static TextReplacementConfig replace(@RegExp @Nonnull String a, @Nonnull String b) {
         return TextReplacementConfig.builder().match(a).replacement(b).build();
     }
 
@@ -76,7 +77,7 @@ public class ComponentUtils {
      * @return Configured {@link TextReplacementConfig}
      */
     @Nonnull
-    public static TextReplacementConfig replace(@Nonnull String a, @Nonnull String b, int times) {
+    public static TextReplacementConfig replace(@RegExp @Nonnull String a, @Nonnull String b, int times) {
         return TextReplacementConfig.builder().match(a).replacement(b).times(times).build();
     }
 
@@ -99,7 +100,7 @@ public class ComponentUtils {
      * @return Configured {@link TextReplacementConfig}
      */
     @Nonnull
-    public static TextReplacementConfig replace(@Nonnull String a, @Nonnull Component b) {
+    public static TextReplacementConfig replace(@RegExp @Nonnull String a, @Nonnull Component b) {
         return TextReplacementConfig.builder().match(a).replacement(b).build();
     }
 
@@ -122,7 +123,7 @@ public class ComponentUtils {
      * @return Configured {@link TextReplacementConfig}
      */
     @Nonnull
-    public static TextReplacementConfig replace(@Nonnull String a, @Nonnull Component b, int times) {
+    public static TextReplacementConfig replace(@RegExp @Nonnull String a, @Nonnull Component b, int times) {
         return TextReplacementConfig.builder().match(a).replacement(b).times(times).build();
     }
 
@@ -153,6 +154,7 @@ public class ComponentUtils {
             return PatternReplacementResult.REPLACE;
         }).build());
         if (!hasPing.get() && PlayerLinkController.isPlayerLinked(uuid)) {
+            @SuppressWarnings("ConstantConditions")
             String dcname = Variables.discord_instance.getChannel().getGuild().retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(uuid)).complete().getEffectiveName();
             msg = msg.replaceText(TextReplacementConfig.builder().matchLiteral("@" + dcname).replacement(Component.text("@" + dcname).style(Style.style(TextColors.PING).decorate(TextDecoration.BOLD))).condition((a, b) -> {
                 hasPing.set(true);

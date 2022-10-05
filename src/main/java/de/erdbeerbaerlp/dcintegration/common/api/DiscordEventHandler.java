@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 public abstract class DiscordEventHandler {
     /**
      * Gets called when someone DMs the bot before any code gets executed
@@ -29,7 +30,7 @@ public abstract class DiscordEventHandler {
     }
 
     /**
-     * Gets called when an command was entered, invalid or not
+     * Gets called when a command was entered, invalid or not
      *
      * @param channel Text channel where command was executed
      * @param sender Command sender

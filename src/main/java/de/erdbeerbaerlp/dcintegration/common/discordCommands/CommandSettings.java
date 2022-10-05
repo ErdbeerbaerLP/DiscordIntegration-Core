@@ -32,7 +32,7 @@ public class CommandSettings extends DiscordCommand {
             settings.add(new Command.Choice(f.getName(), f.getName()));
 
         addSubcommands(new SubcommandData("get", Localization.instance().commands.cmdSett_get).addOptions(
-                new OptionData(OptionType.STRING, "key", Localization.instance().commands.cmdSett_key, false).addChoices(settings)),
+                        new OptionData(OptionType.STRING, "key", Localization.instance().commands.cmdSett_key, false).addChoices(settings)),
                 new SubcommandData("set", Localization.instance().commands.cmdSett_set).addOptions(
                         new OptionData(OptionType.STRING, "key", Localization.instance().commands.cmdSett_key, true).addChoices(settings),
                         new OptionData(OptionType.BOOLEAN, "value", Localization.instance().commands.cmdSett_val)));
@@ -91,7 +91,9 @@ public class CommandSettings extends DiscordCommand {
                             final PlayerSettings settings = PlayerLinkController.getSettings(ev.getUser().getId(), null);
                             boolean newval;
                             try {
-                                newval = Boolean.parseBoolean(value.getAsString());
+                                if (value != null) {
+                                    newval = Boolean.parseBoolean(value.getAsString());
+                                } else newval = false;
                             } catch (NumberFormatException e) {
                                 newval = false;
                             }

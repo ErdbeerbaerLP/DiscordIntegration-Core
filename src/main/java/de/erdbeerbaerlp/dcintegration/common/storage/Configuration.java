@@ -1,9 +1,5 @@
 package de.erdbeerbaerlp.dcintegration.common.storage;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlComment;
 import com.moandjiezana.toml.TomlIgnore;
@@ -11,14 +7,13 @@ import com.moandjiezana.toml.TomlWriter;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.GameType;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
-import net.dv8tion.jda.api.entities.Webhook;
-import net.dv8tion.jda.internal.requests.Requester;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
 
+@SuppressWarnings("unused")
 public class Configuration {
 
     @TomlIgnore
@@ -114,6 +109,7 @@ public class Configuration {
         INSTANCE.saveConfig(); //Re-write the config so new values get added after updates
     }
 
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "DuplicatedCode"})
     public void saveConfig() throws IOException {
         if (!configFile.exists()) {
             if (!configFile.getParentFile().exists()) configFile.getParentFile().mkdirs();
@@ -242,13 +238,13 @@ public class Configuration {
         public boolean enabled = true;
 
         @TomlComment("The message displayed when typing /discord in the server chat")
-        public String message = "Join our discord! http://discord.gg/myserver";
+        public String message = "Join our discord! https://discord.gg/myserver";
 
         @TomlComment("The message shown when hovering the /discord command message")
         public String hoverMessage = "Click to open the invite url";
 
         @TomlComment("The url to open when clicking the /discord command text")
-        public String inviteURL = "http://discord.gg/myserver";
+        public String inviteURL = "https://discord.gg/myserver";
     }
 
 

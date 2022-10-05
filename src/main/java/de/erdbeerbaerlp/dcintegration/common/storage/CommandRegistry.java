@@ -4,9 +4,8 @@ import de.erdbeerbaerlp.dcintegration.common.discordCommands.*;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -15,8 +14,11 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
+@SuppressWarnings("unused")
 public class CommandRegistry {
     /**
      * Registered commands
@@ -68,6 +70,7 @@ public class CommandRegistry {
         }
     }
 
+    @SuppressWarnings({"LoopStatementThatDoesntLoop", "UnusedAssignment"})
     private static boolean optionsEqual(List<OptionData> data, List<Command.Option> options) {
         if (data.size() != options.size()) return false;
         for (int i = 0; i < data.size(); i++) {
@@ -135,11 +138,11 @@ public class CommandRegistry {
         }
         for (DiscordCommand cm : toRemove)
             commands.remove(cm);
-        boolean ret = commands.add(cmd);
-        if (ret && cmd instanceof CommandFromCFG) {
+        commands.add(cmd);
+        if (cmd instanceof CommandFromCFG) {
             if (cmd.isUsingArgs()) cmd.addOption(OptionType.STRING, "args", cmd.getArgText());
         }
-        return ret;
+        return true;
 
     }
 
