@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "2.5.0"
+version = "2.5.0-SNAPSHOT"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 

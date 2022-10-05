@@ -26,6 +26,7 @@ import net.dv8tion.jda.internal.requests.Requester;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -545,12 +546,12 @@ public class Discord extends Thread {
                 Variables.LOGGER.info("Translation migration complete");
 
             }
+
         }
 
         // === Load everything ===
 
         Configuration.instance().loadConfig();
-
         if (!Configuration.instance().messages.language.equals("local")) {
             final File backupFile = new File(messagesFile, ".bak");
             if (backupFile.exists()) backupFile.delete();
@@ -574,6 +575,14 @@ public class Discord extends Thread {
             }
         } else
             Localization.instance().loadConfig();
+
+
+
+        if(StringUtils.containsIgnoreCase(Configuration.instance().webhook.webhookName, "discord")){
+            StringUtils.replaceIgnoreCase(Configuration.instance().webhook.webhookName,"discord","dc");
+            Variables.LOGGER.info("Fixed webhook name containing the word \"Discord\".");
+            Configuration.instance().saveConfig();
+        }
     }
 
     /**
