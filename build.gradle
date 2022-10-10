@@ -85,7 +85,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-alpha.20'
+    embed 'net.dv8tion:JDA:5.0.0-alpha.21'
     embed 'club.minnced:discord-webhooks:0.8.2'
 
     //GSON
