@@ -21,6 +21,53 @@ public class Localization {
         INSTANCE = new Localization();
     }
 
+    @TomlComment({"This is what will be displayed ingame when someone types into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The message"})
+    public String ingame_discordMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r <%user%> %msg%";
+    @TomlComment({"This is what will be displayed ingame when someone sends an reply into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The reply message", "%ruser% - The username of the message that got the reply", "%rmsg% - The replied message"})
+    public String ingame_discordReplyMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r \u00a7a%user%\u00a7r in reply to \u00a73%ruser%\u00a7r: %msg%";
+    @TomlComment({"Message shown when hovering over the username of an discord message", "PLACEHOLDERS:", "%user% - The username/nickname (Someone123)", "%user#tag% - The username with tag (someone#0001)", "%id% - The user ID", "", "NOTE: using an @ here can cause ping sounds ingame"})
+    public String discordUserHover = "\u00a73Discord User %user#tag%\n\u00a7aClick to mention";
+    @TomlComment("This message will edited in / sent when the server finished starting")
+    public String serverStarted = "Server Started!";
+    @TomlComment({"Message to show while the server is starting", "This will be edited to SERVER_STARTED_MSG when webhook is false"})
+    public String serverStarting = "Server Starting...";
+    @TomlComment("This message will be sent when the server was stopped")
+    public String serverStopped = "Server Stopped!";
+    @TomlComment("The message to print to discord when it was possible to detect a server crash")
+    public String serverCrash = "Server Crash Detected :thinking:";
+    @TomlComment({"Gets sent when an player joins", "", "PLACEHOLDERS:", "%player% - The player's name"})
+    public String playerJoin = "%player% joined";
+    @TomlComment({"Gets sent when an player leaves", "", "PLACEHOLDERS:", "%player% - The player's name"})
+    public String playerLeave = "%player% left";
+    @TomlComment({"Gets sent when an player dies", "", "PLACEHOLDERS:", "%player% - The player's name", "%msg% - The death message"})
+    public String playerDeath = "%player% %msg%";
+    @TomlComment({"Message sent instead of playerLeave, when the player times out", "", "PLACEHOLDERS:", "%player% - The player's name"})
+    public String playerTimeout = "%player% timed out!";
+    @TomlComment({"Gets sent when an player finishes an advancement", "Supports MulitLined messages using \\n", "", "PLACEHOLDERS:", "%player% - The player's name", "%name% - The advancement name", "%desc% - The advancement description"})
+    public String advancementMessage = "%player% just made the advancement **%name%**\n_%desc%_";
+    @TomlComment({"The chat message in discord, sent from an player in-game", "", "PLACEHOLDERS:", "%player% - The player's name", "%msg% - The chat message"})
+    public String discordChatMessage = "%player%: %msg%";
+    @TomlComment({"Sent to a player when someone reacts to his messages", "PLACEHOLDERS:", "%name% - (Nick-)Name of the user who reacted (format: 'SomeNickName')", "%name2% - Name of the user who reacted with discord discriminator (format: 'SomeName#0123')", "%msg% - Content of the message which got the reaction", "%emote% - The reacted emote"})
+    public String reactionMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r\u00a77 %name% reacted to your message \"\u00a79%msg%\u00a77\" with '%emote%'";
+    @TomlComment("Message shown for attachments")
+    public String attachment = "Attachment";
+    @TomlComment("Message shown for stickers")
+    public String sticker = "Sticker";
+    @TomlComment("Header for Embeds")
+    public String embed = "Embed";
+    @TomlComment("Message shown for embed images")
+    public String embedImage = "Image";
+    @TomlComment("Message shown for embed messages")
+    public String embedMessage = "Message";
+    @TomlComment("Hover message for the bot tag ingame")
+    public String bot = "This user is an bot";
+    @TomlComment("Strings about the discord commands")
+    public Commands commands = new Commands();
+    @TomlComment("Strings about the account linking feature")
+    public Linking linking = new Linking();
+    @TomlComment("Strings about the personal settings feature")
+    public PersonalSettings personalSettings = new PersonalSettings();
+
     public static Localization instance() {
         return INSTANCE;
     }
@@ -48,73 +95,6 @@ public class Localization {
                 .build();
         w.write(this, messagesFile);
     }
-
-
-
-    @TomlComment({"This is what will be displayed ingame when someone types into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The message"})
-    public String ingame_discordMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r <%user%> %msg%";
-
-    @TomlComment({"This is what will be displayed ingame when someone sends an reply into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The reply message", "%ruser% - The username of the message that got the reply", "%rmsg% - The replied message"})
-    public String ingame_discordReplyMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r \u00a7a%user%\u00a7r in reply to \u00a73%ruser%\u00a7r: %msg%";
-
-    @TomlComment({"Message shown when hovering over the username of an discord message", "PLACEHOLDERS:", "%user% - The username/nickname (Someone123)", "%user#tag% - The username with tag (someone#0001)", "%id% - The user ID", "", "NOTE: using an @ here can cause ping sounds ingame"})
-    public String discordUserHover = "\u00a73Discord User %user#tag%\n\u00a7aClick to mention";
-
-    @TomlComment("This message will edited in / sent when the server finished starting")
-    public String serverStarted = "Server Started!";
-
-    @TomlComment({"Message to show while the server is starting", "This will be edited to SERVER_STARTED_MSG when webhook is false"})
-    public String serverStarting = "Server Starting...";
-
-    @TomlComment("This message will be sent when the server was stopped")
-    public String serverStopped = "Server Stopped!";
-
-    @TomlComment("The message to print to discord when it was possible to detect a server crash")
-    public String serverCrash = "Server Crash Detected :thinking:";
-
-    @TomlComment({"Gets sent when an player joins", "", "PLACEHOLDERS:", "%player% - The player's name"})
-    public String playerJoin = "%player% joined";
-
-    @TomlComment({"Gets sent when an player leaves", "", "PLACEHOLDERS:", "%player% - The player's name"})
-    public String playerLeave = "%player% left";
-
-    @TomlComment({"Gets sent when an player dies", "", "PLACEHOLDERS:", "%player% - The player's name", "%msg% - The death message"})
-    public String playerDeath = "%player% %msg%";
-
-    @TomlComment({"Message sent instead of playerLeave, when the player times out", "", "PLACEHOLDERS:", "%player% - The player's name"})
-    public String playerTimeout = "%player% timed out!";
-
-    @TomlComment({"Gets sent when an player finishes an advancement", "Supports MulitLined messages using \\n", "", "PLACEHOLDERS:", "%player% - The player's name", "%name% - The advancement name", "%desc% - The advancement description"})
-    public String advancementMessage = "%player% just made the advancement **%name%**\n_%desc%_";
-
-    @TomlComment({"The chat message in discord, sent from an player in-game", "", "PLACEHOLDERS:", "%player% - The player's name", "%msg% - The chat message"})
-    public String discordChatMessage = "%player%: %msg%";
-
-
-    @TomlComment({"Sent to a player when someone reacts to his messages", "PLACEHOLDERS:", "%name% - (Nick-)Name of the user who reacted (format: 'SomeNickName')", "%name2% - Name of the user who reacted with discord discriminator (format: 'SomeName#0123')", "%msg% - Content of the message which got the reaction", "%emote% - The reacted emote"})
-    public String reactionMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r\u00a77 %name% reacted to your message \"\u00a79%msg%\u00a77\" with '%emote%'";
-
-    @TomlComment("Message shown for attachments")
-    public String attachment = "Attachment";
-    @TomlComment("Message shown for stickers")
-    public String sticker = "Sticker";
-    @TomlComment("Header for Embeds")
-    public String embed = "Embed";
-    @TomlComment("Message shown for embed images")
-    public String embedImage = "Image";
-    @TomlComment("Message shown for embed messages")
-    public String embedMessage = "Message";
-    @TomlComment("Hover message for the bot tag ingame")
-    public String bot = "This user is an bot";
-
-    @TomlComment("Strings about the discord commands")
-    public Commands commands = new Commands();
-
-    @TomlComment("Strings about the account linking feature")
-    public Linking linking = new Linking();
-
-    @TomlComment("Strings about the personal settings feature")
-    public PersonalSettings personalSettings = new PersonalSettings();
 
     public static class Linking {
 

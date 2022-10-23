@@ -40,6 +40,10 @@ repositories {
     }
     mavenCentral()
 
+    flatDir {
+        dirs 'libs'
+    }
+
 }
 //ShadowJar
 configurations {
@@ -85,7 +89,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-alpha.20'
+    embed 'net.dv8tion:JDA:5.0.0-alpha.21'
     embed 'club.minnced:discord-webhooks:0.8.2'
 
     //GSON
@@ -104,6 +108,7 @@ dependencies {
 
     //Toml4j
     embed("de.erdbeerbaerlp:toml4j:cf5b4655")
+    //embed("Toml4J:toml4j-0.7.5-SNAPSHOT")
 
     //Apache commons lang3
     embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'

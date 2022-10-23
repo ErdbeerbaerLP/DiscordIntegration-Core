@@ -1,7 +1,5 @@
 package de.erdbeerbaerlp.dcintegration.common.addon;
 
-import javax.annotation.Nonnull;
-
 @SuppressWarnings({"unused", "FieldMayBeFinal", "FieldCanBeLocal"})
 public class DiscordAddonMeta {
     /**
@@ -35,14 +33,15 @@ public class DiscordAddonMeta {
     public String getName() {
         return name;
     }
+
     public String getVersion() {
         return version;
     }
-    @Nonnull
+
     public String getAuthor() {
         return author;
     }
-    @Nonnull
+
     public String getDescription() {
         return description;
     }

@@ -7,8 +7,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.internal.interactions.CommandDataImpl;
 
-import javax.annotation.Nonnull;
-
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 
@@ -18,10 +16,13 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 @SuppressWarnings("unused")
 public abstract class DiscordCommand extends CommandDataImpl {
 
-    boolean isConfigCmd = false;
-
     protected boolean useArgs = false;
     protected String argText = "<undefined>";
+    boolean isConfigCmd = false;
+
+    protected DiscordCommand(String name, String desc) {
+        super(name, desc);
+    }
 
     public final boolean isUsingArgs() {
         return useArgs;
@@ -31,32 +32,29 @@ public abstract class DiscordCommand extends CommandDataImpl {
         return argText;
     }
 
-
-    protected DiscordCommand(String name, String desc) {
-        super(name,desc);
-    }
-
     /**
      * Sets the name of the command
      */
-    @Nonnull
-    public String getName(){
+
+    public String getName() {
         return name;
     }
 
     /**
      * Sets the aliases of the command<br>
-     *  no longer used
+     * no longer used
      */
-    @Nonnull
+
     @Deprecated
-    public String[] getAliases(){return new String[0];}
+    public String[] getAliases() {
+        return new String[0];
+    }
 
     /**
      * Sets the description for the help command
      */
-    @Nonnull
-    public String getDescription(){
+
+    public String getDescription() {
         return description;
     }
 
@@ -70,13 +68,15 @@ public abstract class DiscordCommand extends CommandDataImpl {
     /**
      * Method called when executing this command
      * <p>
+     *
      * @param ev the SlashCommandInteractionEvent
      */
     public abstract void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply);
 
     /**
-     * Wether or not this command should be visible in help
+     * Whether this command should be visible in help
      */
+    @SuppressWarnings("SameReturnValue")
     public boolean includeInHelp() {
         return true;
     }
@@ -89,8 +89,8 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * @return wether or not the user can execute this command
      */
     @SuppressWarnings("ConstantConditions")
-    public boolean canUserExecuteCommand(@Nonnull User user) {
-        Member m =  discord_instance.getChannel().getGuild().retrieveMember(user).complete();
+    public boolean canUserExecuteCommand(User user) {
+        Member m = discord_instance.getChannel().getGuild().retrieveMember(user).complete();
         if (m == null) return false;
         return !this.adminOnly() || discord_instance.hasAdminRole(m.getRoles());
     }
@@ -100,7 +100,7 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * Override to customize the command usage, which is being displayed in help (ex. to add arguments)
      */
     public String getCommandUsage() {
-        return "/"+getName();
+        return "/" + getName();
     }
 
     public final boolean equals(DiscordCommand cmd) {
@@ -109,7 +109,7 @@ public abstract class DiscordCommand extends CommandDataImpl {
 
 
     /**
-     * Generates an Player not found message to send to discord
+     * Generates a Player not found message to send to discord
      *
      * @param playerName Name of the player
      * @return The message

@@ -6,8 +6,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
-import javax.annotation.Nonnull;
-
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 
@@ -17,7 +15,7 @@ public class CommandFromCFG extends DiscordCommand {
     private final ConfigCommand.CommandArgument[] args;
     private final boolean hidden;
 
-    public CommandFromCFG(@Nonnull String cmd, @Nonnull String description, @Nonnull String mcCommand, boolean adminOnly, ConfigCommand.CommandArgument[] args, boolean hidden) throws IllegalArgumentException {
+    public CommandFromCFG(String cmd, String description, String mcCommand, boolean adminOnly, ConfigCommand.CommandArgument[] args, boolean hidden) throws IllegalArgumentException {
         super(cmd, description);
         this.isConfigCmd = true;
         this.admin = adminOnly;
@@ -53,7 +51,7 @@ public class CommandFromCFG extends DiscordCommand {
         String cmd = mcCmd;
         for (ConfigCommand.CommandArgument arg : args) {
             final OptionMapping option = ev.getOption(arg.name);
-                cmd = cmd.replace("%" + arg.name + "%", option == null? "":option.getAsString());
+            cmd = cmd.replace("%" + arg.name + "%", option == null ? "" : option.getAsString());
 
         }
         discord_instance.srv.runMcCommand(cmd, reply.setEphemeral(hidden).submit(), ev.getUser());

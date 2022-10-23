@@ -2,7 +2,6 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 
 import net.kyori.adventure.text.format.TextColor;
 
-import javax.annotation.Nonnull;
 import java.awt.*;
 
 @SuppressWarnings("unused")
@@ -48,8 +47,8 @@ public class TextColors {
      * @param c {@link Color} to convert
      * @return Converted {@link TextColor}
      */
-    @Nonnull
-    public static TextColor of(@Nonnull Color c) {
+
+    public static TextColor of(Color c) {
         return TextColor.color(c.getRed(), c.getGreen(), c.getBlue());
     }
 

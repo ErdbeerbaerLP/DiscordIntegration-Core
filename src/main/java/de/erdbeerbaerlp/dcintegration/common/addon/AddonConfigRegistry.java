@@ -6,70 +6,96 @@ import com.moandjiezana.toml.TomlWriter;
 import de.erdbeerbaerlp.dcintegration.common.Discord;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class AddonConfigRegistry {
 
     /**
      * Loads all values from the config file
+     *
+     * @param cfg        Configuration instance
+     * @param configFile Target File
      * @return The config file with (re-)loaded values
      */
-    @Nullable
-    public static <T extends AddonConfiguration> T loadConfig(@Nonnull T cfg) {
-        if (cfg.getConfigFile() == null) return null;
-        if (!cfg.getConfigFile().exists()) {
-            saveConfig(cfg);
-            return cfg;
+    public static <T> T loadConfig(T cfg, final File configFile) {
+        if (configFile == null) return null;
+        if (!configFile.exists()) {
+            saveConfig(cfg, configFile);
         }
-        final File cfgFile = cfg.getConfigFile();
-        final T conf = (T) new Toml().read(cfgFile).to(cfg.getClass());
-        conf.setConfigFile(cfgFile);
-        saveConfig(conf); //Re-write the config so new values get added after updates
+        @SuppressWarnings("unchecked") final T conf = (T) new Toml().read(configFile).to(cfg.getClass());
+        saveConfig(conf, configFile); //Re-write the config so new values get added after updates
         return conf;
 
     }
 
     /**
      * Saves all values to the config file
+     *
+     * @param cfg        Configuration instance
+     * @param configFile Target File
      */
-    public static void saveConfig(@Nonnull AddonConfiguration cfg) {
-        if (cfg.getConfigFile() == null) return;
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static <T> void saveConfig(T cfg, final File configFile) {
+        if (configFile == null) return;
         try {
-            if (!cfg.getConfigFile().exists()) {
-                if (!cfg.getConfigFile().getParentFile().exists()) cfg.getConfigFile().getParentFile().mkdirs();
-                cfg.getConfigFile().createNewFile();
+            if (!configFile.exists()) {
+                if (!configFile.getParentFile().exists()) configFile.getParentFile().mkdirs();
+                configFile.createNewFile();
             }
             final TomlWriter w = new TomlWriter.Builder()
                     .indentValuesBy(2)
                     .indentTablesBy(4)
                     .padArrayDelimitersBy(2)
                     .build();
-            w.write(cfg, cfg.getConfigFile());
+            w.write(cfg, configFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Creates an Instance of your {@link AddonConfiguration} and loads it using {@link AddonConfigRegistry#loadConfig(AddonConfiguration)}<br>
+     * Legacy version of {@link AddonConfigRegistry#loadConfig(Class, DiscordIntegrationAddon)}
+     *
+     * @deprecated Use {@link AddonConfigRegistry#loadConfig(Class, DiscordIntegrationAddon)} instead
+     */
+
+    @Deprecated
+    public static <T extends AddonConfiguration> T registerConfig(Class<T> cfg, DiscordIntegrationAddon inst) {
+        return loadConfig(cfg, inst);
+    }
+
+    /**
+     * Creates an Instance of your configuration and loads it<br>
      * Should be called in {@link DiscordIntegrationAddon#load(Discord)}
+     *
      * @param cfg  Class of your Configuration
      * @param inst Instance of your Addon
      * @return Configuration file, if existing
      */
-    @Nullable
-    public static <T extends AddonConfiguration> T registerConfig(@Nonnull Class<T> cfg, @Nonnull DiscordIntegrationAddon inst) {
+
+
+    public static <T> T loadConfig(Class<T> cfg, DiscordIntegrationAddon inst) {
         try {
             final T conf = cfg.getDeclaredConstructor().newInstance();
-            conf.setConfigFile(new File(AddonLoader.getAddonDir(), AddonLoader.getAddonMeta(inst).getName() + ".toml"));
-            return loadConfig(conf);
-        } catch (RuntimeException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            Variables.LOGGER.error("An exception occurred while loading addon configuration " +cfg.getName() );
+            return loadConfig(conf, inst);
+        } catch (RuntimeException | InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
+            Variables.LOGGER.error("An exception occurred while loading addon configuration " + cfg.getName());
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Loads the contents of the config file by using an addon instance
+     *
+     * @param cfg  Class of your Configuration
+     * @param inst Instance of your Addon
+     * @return Configuration file, if existing
+     */
+    public static <T> T loadConfig(T cfg, DiscordIntegrationAddon inst) {
+        return loadConfig(cfg, new File(AddonLoader.getAddonDir(), AddonLoader.getAddonMeta(inst).getName() + ".toml"));
     }
 }

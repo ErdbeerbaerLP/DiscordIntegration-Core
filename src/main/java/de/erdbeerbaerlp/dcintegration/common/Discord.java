@@ -28,8 +28,6 @@ import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.lang.reflect.Field;
@@ -52,22 +50,17 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
 public class Discord extends Thread {
 
     /**
-     * Cache file for players which ignore discord chat
-     */
-    private static final File IGNORED_PLAYERS = new File(Variables.discordDataDir, ".PlayerIgnores");
-    /**
      * Dummy UUID for unknown players or server messages
      */
     public static final UUID dummyUUID = new UUID(0L, 0L);
     /**
+     * Cache file for players which ignore discord chat
+     */
+    private static final File IGNORED_PLAYERS = new File(Variables.discordDataDir, ".PlayerIgnores");
+    /**
      * Instance of the ServerInterface
      */
     public final ServerInterface srv;
-    /**
-     * Holds messages recently forwarded to discord in format MessageID,Sender UUID
-     */
-    private final HashMap<String, UUID> recentMessages = new HashMap<>(150);
-
     /**
      * ArrayList with players which ignore the discord chat
      */
@@ -82,12 +75,17 @@ public class Discord extends Thread {
     public final HashMap<Integer, KeyValue<Instant, UUID>> pendingBedrockLinks = new HashMap<>();
     final ArrayList<DiscordEventHandler> eventHandlers = new ArrayList<>();
     /**
+     * Holds messages recently forwarded to discord in format MessageID,Sender UUID
+     */
+    private final HashMap<String, UUID> recentMessages = new HashMap<>(150);
+    /**
      * Pending messages from command sender
      */
     private final HashMap<String, ArrayList<String>> messages = new HashMap<>();
 
     private final HashMap<String, Webhook> webhookHashMap = new HashMap<>();
     private final HashMap<String, JDAWebhookClient> webhookClis = new HashMap<>();
+    private final HashMap<String, TextChannel> channelCache = new HashMap<>();
     /**
      * Current JDA instance
      */
@@ -95,7 +93,7 @@ public class Discord extends Thread {
     private Thread messageSender, statusUpdater;
     private DiscordEventListener listener;
 
-    public Discord(@Nonnull ServerInterface srv) {
+    public Discord(ServerInterface srv) {
         this.srv = srv;
         setDaemon(true);
         setName("Discord Integration - Launch Thread");
@@ -110,6 +108,70 @@ public class Discord extends Thread {
                 e.printStackTrace();
             }
         start();
+    }
+
+    /**
+     * Loads all configuration files
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public static void loadConfigs() throws IOException {
+        // === Migration ===
+
+        if (configFile.exists()) {
+
+            if (!messagesFile.exists()) messagesFile.createNewFile();
+
+            // Migrate localization to new file
+            final Toml toml = new Toml().read(configFile).getTable("localization");
+
+            if (toml != null) {
+                final Localization localization = toml.to(Localization.class);
+                Variables.LOGGER.info("Starting Translation migration");
+                final TomlWriter w = new TomlWriter.Builder()
+                        .indentValuesBy(2)
+                        .indentTablesBy(4)
+                        .padArrayDelimitersBy(2)
+                        .build();
+                w.write(localization, messagesFile);
+                Variables.LOGGER.info("Translation migration complete");
+
+            }
+
+        }
+
+        // === Load everything ===
+
+        Configuration.instance().loadConfig();
+        if (!Configuration.instance().messages.language.equals("local")) {
+            final File backupFile = new File(messagesFile, ".bak");
+            if (backupFile.exists()) backupFile.delete();
+            try {
+                final URL langURL = new URL("https://raw.githubusercontent.com/ErdbeerbaerLP/Discord-Integration-Translations/main/" + Configuration.instance().messages.language + ".toml");
+                final HttpsURLConnection urlConnection = (HttpsURLConnection) langURL.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+                if (urlConnection.getResponseCode() == 200) {
+                    messagesFile.renameTo(backupFile);
+                    try (InputStream in = urlConnection.getInputStream()) {
+                        Files.copy(in, messagesFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } else {
+                    Localization.instance().loadConfig();
+                }
+            } catch (IOException ex) {
+                if (backupFile.exists())
+                    backupFile.renameTo(messagesFile);
+                Localization.instance().loadConfig();
+            }
+        } else
+            Localization.instance().loadConfig();
+
+
+        if (StringUtils.containsIgnoreCase(Configuration.instance().webhook.webhookName, "discord")) {
+            StringUtils.replaceIgnoreCase(Configuration.instance().webhook.webhookName, "discord", "dc");
+            Variables.LOGGER.info("Fixed webhook name containing the word \"Discord\".");
+            Configuration.instance().saveConfig();
+        }
     }
 
     /**
@@ -147,7 +209,7 @@ public class Discord extends Thread {
      *
      * @param handler Event handler to register
      */
-    public void registerEventHandler(@Nonnull final DiscordEventHandler handler) {
+    public void registerEventHandler(final DiscordEventHandler handler) {
         if (!eventHandlers.contains(handler))
             eventHandlers.add(handler);
     }
@@ -157,7 +219,7 @@ public class Discord extends Thread {
      *
      * @param handler Event handler to unregister
      */
-    public void unregisterEventHandler(@Nonnull final DiscordEventHandler handler) {
+    public void unregisterEventHandler(final DiscordEventHandler handler) {
         eventHandlers.remove(handler);
     }
 
@@ -168,14 +230,13 @@ public class Discord extends Thread {
         eventHandlers.clear();
     }
 
-
     /**
-     * Saves an new Message into the recent messages list
+     * Saves a new Message into the recent messages list
      *
      * @param msgID Message ID
      * @param uuid  Sender UUID
      */
-    public void addRecentMessage(@Nonnull String msgID, @Nonnull UUID uuid) {
+    public void addRecentMessage(String msgID, UUID uuid) {
         if (recentMessages.size() + 1 >= 150) {
             do {
                 recentMessages.remove(recentMessages.keySet().toArray(new String[0])[0]);
@@ -185,16 +246,15 @@ public class Discord extends Thread {
     }
 
     /**
-     * Gets the sender's {@link UUID} from an recently sent message
+     * Gets the sender's {@link UUID} from a recently sent message
      *
      * @param messageID Message ID to get the {@link UUID} from
      * @return The sender's {@link UUID}, or {@linkplain Discord#dummyUUID}
      */
-    @Nonnull
-    public UUID getSenderUUIDFromMessageID(@Nonnull String messageID) {
+
+    public UUID getSenderUUIDFromMessageID(String messageID) {
         return recentMessages.getOrDefault(messageID, dummyUUID);
     }
-
 
     @Override
     public void run() {
@@ -293,8 +353,8 @@ public class Discord extends Thread {
      * @return Webhook Client for the Channel ID
      */
     @SuppressWarnings("ConstantConditions")
-    @Nullable
-    public JDAWebhookClient getWebhookCli(@Nonnull String channel) {
+
+    public JDAWebhookClient getWebhookCli(String channel) {
         return webhookClis.computeIfAbsent(channel, (id) -> JDAWebhookClient.from(getWebhook(getChannel(id))));
     }
 
@@ -331,12 +391,10 @@ public class Discord extends Thread {
         kill(true);
     }
 
-    private final HashMap<String, TextChannel> channelCache = new HashMap<>();
-
     /**
      * @return the specified text channel
      */
-    @Nullable
+
     public TextChannel getChannel() {
         return getChannel("default");
     }
@@ -344,8 +402,8 @@ public class Discord extends Thread {
     /**
      * @return the specified text channel (supports "default" to return the default server channel)
      */
-    @Nullable
-    public TextChannel getChannel(@Nonnull String id) {
+
+    public TextChannel getChannel(String id) {
         if (jda == null) return null;
         TextChannel channel;
         final boolean deflt = id.equals("default") || id.equals(Configuration.instance().general.botChannel);
@@ -364,10 +422,8 @@ public class Discord extends Thread {
         return channel;
     }
 
-
     /**
      * Loads the last known players who ignored discord messages from file
-     *
      */
     public void loadIgnoreList() throws IOException {
         if (IGNORED_PLAYERS.exists()) {
@@ -415,7 +471,7 @@ public class Discord extends Thread {
     /**
      * @return Current JDA instance, if it exists
      */
-    @Nullable
+
     public JDA getJDA() {
         return jda;
     }
@@ -427,7 +483,7 @@ public class Discord extends Thread {
      * @param msg       message
      * @param channelID the channel ID the message should get sent to
      */
-    public void sendMessageFuture(@Nonnull String msg, @Nonnull String channelID) {
+    public void sendMessageFuture(String msg, String channelID) {
         if (msg.isEmpty() || channelID.isEmpty()) return;
         final ArrayList<String> msgs;
         if (messages.containsKey(channelID))
@@ -446,7 +502,7 @@ public class Discord extends Thread {
      * @param channel    Target channel
      * @param uuid       Player UUID
      */
-    public void sendMessage(@Nonnull final String playerName, @Nonnull String uuid, @Nonnull MessageEmbed embed, @Nonnull MessageChannel channel) {
+    public void sendMessage(final String playerName, String uuid, MessageEmbed embed, MessageChannel channel) {
         sendMessage(playerName, uuid, new DiscordMessage(embed), channel);
     }
 
@@ -455,7 +511,7 @@ public class Discord extends Thread {
      *
      * @param msg Message
      */
-    public void sendMessage(@Nonnull String msg) {
+    public void sendMessage(String msg) {
         sendMessage(Configuration.instance().webhook.serverName, "0000000", msg, getChannel(Configuration.instance().advanced.serverChannelID));
     }
 
@@ -467,19 +523,19 @@ public class Discord extends Thread {
      * @param channel    Target channel
      * @param uuid       Player UUID
      */
-    public void sendMessage(@Nonnull final String playerName, @Nonnull String uuid, @Nonnull String msg, MessageChannel channel) {
+    public void sendMessage(final String playerName, String uuid, String msg, MessageChannel channel) {
         sendMessage(playerName, uuid, new DiscordMessage(msg), channel);
     }
 
     /**
-     * Sends an generic message to discord with custom avatar url (when using a webhook)
+     * Sends a generic message to discord with custom avatar url (when using a webhook)
      *
      * @param channel   target channel
      * @param message   message
      * @param avatarURL URL of the avatar image for the webhook
      * @param name      Webhook name
      */
-    public void sendMessage(MessageChannel channel, @Nonnull String message, @Nonnull String avatarURL, @Nonnull String name) {
+    public void sendMessage(MessageChannel channel, String message, String avatarURL, String name) {
         sendMessage(name, new DiscordMessage(message), avatarURL, channel, false);
     }
 
@@ -490,7 +546,7 @@ public class Discord extends Thread {
      * @param avatarURL URL of the avatar image
      * @param name      Name of the fake player
      */
-    public void sendMessage(@Nonnull String msg, @Nonnull String avatarURL, @Nonnull String name) {
+    public void sendMessage(String msg, String avatarURL, String name) {
         sendMessage(name, new DiscordMessage(msg), avatarURL, getChannel(Configuration.instance().advanced.serverChannelID), true);
     }
 
@@ -502,105 +558,39 @@ public class Discord extends Thread {
      * @param channel   Channel to send message into
      * @param avatarURL URL of the avatar image
      */
-    public void sendMessage(@Nonnull String name, @Nonnull String msg, MessageChannel channel, @Nonnull String avatarURL) {
+    public void sendMessage(String name, String msg, MessageChannel channel, String avatarURL) {
         sendMessage(name, new DiscordMessage(msg), avatarURL, channel, true);
     }
 
     /**
      * Sends an discord message
      *
-     * @param name          Player name or Webhook user name
+     * @param name          Player name or Webhook username
      * @param message       Message to send
      * @param avatarURL     Avatar URL for the webhook
      * @param channel       Target channel
      * @param isChatMessage true to send it as chat message (when not using webhook)
      */
-    public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, MessageChannel channel, boolean isChatMessage) {
+    public void sendMessage(String name, DiscordMessage message, String avatarURL, MessageChannel channel, boolean isChatMessage) {
         sendMessage(name, message, avatarURL, channel, isChatMessage, dummyUUID.toString());
-    }
-
-    /**
-     * Loads all configuration files
-     *
-     */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void loadConfigs() throws IOException {
-        // === Migration ===
-
-        if (configFile.exists()) {
-
-            if (!messagesFile.exists()) messagesFile.createNewFile();
-
-            // Migrate localization to new file
-            final Toml toml = new Toml().read(configFile).getTable("localization");
-
-            if (toml != null) {
-                final Localization localization = toml.to(Localization.class);
-                Variables.LOGGER.info("Starting Translation migration");
-                final TomlWriter w = new TomlWriter.Builder()
-                        .indentValuesBy(2)
-                        .indentTablesBy(4)
-                        .padArrayDelimitersBy(2)
-                        .build();
-                w.write(localization, messagesFile);
-                Variables.LOGGER.info("Translation migration complete");
-
-            }
-
-        }
-
-        // === Load everything ===
-
-        Configuration.instance().loadConfig();
-        if (!Configuration.instance().messages.language.equals("local")) {
-            final File backupFile = new File(messagesFile, ".bak");
-            if (backupFile.exists()) backupFile.delete();
-            try {
-                final URL langURL = new URL("https://raw.githubusercontent.com/ErdbeerbaerLP/Discord-Integration-Translations/main/" + Configuration.instance().messages.language + ".toml");
-                final HttpsURLConnection urlConnection = (HttpsURLConnection) langURL.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-                if (urlConnection.getResponseCode() == 200) {
-                    messagesFile.renameTo(backupFile);
-                    try (InputStream in = urlConnection.getInputStream()) {
-                        Files.copy(in, messagesFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    }
-                } else {
-                    Localization.instance().loadConfig();
-                }
-            } catch (IOException ex) {
-                if (backupFile.exists())
-                    backupFile.renameTo(messagesFile);
-                Localization.instance().loadConfig();
-            }
-        } else
-            Localization.instance().loadConfig();
-
-
-
-        if(StringUtils.containsIgnoreCase(Configuration.instance().webhook.webhookName, "discord")){
-            StringUtils.replaceIgnoreCase(Configuration.instance().webhook.webhookName,"discord","dc");
-            Variables.LOGGER.info("Fixed webhook name containing the word \"Discord\".");
-            Configuration.instance().saveConfig();
-        }
     }
 
     /**
      * Sends an discord message
      *
-     * @param name          Player name or Webhook user name
+     * @param name          Player name or Webhook username
      * @param message       Message to send
      * @param avatarURL     Avatar URL for the webhook
      * @param channel       Target channel
      * @param isChatMessage true to send it as chat message (when not using webhook)
      * @param uuid          UUID of the player (required for in-game pinging)
      */
-    @SuppressWarnings("ConstantConditions")
-    public void sendMessage(@Nonnull String name, @Nonnull DiscordMessage message, @Nonnull String avatarURL, MessageChannel channel, boolean isChatMessage, @Nonnull String uuid) {
+    public void sendMessage(String name, DiscordMessage message, String avatarURL, MessageChannel channel, boolean isChatMessage, String uuid) {
         if (jda == null || channel == null) return;
         final Thread t = new Thread(() -> {
             try {
                 if (Configuration.instance().webhook.enable) {
+                    if (isChatMessage) message.setIsChatMessage();
                     final ArrayList<WebhookMessageBuilder> messages = message.buildWebhookMessages();
                     messages.forEach((builder) -> {
                         builder.setUsername(name);
@@ -612,7 +602,7 @@ public class Discord extends Thread {
                     message.setIsChatMessage();
                     channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
                 } else {
-                        channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
+                    channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> addRecentMessage(a.getId(), UUID.fromString(uuid)));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -627,7 +617,7 @@ public class Discord extends Thread {
      * @return an instance of the webhook or null
      */
     @SuppressWarnings("ConstantConditions")
-    @Nullable
+
     public Webhook getWebhook(final TextChannel c) {
         if (!Configuration.instance().webhook.enable || c == null) return null;
         return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
@@ -658,8 +648,8 @@ public class Discord extends Thread {
      * @param msg message
      * @return Sent message
      */
-    @Nullable
-    public CompletableFuture<Message> sendMessageReturns(@Nonnull String msg, TextChannel c) {
+
+    public CompletableFuture<Message> sendMessageReturns(String msg, TextChannel c) {
         if (Configuration.instance().webhook.enable || msg.isEmpty() || c == null) return null;
         else return c.sendMessage(msg).submit();
     }
@@ -671,7 +661,7 @@ public class Discord extends Thread {
      * @param msg         the message to send
      * @param textChannel the channel where the message should arrive
      */
-    public void sendMessage(@Nonnull String msg, MessageChannel textChannel) {
+    public void sendMessage(String msg, MessageChannel textChannel) {
         sendMessage(new DiscordMessage(msg), textChannel);
     }
 
@@ -681,7 +671,7 @@ public class Discord extends Thread {
      * @param msg     the message to send
      * @param channel the channel where the message should arrive
      */
-    public void sendMessage(@Nonnull DiscordMessage msg, MessageChannel channel) {
+    public void sendMessage(DiscordMessage msg, MessageChannel channel) {
         sendMessage(Configuration.instance().webhook.serverName, "0000000", msg, channel);
     }
 
@@ -708,7 +698,7 @@ public class Discord extends Thread {
      *
      * @return HashMap with the setting keys as key and the setting descriptions as value
      */
-    @Nonnull
+
     public HashMap<String, String> getSettings() {
         final HashMap<String, String> out = new HashMap<>();
         final Field[] fields = PlayerSettings.class.getFields();
@@ -736,7 +726,7 @@ public class Discord extends Thread {
      * @param msg        the message to send
      */
     @SuppressWarnings("ConstantConditions")
-    public void sendMessage(@Nonnull String playerName, @Nonnull String uuid, @Nonnull DiscordMessage msg, MessageChannel channel) {
+    public void sendMessage(String playerName, String uuid, DiscordMessage msg, MessageChannel channel) {
         if (channel == null) return;
         final boolean isServerMessage = playerName.equals(Configuration.instance().webhook.serverName) && uuid.equals("0000000");
         final UUID uUUID = uuid.equals("0000000") ? null : UUID.fromString(uuid);
@@ -761,12 +751,12 @@ public class Discord extends Thread {
     }
 
     /**
-     * Toggles an player's ignore status
+     * Toggles a player's ignore status
      *
      * @param uuid Player's UUID
      * @return new ignore status
      */
-    public boolean togglePlayerIgnore(@Nonnull UUID uuid) {
+    public boolean togglePlayerIgnore(UUID uuid) {
         if (PlayerLinkController.isPlayerLinked(uuid)) {
             final PlayerSettings settings = PlayerLinkController.getSettings(null, uuid);
             settings.ignoreDiscordChatIngame = !settings.ignoreDiscordChatIngame;
@@ -789,26 +779,26 @@ public class Discord extends Thread {
     }
 
     /**
-     * Generates or gets an unique link number for an player
+     * Generates or gets a unique link number for a player
      *
      * @param uniqueID The player's {@link UUID} to generate the number for
      * @return Link number for this player
      */
-    public int genLinkNumber(@Nonnull UUID uniqueID) {
+    public int genLinkNumber(UUID uniqueID) {
         return genLinkNumber(uniqueID, pendingLinks);
     }
 
     /**
-     * Generates or gets an unique link number for an player
+     * Generates or gets a unique link number for a player
      *
      * @param uniqueID The player's {@link UUID} to generate the number for
      * @return Link number for this player
      */
-    public int genBedrockLinkNumber(@Nonnull UUID uniqueID) {
+    public int genBedrockLinkNumber(UUID uniqueID) {
         return genLinkNumber(uniqueID, pendingBedrockLinks);
     }
 
-    private int genLinkNumber(@Nonnull UUID uniqueID, HashMap<Integer, KeyValue<Instant, UUID>> pendingBedrockLinks) {
+    private int genLinkNumber(UUID uniqueID, HashMap<Integer, KeyValue<Instant, UUID>> pendingBedrockLinks) {
         final AtomicInteger r = new AtomicInteger(-1);
         pendingBedrockLinks.forEach((k, v) -> {
             if (v.getValue().equals(uniqueID))
@@ -847,7 +837,7 @@ public class Discord extends Thread {
      * @param roles List to check for admin roles
      * @return true, if the given {@link Role} list has an admin role
      */
-    public boolean hasAdminRole(@Nonnull List<Role> roles) {
+    public boolean hasAdminRole(List<Role> roles) {
         final AtomicBoolean ret = new AtomicBoolean(false);
         roles.forEach((r) -> {
             for (String id : Configuration.instance().commands.adminRoleIDs) {
@@ -861,9 +851,9 @@ public class Discord extends Thread {
      * Calls an event and returns true, if one of the handler returned true
      *
      * @param func function to run on every event handler
-     * @return if an handler returned true
+     * @return if a handler returned true
      */
-    public boolean callEvent(@Nonnull Function<DiscordEventHandler, Boolean> func) {
+    public boolean callEvent(Function<DiscordEventHandler, Boolean> func) {
         for (DiscordEventHandler h : eventHandlers) {
             if (func.apply(h)) return true;
         }
@@ -875,7 +865,7 @@ public class Discord extends Thread {
      *
      * @param consumer function to run on every event handler
      */
-    public void callEventC(@Nonnull Consumer<DiscordEventHandler> consumer) {
+    public void callEventC(Consumer<DiscordEventHandler> consumer) {
         for (DiscordEventHandler h : eventHandlers) {
             consumer.accept(h);
         }

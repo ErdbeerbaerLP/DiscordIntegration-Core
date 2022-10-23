@@ -7,6 +7,7 @@ public interface DiscordIntegrationAddon {
     /**
      * Gets called after loading an Addon<br>
      * Use it to register event handlers or semilar
+     *
      * @param dc {@link Discord} instance
      */
     void load(final Discord dc);
@@ -14,9 +15,10 @@ public interface DiscordIntegrationAddon {
     /**
      * Gets called when Discord Integration is reloading by the /discord reload command. Can be used to reload configs
      */
-    default void reload(){
+    default void reload() {
 
     }
+
     /**
      * Gets called before unloading an Addon
      *

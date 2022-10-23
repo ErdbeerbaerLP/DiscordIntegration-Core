@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Queue;
 
@@ -22,37 +21,41 @@ public final class DiscordMessage {
     private String message;
 
     /**
-     * @param embed Embed to attach to message
-     * @param message Message to send
+     * @param embed    Embed to attach to message
+     * @param message  Message to send
      * @param isNotRaw set to true to enable markdown escaping and mc color conversion (default: false)
      */
-    public DiscordMessage(final MessageEmbed embed, @Nonnull final String message, boolean isNotRaw) {
+    public DiscordMessage(final MessageEmbed embed, final String message, boolean isNotRaw) {
         this.embed = embed;
         this.message = message;
         this.isNotRaw = isNotRaw;
     }
+
     /**
-     * @param embed Embed to attach to message
+     * @param embed   Embed to attach to message
      * @param message Message to send
      */
-    public DiscordMessage(final MessageEmbed embed, @Nonnull final String message) {
+    public DiscordMessage(final MessageEmbed embed, final String message) {
         this(embed, message, false);
     }
+
     /**
      * @param message Message to send
      */
-    public DiscordMessage(@Nonnull final String message) {
+    public DiscordMessage(final String message) {
         this(null, message, false);
     }
+
     /**
      * @param embed Embed to send
      */
-    public DiscordMessage(@Nonnull final MessageEmbed embed) {
+    public DiscordMessage(final MessageEmbed embed) {
         this(embed, "", false);
     }
 
     /**
      * Gets the raw message
+     *
      * @return Message String
      */
     public String getMessage() {
@@ -61,17 +64,18 @@ public final class DiscordMessage {
 
     /**
      * Changes the raw message
+     *
      * @param message Message to set
      */
-    public void setMessage(@Nonnull final String message) {
+    public void setMessage(final String message) {
         this.message = message;
     }
 
-    public void setIsChatMessage(){
+    public void setIsChatMessage() {
         this.isSystemMessage = false;
     }
+
     /**
-     *
      * @return The set embed
      */
     public MessageEmbed getEmbed() {
@@ -80,9 +84,10 @@ public final class DiscordMessage {
 
     /**
      * Sets the embed of this Message
+     *
      * @param embed Embed to set
      */
-    public void setEmbed(@Nonnull final MessageEmbed embed) {
+    public void setEmbed(final MessageEmbed embed) {
         this.embed = embed;
     }
 
@@ -92,10 +97,10 @@ public final class DiscordMessage {
      * @return {@link Queue} of messages
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Nonnull
+
     public MessageCreateData buildMessages() {
         final MessageCreateBuilder out = new MessageCreateBuilder();
-        if(isSystemMessage) {
+        if (isSystemMessage) {
             final ArrayList<Message.MentionType> mentions = new ArrayList<>();
             mentions.add(Message.MentionType.USER);
             mentions.add(Message.MentionType.CHANNEL);
@@ -119,6 +124,7 @@ public final class DiscordMessage {
 
     /**
      * Splits messages for character limits of the webhook
+     *
      * @param inMsg Message to split
      * @return Split messages
      */
@@ -143,10 +149,11 @@ public final class DiscordMessage {
 
     /**
      * Builds webhook messages
+     *
      * @return List containing webhook messages
      */
     @SuppressWarnings("ConstantConditions")
-    @Nonnull
+
     public ArrayList<WebhookMessageBuilder> buildWebhookMessages() {
         final ArrayList<WebhookMessageBuilder> out = new ArrayList<>();
         String content;
@@ -160,7 +167,7 @@ public final class DiscordMessage {
                 content = message;
             }
             for (String msg : splitMessages(content)) {
-                out.add(new WebhookMessageBuilder().setContent(msg).setAllowedMentions(isSystemMessage?AllowedMentions.all():AllowedMentions.none().withParseUsers(true)));
+                out.add(new WebhookMessageBuilder().setContent(msg).setAllowedMentions(isSystemMessage ? AllowedMentions.all() : AllowedMentions.none().withParseUsers(true)));
             }
         }
         if (embed != null) {
@@ -181,7 +188,7 @@ public final class DiscordMessage {
             eb.setTimestamp(embed.getTimestamp());
             if (embed.getTitle() != null)
                 eb.setTitle(new WebhookEmbed.EmbedTitle(embed.getTitle(), embed.getUrl()));
-            out.set(out.size()-1,out.get(out.size()-1).addEmbeds(eb.build()));
+            out.set(out.size() - 1, out.get(out.size() - 1).addEmbeds(eb.build()));
         }
         return out;
     }

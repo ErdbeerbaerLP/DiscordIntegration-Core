@@ -41,12 +41,12 @@ public class DynmapListener extends DynmapCommonAPIListener {
 
     @Override
     public boolean webChatEvent(String source, String name, String message) {
-        if(!this.workaroundEnabled)
+        if (!this.workaroundEnabled)
             sendMessage(name, message);
         return super.webChatEvent(source, name, message);
     }
 
-    public void sendMessage(String name, String message){
+    public void sendMessage(String name, String message) {
         Variables.discord_instance.sendMessage(Variables.discord_instance.getChannel(Configuration.instance().dynmap.dynmapChannelID), Configuration.instance().dynmap.dcMessage.replace("%msg%", message).replace("%sender%", name.isEmpty() ? Configuration.instance().dynmap.unnamed : name), Configuration.instance().dynmap.avatarURL, Configuration.instance().dynmap.name);
     }
 

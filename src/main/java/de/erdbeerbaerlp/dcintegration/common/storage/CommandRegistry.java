@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.apache.commons.lang3.ArrayUtils;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,21 +20,21 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class CommandRegistry {
     /**
-     * Registered commands
-     */
-    private static List<DiscordCommand> commands = new ArrayList<>();
-    /**
      * Commands registered to Discord
      */
     public static final HashMap<Long, DiscordCommand> registeredCMDs = new HashMap<>();
-
+    /**
+     * Registered commands
+     */
+    private static List<DiscordCommand> commands = new ArrayList<>();
 
     /**
      * Registers all commands to discord if changed
      */
-    public static void updateSlashCommands() throws IllegalStateException{
+    public static void updateSlashCommands() throws IllegalStateException {
         final TextChannel channel = Variables.discord_instance.getChannel();
-        if (channel == null) throw new IllegalStateException("Channel does not exist, check channel ID and bot permissions on both channel and category");
+        if (channel == null)
+            throw new IllegalStateException("Channel does not exist, check channel ID and bot permissions on both channel and category");
         final List<Command> cmds = channel.getGuild().retrieveCommands().complete();
         boolean regenCommands = false;
         if (commands.size() == cmds.size())
@@ -47,7 +46,7 @@ public class CommandRegistry {
                         break;
                     }
                 }
-                if(cm == null){
+                if (cm == null) {
                     regenCommands = true;
                     break;
                 }
@@ -125,7 +124,7 @@ public class CommandRegistry {
      * @param cmd command
      * @return true if the registration was successful
      */
-    public static boolean registerCommand(@Nonnull DiscordCommand cmd) {
+    public static boolean registerCommand(DiscordCommand cmd) {
         if (Variables.started != -1) {
             Variables.LOGGER.info("Attempted to register command " + cmd.getName() + "after server finished loading");
             return false;
@@ -189,7 +188,7 @@ public class CommandRegistry {
     /**
      * @return A list of all registered commands
      */
-    @Nonnull
+
     public static List<DiscordCommand> getCommandList() {
         return commands;
     }

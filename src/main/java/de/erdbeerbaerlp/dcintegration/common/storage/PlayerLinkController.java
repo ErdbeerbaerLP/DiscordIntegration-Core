@@ -10,8 +10,6 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.*;
 import java.util.UUID;
 
@@ -27,24 +25,24 @@ public class PlayerLinkController {
 
 
     /**
-     * Checks if an player has linked their minecraft account with discord
+     * Checks if a player has linked their minecraft account with discord
      *
      * @param player {@link UUID} of the player to check
      * @return The player's link status
      */
-    public static boolean isPlayerLinked(@Nonnull UUID player) {
+    public static boolean isPlayerLinked(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         if (isJavaPlayerLinked(player)) return true;
         return isBedrockPlayerLinked(player);
     }
 
     /**
-     * Checks if an player has linked their minecraft account with discord
+     * Checks if a player has linked their minecraft account with discord
      *
      * @param player {@link UUID} of the player to check
      * @return The player's link status
      */
-    public static boolean isBedrockPlayerLinked(@Nonnull UUID player) {
+    public static boolean isBedrockPlayerLinked(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         try {
             for (JsonElement e : getJson()) {
@@ -60,12 +58,12 @@ public class PlayerLinkController {
     }
 
     /**
-     * Checks if an player has linked their minecraft account with discord
+     * Checks if a player has linked their minecraft account with discord
      *
      * @param player {@link UUID} of the player to check
      * @return The player's link status
      */
-    public static boolean isJavaPlayerLinked(@Nonnull UUID player) {
+    public static boolean isJavaPlayerLinked(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         try {
             for (JsonElement e : getJson()) {
@@ -81,24 +79,24 @@ public class PlayerLinkController {
     }
 
     /**
-     * Checks if an user has linked their discord account with minecraft
+     * Checks if a user has linked their discord account with minecraft
      *
      * @param discordID The discord ID to check
      * @return The user's link status
      */
-    public static boolean isDiscordLinked(@Nonnull String discordID) {
+    public static boolean isDiscordLinked(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         if (isDiscordLinkedJava(discordID)) return true;
         return isDiscordLinkedBedrock(discordID);
     }
 
     /**
-     * Checks if an user has linked their discord account with minecraft bedrock
+     * Checks if a user has linked their discord account with minecraft bedrock
      *
      * @param discordID The discord ID to check
      * @return The user's link status
      */
-    public static boolean isDiscordLinkedBedrock(@Nonnull String discordID) {
+    public static boolean isDiscordLinkedBedrock(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         try {
             for (JsonElement e : getJson()) {
@@ -114,12 +112,12 @@ public class PlayerLinkController {
     }
 
     /**
-     * Checks if an user has linked their discord account with minecraft java
+     * Checks if a user has linked their discord account with minecraft java
      *
      * @param discordID The discord ID to check
      * @return The user's link status
      */
-    public static boolean isDiscordLinkedJava(@Nonnull String discordID) {
+    public static boolean isDiscordLinkedJava(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         try {
             for (JsonElement e : getJson()) {
@@ -135,13 +133,13 @@ public class PlayerLinkController {
     }
 
     /**
-     * Gets the linked {@link UUID} of an discord id
+     * Gets the linked {@link UUID} of a discord id
      *
      * @param discordID The Discord ID to get the player {@link UUID}  from
      * @return Linked player {@link UUID}, or null if the discord user is not linked
      */
-    @Nullable
-    public static UUID getPlayerFromDiscord(@Nonnull String discordID) {
+
+    public static UUID getPlayerFromDiscord(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return null;
         try {
             for (JsonElement e : getJson()) {
@@ -157,13 +155,13 @@ public class PlayerLinkController {
     }
 
     /**
-     * Gets the linked bedrock {@link UUID} of an discord id
+     * Gets the linked bedrock {@link UUID} of a discord id
      *
      * @param discordID The Discord ID to get the player {@link UUID}  from
      * @return Linked player {@link UUID}, or null if the discord user is not linked
      */
-    @Nullable
-    public static UUID getBedrockPlayerFromDiscord(@Nonnull String discordID) {
+
+    public static UUID getBedrockPlayerFromDiscord(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return null;
         try {
             for (JsonElement e : getJson()) {
@@ -184,8 +182,8 @@ public class PlayerLinkController {
      * @param player The player's {@link UUID} to get the discord ID from
      * @return Linked discord ID, or null if the player is not linked
      */
-    @Nullable
-    public static String getDiscordFromPlayer(@Nonnull UUID player) {
+
+    public static String getDiscordFromPlayer(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return null;
         if (isJavaPlayerLinked(player)) return getDiscordFromJavaPlayer(player);
         if (isBedrockPlayerLinked(player)) return getDiscordFromBedrockPlayer(player);
@@ -198,8 +196,8 @@ public class PlayerLinkController {
      * @param player The player's {@link UUID} to get the discord ID from
      * @return Linked discord ID, or null if the player is not linked
      */
-    @Nullable
-    public static String getDiscordFromJavaPlayer(@Nonnull UUID player) {
+
+    public static String getDiscordFromJavaPlayer(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return null;
         try {
             for (JsonElement e : getJson()) {
@@ -220,8 +218,8 @@ public class PlayerLinkController {
      * @param player The player's {@link UUID} to get the discord ID from
      * @return Linked discord ID, or null if the player is not linked
      */
-    @Nullable
-    public static String getDiscordFromBedrockPlayer(@Nonnull UUID player) {
+
+    public static String getDiscordFromBedrockPlayer(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return null;
         try {
             for (JsonElement e : getJson()) {
@@ -241,11 +239,11 @@ public class PlayerLinkController {
      *
      * @param discordID The discord id to get the settings from, or null if {@code player} is set
      * @param player    The player's {@link UUID} to get the settings from, or null if {@code discordID} is set
-     * @return The {@link PlayerSettings} of the player/discord user, or an default instance of {@link PlayerSettings}, if the user/player is not linked
+     * @return The {@link PlayerSettings} of the player/discord user, or a default instance of {@link PlayerSettings}, if the user/player is not linked
      * @throws IllegalArgumentException if both arguments were null or the player
      */
-    @Nonnull
-    public static PlayerSettings getSettings(@Nullable String discordID, @Nullable UUID player) {
+
+    public static PlayerSettings getSettings(String discordID, UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return new PlayerSettings();
         if (player == null && discordID == null) throw new IllegalArgumentException();
         else if (discordID == null) discordID = getDiscordFromPlayer(player);
@@ -270,7 +268,7 @@ public class PlayerLinkController {
      * Does not add role and nothing, only saves link into json<br><br>
      * Use {@linkplain PlayerLinkController#linkPlayer(String, UUID)} for linking instead
      */
-    public static void migrateLinkPlayer(@Nonnull String discordID, @Nonnull UUID player) {
+    public static void migrateLinkPlayer(String discordID, UUID player) {
         try {
             final JsonArray a = getJson();
             final PlayerLink link = new PlayerLink();
@@ -284,15 +282,15 @@ public class PlayerLinkController {
     }
 
     /**
-     * Links an discord user ID with an player's {@link UUID}
+     * Links a discord user ID with a player's {@link UUID}
      *
      * @param discordID Discord ID to link
      * @param player    {@link UUID} to link
      * @return true, if linking was successful
      * @throws IllegalArgumentException if one side is already linked
      */
-    @SuppressWarnings("ConstantConditions")
-    public static boolean linkPlayer(@Nonnull String discordID, @Nonnull UUID player) throws IllegalArgumentException {
+    @SuppressWarnings({"ConstantConditions", "DuplicatedCode"})
+    public static boolean linkPlayer(String discordID, UUID player) throws IllegalArgumentException {
         if (!discord_instance.srv.isOnlineMode() || player.equals(Discord.dummyUUID)) return false;
         if (isDiscordLinkedJava(discordID) || isPlayerLinked(player))
             throw new IllegalArgumentException("One link side already exists");
@@ -338,15 +336,15 @@ public class PlayerLinkController {
     }
 
     /**
-     * Links an discord user ID with an player's {@link UUID}
+     * Links a discord user ID with a player's {@link UUID}
      *
      * @param discordID     Discord ID to link
      * @param bedrockPlayer {@link UUID} to link
      * @return true, if linking was successful
      * @throws IllegalArgumentException if one side is already linked
      */
-    @SuppressWarnings("ConstantConditions")
-    public static boolean linkBedrockPlayer(@Nonnull String discordID, @Nonnull UUID bedrockPlayer) throws IllegalArgumentException {
+    @SuppressWarnings({"ConstantConditions", "DuplicatedCode"})
+    public static boolean linkBedrockPlayer(String discordID, UUID bedrockPlayer) throws IllegalArgumentException {
         if (!discord_instance.srv.isOnlineMode() || bedrockPlayer.equals(Discord.dummyUUID)) return false;
         if (isDiscordLinkedBedrock(discordID) || isPlayerLinked(bedrockPlayer))
             throw new IllegalArgumentException("One link side already exists");
@@ -389,7 +387,7 @@ public class PlayerLinkController {
      * @throws NullPointerException if player/user is not linked
      */
     @SuppressWarnings("UnusedReturnValue")
-    public static boolean updatePlayerSettings(@Nullable String discordID, @Nullable UUID player, @Nonnull PlayerSettings settings) {
+    public static boolean updatePlayerSettings(String discordID, UUID player, PlayerSettings settings) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         if (player == null && discordID == null) throw new NullPointerException();
         else if (discordID == null) discordID = getDiscordFromPlayer(player);
@@ -423,20 +421,20 @@ public class PlayerLinkController {
      *
      * @param a Json to save
      */
-    private static void saveJSON(@Nonnull JsonArray a) throws IOException {
+    private static void saveJSON(JsonArray a) throws IOException {
         try (Writer writer = new FileWriter(playerLinkedFile)) {
             gson.toJson(a, writer);
         }
     }
 
     /**
-     * Unlinks an player and discord id
+     * Unlinks a player and discord id
      *
      * @param discordID The discord ID to unlink
      * @return true, if unlinking was successful
      */
     @SuppressWarnings({"UnusedReturnValue", "ConstantConditions"})
-    public static boolean unlinkPlayer(@Nonnull String discordID) {
+    public static boolean unlinkPlayer(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         if (!isDiscordLinked(discordID)) return false;
         try {
@@ -448,6 +446,7 @@ public class PlayerLinkController {
                     try (Writer writer = new FileWriter(playerLinkedFile)) {
                         gson.toJson(json, writer);
                     }
+                    discord_instance.callEventC((a) -> a.onPlayerUnlink(UUID.fromString(o.mcPlayerUUID), discordID));
                     try {
                         final Guild guild = discord_instance.getChannel().getGuild();
                         guild.retrieveMemberById(discordID).submit().thenAccept((member) -> {
@@ -474,7 +473,7 @@ public class PlayerLinkController {
      * @return The {@link PlayerLink} instance
      */
     @SuppressWarnings("DuplicatedCode")
-    private static PlayerLink getUser(@Nonnull String discordID, @Nonnull UUID player) throws IOException {
+    private static PlayerLink getUser(String discordID, UUID player) throws IOException {
         if (!discord_instance.srv.isOnlineMode()) return null;
         final JsonArray a = getJson();
         for (JsonElement e : a) {
@@ -493,8 +492,8 @@ public class PlayerLinkController {
      * @return The {@link PlayerLink} instance
      */
     @SuppressWarnings("DuplicatedCode")
-    @Nullable
-    private static JsonElement getUserRaw(@Nonnull String discordID, @Nonnull UUID player) throws IOException {
+
+    private static JsonElement getUserRaw(String discordID, UUID player) throws IOException {
         if (!discord_instance.srv.isOnlineMode()) return null;
         final JsonArray a = getJson();
         for (JsonElement e : a) {
@@ -513,8 +512,8 @@ public class PlayerLinkController {
      * @return The {@link PlayerLink} instance
      */
     @SuppressWarnings("DuplicatedCode")
-    @Nullable
-    private static PlayerLink getBedrockUser(@Nonnull String discordID, @Nonnull UUID bedrockPlayer) throws IOException {
+
+    private static PlayerLink getBedrockUser(String discordID, UUID bedrockPlayer) throws IOException {
         if (!discord_instance.srv.isOnlineMode()) return null;
         final JsonArray a = getJson();
         for (JsonElement e : a) {
@@ -533,8 +532,8 @@ public class PlayerLinkController {
      * @return The {@link PlayerLink} instance
      */
     @SuppressWarnings("DuplicatedCode")
-    @Nullable
-    private static JsonElement getBedrockUserRaw(@Nonnull String discordID, @Nonnull UUID bedrockPlayer) throws IOException {
+
+    private static JsonElement getBedrockUserRaw(String discordID, UUID bedrockPlayer) throws IOException {
         if (!discord_instance.srv.isOnlineMode()) return null;
         final JsonArray a = getJson();
         for (JsonElement e : a) {
@@ -551,7 +550,7 @@ public class PlayerLinkController {
      * @return {@link JsonArray} containing links and settings
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    @Nonnull
+
     private static JsonArray getJson() throws IOException, IllegalStateException {
         if (!playerLinkedFile.exists()) {
             playerLinkedFile.createNewFile();
@@ -571,7 +570,7 @@ public class PlayerLinkController {
      *
      * @return All Player links as array or an empty array if parsing the json fails
      */
-    @Nonnull
+
     public static PlayerLink[] getAllLinks() {
         try {
             return gson.fromJson(getJson(), PlayerLink[].class);

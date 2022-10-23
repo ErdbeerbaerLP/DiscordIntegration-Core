@@ -14,11 +14,15 @@ public class Variables {
     /**
      * Mod/Plugin version
      */
-    public static final String VERSION = "2.4.7";
+    public static final String VERSION = "2.5.0";
     /**
      * Discord Integration data directory
      */
     public static final File discordDataDir = new File("./DiscordIntegration-Data/");
+    /**
+     * The primary {@link Logger} instance
+     */
+    public static final Logger LOGGER = LogManager.getLogger("Discord-Integration");
     /**
      * Time in milliseconds when the server started
      */
@@ -39,8 +43,4 @@ public class Variables {
      * The currently active {@link Discord} instance
      */
     public static Discord discord_instance;
-    /**
-     * The primary {@link Logger} instance
-     */
-    public static final Logger LOGGER = LogManager.getLogger("Discord-Integration-Core");
 }

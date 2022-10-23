@@ -134,8 +134,7 @@ public class DiscordEventListener implements EventListener {
                         for (Sticker s : ev.getMessage().getStickers())
                             attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n" + Localization.instance().sticker + ": " + s.getName()));
 
-                        @SuppressWarnings("unchecked")
-                        final Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), mcSerializerOptions);
+                        @SuppressWarnings("unchecked") final Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), mcSerializerOptions);
                         final Message reply = ev.getMessage().getReferencedMessage();
                         final boolean hasReply = reply != null;
                         Component out = LegacyComponentSerializer.legacySection().deserialize(hasReply ? Localization.instance().ingame_discordReplyMessage : Localization.instance().ingame_discordMessage);
@@ -155,8 +154,7 @@ public class DiscordEventListener implements EventListener {
                                     .style(ComponentUtils.addUserHoverClick(Style.style(TextColor.color((reply.getMember() != null ? reply.getMember().getColorRaw() : 0))), reply.getAuthor(), reply.getMember()));
                             out = out.replaceText(ComponentUtils.replaceLiteral("%ruser%", repUser));
                             final String repMsg = MessageUtils.formatEmoteMessage(reply.getMentions().getCustomEmojis(), reply.getContentDisplay());
-                            @SuppressWarnings("unchecked")
-                            final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), mcSerializerOptions);
+                            @SuppressWarnings("unchecked") final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), mcSerializerOptions);
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
 
                         }

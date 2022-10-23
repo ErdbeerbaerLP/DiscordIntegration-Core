@@ -22,7 +22,7 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_insta
 public class CommandLink extends DiscordCommand {
 
     public CommandLink() {
-        super("link", Configuration.instance().linking.whitelistMode?Localization.instance().commands.descriptions.whitelist:Localization.instance().commands.descriptions.link);
+        super("link", Configuration.instance().linking.whitelistMode ? Localization.instance().commands.descriptions.whitelist : Localization.instance().commands.descriptions.link);
         addOption(OptionType.INTEGER, "code", "Link Code", true);
     }
 
@@ -32,7 +32,7 @@ public class CommandLink extends DiscordCommand {
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
         final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
         Member m = ev.getMember();
-        if(m == null) m = ev.getGuild().retrieveMember(ev.getUser()).complete();
+        if (m == null) m = ev.getGuild().retrieveMember(ev.getUser()).complete();
         if (m != null)
             if (Configuration.instance().linking.requiredRoles.length != 0) {
                 AtomicBoolean ok = new AtomicBoolean(false);
@@ -73,7 +73,9 @@ public class CommandLink extends DiscordCommand {
                 }
             } catch (NumberFormatException nfe) {
                 reply.thenAccept((c) -> c.editOriginal(Localization.instance().linking.linkNumberNAN).queue());
-            } catch (Exception e) {e.printStackTrace();}
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
 

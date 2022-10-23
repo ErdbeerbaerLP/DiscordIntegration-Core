@@ -15,139 +15,147 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.collections4.keyvalue.DefaultMapEntry;
 import org.intellij.lang.annotations.RegExp;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
 public class ComponentUtils {
-    @Nonnull
-    public static Style addUserHoverClick(@Nonnull final Style styleIn, @Nonnull Member m){
-        return addUserHoverClick(styleIn, m.getId(),m.getEffectiveName(),m.getUser().getAsTag());
+
+    public static Style addUserHoverClick(final Style styleIn, Member m) {
+        return addUserHoverClick(styleIn, m.getId(), m.getEffectiveName(), m.getUser().getAsTag());
     }
-    @Nonnull
-    public static Style addUserHoverClick(@Nonnull final Style styleIn, @Nonnull User u, @Nullable Member m){
-        return addUserHoverClick(styleIn, u.getId(),m==null?u.getName():m.getEffectiveName(),u.getAsTag());
+
+    public static Style addUserHoverClick(final Style styleIn, User u, Member m) {
+        return addUserHoverClick(styleIn, u.getId(), m == null ? u.getName() : m.getEffectiveName(), u.getAsTag());
 
     }
-    @Nonnull
-    public static Style addUserHoverClick(@Nonnull final Style styleIn, @Nonnull String userID, @Nonnull String displayName, @Nonnull String tag){
-        return styleIn.clickEvent(ClickEvent.suggestCommand("<@" + userID + ">")).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%user#tag%", tag).replace("%user%",displayName))));
+
+    public static Style addUserHoverClick(final Style styleIn, String userID, String displayName, String tag) {
+        return styleIn.clickEvent(ClickEvent.suggestCommand("<@" + userID + ">")).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%user#tag%", tag).replace("%user%", displayName))));
     }
 
     /**
      * Makes URLs in {@link Component}s clickable by adding click event and formatting
-     * @param in Component which might contain an URL
+     *
+     * @param in Component which might contain a URL
      * @return Component with all URLs clickable
      */
-    @Nonnull
-    public static Component makeURLsClickable(@Nonnull final Component in) {
+
+    public static Component makeURLsClickable(final Component in) {
         return in.replaceText(TextReplacementConfig.builder().match(MessageUtils.URL_PATTERN).replacement(url -> url.decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(url.content()))).build());
     }
 
     /**
      * Provides an {@link TextReplacementConfig} for {@link Component#replaceText(TextReplacementConfig)}
+     *
      * @param a String/Regex which should be replaced
      * @param b Replacement String
      * @return Configured {@link TextReplacementConfig}
      */
-    @Nonnull
-    public static TextReplacementConfig replace(@RegExp @Nonnull String a, @Nonnull String b) {
+
+    public static TextReplacementConfig replace(@RegExp String a, String b) {
         return TextReplacementConfig.builder().match(a).replacement(b).build();
     }
 
     /**
      * Provides an {@link TextReplacementConfig} for {@link Component#replaceText(TextReplacementConfig)}
+     *
      * @param a Literal String which should be replaced
      * @param b Replacement String
      * @return Configured {@link TextReplacementConfig}
      */
-    @Nonnull
-    public static TextReplacementConfig replaceLiteral(@Nonnull String a, @Nonnull String b) {
+
+    public static TextReplacementConfig replaceLiteral(String a, String b) {
         return TextReplacementConfig.builder().matchLiteral(a).replacement(b).build();
     }
 
     /**
      * Provides an {@link TextReplacementConfig} for {@link Component#replaceText(TextReplacementConfig)}
-     * @param a String/Regex which should be replaced
-     * @param b Replacement String
+     *
+     * @param a     String/Regex which should be replaced
+     * @param b     Replacement String
      * @param times Only replaces this amount of matches
      * @return Configured {@link TextReplacementConfig}
      */
-    @Nonnull
-    public static TextReplacementConfig replace(@RegExp @Nonnull String a, @Nonnull String b, int times) {
+
+    public static TextReplacementConfig replace(@RegExp String a, String b, int times) {
         return TextReplacementConfig.builder().match(a).replacement(b).times(times).build();
     }
 
     /**
      * Provides an {@link TextReplacementConfig} for {@link Component#replaceText(TextReplacementConfig)}
-     * @param a Literal String which should be replaced
-     * @param b Replacement String
+     *
+     * @param a     Literal String which should be replaced
+     * @param b     Replacement String
      * @param times Only replaces this amount of matches
      * @return Configured {@link TextReplacementConfig}
      */
-    @Nonnull
-    public static TextReplacementConfig replaceLiteral(@Nonnull String a, @Nonnull String b, int times) {
+
+    public static TextReplacementConfig replaceLiteral(String a, String b, int times) {
         return TextReplacementConfig.builder().matchLiteral(a).replacement(b).times(times).build();
     }
 
     /**
      * Provides an {@link TextReplacementConfig} for {@link Component#replaceText(TextReplacementConfig)}
+     *
      * @param a String/Regex which should be replaced
      * @param b Replacement Component
      * @return Configured {@link TextReplacementConfig}
      */
-    @Nonnull
-    public static TextReplacementConfig replace(@RegExp @Nonnull String a, @Nonnull Component b) {
+
+    public static TextReplacementConfig replace(@RegExp String a, Component b) {
         return TextReplacementConfig.builder().match(a).replacement(b).build();
     }
 
     /**
      * Provides an {@link TextReplacementConfig} for {@link Component#replaceText(TextReplacementConfig)}
+     *
      * @param a Literal String which should be replaced
      * @param b Replacement Component
      * @return Configured {@link TextReplacementConfig}
      */
-    @Nonnull
-    public static TextReplacementConfig replaceLiteral(@Nonnull String a, @Nonnull Component b) {
+
+    public static TextReplacementConfig replaceLiteral(String a, Component b) {
         return TextReplacementConfig.builder().matchLiteral(a).replacement(b).build();
     }
 
     /**
      * Provides an {@link TextReplacementConfig} for {@link Component#replaceText(TextReplacementConfig)}
-     * @param a String/Regex which should be replaced
-     * @param b Replacement Component
+     *
+     * @param a     String/Regex which should be replaced
+     * @param b     Replacement Component
      * @param times Only replaces this amount of matches
      * @return Configured {@link TextReplacementConfig}
      */
-    @Nonnull
-    public static TextReplacementConfig replace(@RegExp @Nonnull String a, @Nonnull Component b, int times) {
+
+    public static TextReplacementConfig replace(@RegExp String a, Component b, int times) {
         return TextReplacementConfig.builder().match(a).replacement(b).times(times).build();
     }
 
     /**
      * Provides an {@link TextReplacementConfig} for {@link Component#replaceText(TextReplacementConfig)}
-     * @param a Literal String which should be replaced
-     * @param b Replacement Component
+     *
+     * @param a     Literal String which should be replaced
+     * @param b     Replacement Component
      * @param times Only replaces this amount of matches
      * @return Configured {@link TextReplacementConfig}
      */
-    @Nonnull
-    public static TextReplacementConfig replaceLiteral(@Nonnull String a, @Nonnull Component b, int times) {
+
+    public static TextReplacementConfig replaceLiteral(String a, Component b, int times) {
         return TextReplacementConfig.builder().matchLiteral(a).replacement(b).times(times).build();
     }
 
     /**
      * Parses and formats Pings/Mentions<br>Every found mention will get bold and colored in {@linkplain TextColors#PING}
-     * @param msg Message where Mentions should be formatted from
+     *
+     * @param msg  Message where Mentions should be formatted from
      * @param uuid {@link UUID} of the receiving player
      * @param name Name of the receiving player
-     * @return {@link Map.Entry} containing an boolean, which is true, when there was an mention found, as key and the formatted {@link Component} as value
+     * @return {@link Map.Entry} containing a boolean, which is true, when there was a mention found, as key and the formatted {@link Component} as value
      */
-    @Nonnull
-    public static Map.Entry<Boolean, Component> parsePing(@Nonnull Component msg, @Nonnull UUID uuid, @Nonnull String name) {
+
+    public static Map.Entry<Boolean, Component> parsePing(Component msg, UUID uuid, String name) {
         AtomicBoolean hasPing = new AtomicBoolean(false);
         msg = msg.replaceText(TextReplacementConfig.builder().matchLiteral("@" + name).replacement(Component.text("@" + name).style(Style.style(TextColors.PING).decorate(TextDecoration.BOLD))).condition((a, b) -> {
             hasPing.set(true);
@@ -164,8 +172,8 @@ public class ComponentUtils {
         return new DefaultMapEntry<>(hasPing.get(), msg);
     }
 
-    @Nonnull
-    public static Component append(final Component base, final Component toAppend){
+
+    public static Component append(final Component base, final Component toAppend) {
         return base.append(toAppend);
     }
 }

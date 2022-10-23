@@ -5,18 +5,16 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.UUID;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "EmptyMethod", "SameReturnValue"})
 public abstract class DiscordEventHandler {
     /**
      * Gets called when someone DMs the bot before any code gets executed
      *
      * @return true to cancel default code execution
      */
-    public boolean onDiscordPrivateMessage(@Nonnull final MessageReceivedEvent event){
+    public boolean onDiscordPrivateMessage(final MessageReceivedEvent event) {
         return false;
     }
 
@@ -25,7 +23,7 @@ public abstract class DiscordEventHandler {
      *
      * @return true to cancel default code execution
      */
-    public boolean onDiscordMessagePre(@Nonnull final MessageReceivedEvent event){
+    public boolean onDiscordMessagePre(final MessageReceivedEvent event) {
         return false;
     }
 
@@ -33,26 +31,35 @@ public abstract class DiscordEventHandler {
      * Gets called when a command was entered, invalid or not
      *
      * @param channel Text channel where command was executed
-     * @param sender Command sender
+     * @param sender  Command sender
      * @param command the executed command or null if the command was invalid, or the user had no permission for any command
      * @return true to cancel default code execution
      */
-    public boolean onDiscordCommand(final MessageChannelUnion channel, User sender, @Nullable final DiscordCommand command){
+    public boolean onDiscordCommand(final MessageChannelUnion channel, User sender, final DiscordCommand command) {
         return false;
     }
 
     /**
      * Gets called after command execution or message forwarding in any channel
      */
-    public void onDiscordMessagePost(@Nonnull final MessageReceivedEvent event){}
+    public void onDiscordMessagePost(final MessageReceivedEvent event) {
+    }
 
     /**
-     * Gets called when an player successfully links their Discord and Minecraft account
+     * Gets called when a player successfully links their Discord and Minecraft account
      */
-    public void onPlayerLink(@Nonnull final UUID mcUUID, @Nonnull final String discordID){}
+    public void onPlayerLink(final UUID mcUUID, final String discordID) {
+    }
 
     /**
-     * Gets called when an player successfully links their Discord and Minecraft (Bedrock) account
+     * Gets called when a player successfully unlinks their Discord and Minecraft account
      */
-    public void onBedrockPlayerLink(@Nonnull final UUID bedrockUUID, @Nonnull final String discordID){}
+    public void onPlayerUnlink(final UUID mcUUID, final String discordID) {
+    }
+
+    /**
+     * Gets called when a player successfully links their Discord and Minecraft (Bedrock) account
+     */
+    public void onBedrockPlayerLink(final UUID bedrockUUID, final String discordID) {
+    }
 }

@@ -219,7 +219,7 @@ public class Configuration {
         @TomlComment({"Custom channel where messages get sent to minecraft", "Leave 'default' to use default channel"})
         public String chatInputChannelID = "default";
 
-        @TomlComment({"Allows you to change the target URL for the API to make it usable with custom discord instances like fosscord","DO NOT CHANGE if you don't know what you are doing!!"})
+        @TomlComment({"Allows you to change the target URL for the API to make it usable with custom discord instances like fosscord", "DO NOT CHANGE if you don't know what you are doing!!"})
         public String baseAPIUrl = "https://discord.com";
 
 
@@ -246,7 +246,6 @@ public class Configuration {
         @TomlComment("The url to open when clicking the /discord command text")
         public String inviteURL = "https://discord.gg/myserver";
     }
-
 
 
     public static class Webhook {
@@ -283,12 +282,10 @@ public class Configuration {
 
         @TomlComment("Adding Role IDs here will require the players to have at least ONE of these roles to link account")
         public String[] requiredRoles = new String[0];
-
-        @TomlComment("Allows you to configure the default values of some personal settings")
-        PersonalSettingsDefaults personalSettingsDefaults = new PersonalSettingsDefaults();
-
         @TomlComment({"Adding setting keys to this array will prevent thoose settings to be changed", "They will still show up in the list though"})
         public String[] settingsBlacklist = new String[0];
+        @TomlComment("Allows you to configure the default values of some personal settings")
+        PersonalSettingsDefaults personalSettingsDefaults = new PersonalSettingsDefaults();
 
         public static class PersonalSettingsDefaults {
             public boolean default_useDiscordNameInChannel = true;

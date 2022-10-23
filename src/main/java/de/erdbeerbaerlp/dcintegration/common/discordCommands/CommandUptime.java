@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 public class CommandUptime extends DiscordCommand {
     public CommandUptime() {
-        super("uptime",Localization.instance().commands.descriptions.uptime);
+        super("uptime", Localization.instance().commands.descriptions.uptime);
     }
 
     @Override

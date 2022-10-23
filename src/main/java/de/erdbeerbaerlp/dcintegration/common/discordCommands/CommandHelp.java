@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 public class CommandHelp extends DiscordCommand {
 
     public CommandHelp() {
-        super( "help",Localization.instance().commands.descriptions.help);
+        super("help", Localization.instance().commands.descriptions.help);
     }
 
     @Override
