@@ -2,9 +2,12 @@ package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+
+import java.util.concurrent.CompletableFuture;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
@@ -14,9 +17,11 @@ public class CommandFromCFG extends DiscordCommand {
     private final boolean admin;
     private final ConfigCommand.CommandArgument[] args;
     private final boolean hidden;
+    private final String textToSend;
 
-    public CommandFromCFG(String cmd, String description, String mcCommand, boolean adminOnly, ConfigCommand.CommandArgument[] args, boolean hidden) throws IllegalArgumentException {
+    public CommandFromCFG(String cmd, String description, String mcCommand, boolean adminOnly, ConfigCommand.CommandArgument[] args, boolean hidden, String textToSend) throws IllegalArgumentException {
         super(cmd, description);
+        this.textToSend = textToSend;
         this.isConfigCmd = true;
         this.admin = adminOnly;
         this.mcCmd = mcCommand;
@@ -47,14 +52,21 @@ public class CommandFromCFG extends DiscordCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
-        String cmd = mcCmd;
-        for (ConfigCommand.CommandArgument arg : args) {
-            final OptionMapping option = ev.getOption(arg.name);
-            cmd = cmd.replace("%" + arg.name + "%", option == null ? "" : option.getAsString());
-
+    public void execute(final SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
+        reply = reply.setEphemeral(hidden);
+        if (!textToSend.isBlank()) {
+            reply = reply.setContent(textToSend);
         }
-        discord_instance.srv.runMcCommand(cmd, reply.setEphemeral(hidden).submit(), ev.getUser());
+        final CompletableFuture<InteractionHook> submit = reply.submit();
+        if (!mcCmd.isBlank()) {
+            String cmd = mcCmd;
+            for (ConfigCommand.CommandArgument arg : args) {
+                final OptionMapping option = ev.getOption(arg.name);
+                cmd = cmd.replace("%" + arg.name + "%", option == null ? "" : option.getAsString());
+
+            }
+            discord_instance.srv.runMcCommand(cmd, submit, ev.getUser());
+        }
     }
 
 }

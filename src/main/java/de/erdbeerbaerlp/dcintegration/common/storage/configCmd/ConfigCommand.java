@@ -3,7 +3,7 @@ package de.erdbeerbaerlp.dcintegration.common.storage.configCmd;
 
 @SuppressWarnings("CanBeFinal")
 public class ConfigCommand {
-    public String name = "missingno", description = "No description provided.", mcCommand = "?";
+    public String name = "missingno", description = "No description provided.", mcCommand = "", textToSend = "";
     public boolean adminOnly = false, hidden = false;
     public CommandArgument[] args = new CommandArgument[0];
 

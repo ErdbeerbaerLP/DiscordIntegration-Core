@@ -189,7 +189,6 @@ public class DiscordEventListener implements EventListener {
             replyCallbackAction.setContent(Localization.instance().commands.noPermission).setEphemeral(true).queue();
             return;
         }
-        //noinspection ConstantConditions
         if (!executed && (Configuration.instance().commands.showUnknownCommandEverywhere || channel.getId().equals(dc.getChannel().getId())) && Configuration.instance().commands.showUnknownCommandMessage) {
             if (Configuration.instance().commands.helpCmdEnabled)
                 replyCallbackAction.setContent(Localization.instance().commands.unknownCommand.replace("%prefix%", "/")).setEphemeral(true).queue();

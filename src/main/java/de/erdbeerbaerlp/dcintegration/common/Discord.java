@@ -352,7 +352,6 @@ public class Discord extends Thread {
      * @param channel Channel ID
      * @return Webhook Client for the Channel ID
      */
-    @SuppressWarnings("ConstantConditions")
 
     public JDAWebhookClient getWebhookCli(String channel) {
         return webhookClis.computeIfAbsent(channel, (id) -> JDAWebhookClient.from(getWebhook(getChannel(id))));

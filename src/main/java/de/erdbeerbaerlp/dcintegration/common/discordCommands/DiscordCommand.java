@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.internal.interactions.CommandDataImpl;
+import org.jetbrains.annotations.NotNull;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
@@ -36,7 +37,7 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * Sets the name of the command
      */
 
-    public String getName() {
+    public @NotNull String getName() {
         return name;
     }
 
@@ -54,7 +55,7 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * Sets the description for the help command
      */
 
-    public String getDescription() {
+    public @NotNull String getDescription() {
         return description;
     }
 
@@ -88,7 +89,6 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * @param user The user being handled
      * @return wether or not the user can execute this command
      */
-    @SuppressWarnings("ConstantConditions")
     public boolean canUserExecuteCommand(User user) {
         Member m = discord_instance.getChannel().getGuild().retrieveMember(user).complete();
         if (m == null) return false;

@@ -106,7 +106,7 @@ public class CommandRegistry {
 
         for (ConfigCommand cmd : Configuration.instance().commands.customCommands) {
             try {
-                final DiscordCommand regCmd = new CommandFromCFG(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden);
+                final DiscordCommand regCmd = new CommandFromCFG(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden, cmd.textToSend);
                 if (!registerCommand(regCmd))
                     Variables.LOGGER.error("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
             } catch (IllegalArgumentException e) {
