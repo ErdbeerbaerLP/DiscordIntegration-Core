@@ -79,4 +79,9 @@ public interface ServerInterface {
      */
 
     String getNameFromUUID(UUID uuid);
+
+    /**
+     * @return The mod/plugin loader name<br>Currently unused, but may be used by addons
+     */
+    String getLoaderName();
 }

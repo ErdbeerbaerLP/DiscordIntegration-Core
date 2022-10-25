@@ -22,22 +22,6 @@ repositories {
         url 'https://m2.dv8tion.net/releases'
     }
     maven { url 'https://jitpack.io' }
-    maven { url "https://nexus.vankka.dev/repository/maven-public/" }
-    maven { url "https://repository.dev.gotan.io/repository/gotan.os/" }
-    maven { url "https://repo.opencollab.dev/maven-snapshots" }
-    maven { url "https://repo.opencollab.dev/maven-releases" }
-    maven {
-        name = 'sonatype-oss'
-        url = 'https://oss.sonatype.org/content/repositories/snapshots/'
-    }
-    maven {
-        name = 'sonatype'
-        url = 'https://oss.sonatype.org/content/groups/public/'
-    }
-    maven {
-        name = 'howaner'
-        url = "https://repo.howaner.de/"
-    }
     mavenCentral()
 
     flatDir {
