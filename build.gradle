@@ -77,7 +77,7 @@ dependencies {
     embed 'club.minnced:discord-webhooks:0.8.2'
 
     //GSON
-    embed group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
+    embed group: 'com.google.code.gson', name: 'gson', version: '2.10'
 
 
     //Emoji-Java
