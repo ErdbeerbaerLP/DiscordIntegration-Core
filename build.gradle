@@ -132,6 +132,7 @@ artifacts {
     archives tasks.shadowJar
 }
 publishing {
+ if (project.hasProperty('nexusUser')) { // $GRADLE_USER_HOME/gradle.properties
     publications {
         maven(MavenPublication) {
             groupId = 'de.erdbeerbaerlp'
@@ -151,5 +152,6 @@ publishing {
                 url = "https://repo.erdbeerbaerlp.de/repository/maven-releases"
             }
         }
+    }
     }
 }
