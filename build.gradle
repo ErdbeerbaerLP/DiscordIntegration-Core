@@ -72,8 +72,11 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed('net.dv8tion:JDA:5.0.0-alpha.21')
-    embed('club.minnced:discord-webhooks:0.8.2')
+    embed 'net.dv8tion:JDA:5.0.0-alpha.22'
+    embed 'club.minnced:discord-webhooks:0.8.2'
+
+    //GSON
+    embed group: 'com.google.code.gson', name: 'gson', version: '2.10'
 
 
     //Emoji-Java
@@ -133,6 +136,7 @@ artifacts {
     archives tasks.shadowJar
 }
 publishing {
+ if (project.hasProperty('nexusUser')) { // $GRADLE_USER_HOME/gradle.properties
     publications {
         maven(MavenPublication) {
             groupId = 'de.erdbeerbaerlp'
@@ -152,5 +156,6 @@ publishing {
                 url = "https://repo.erdbeerbaerlp.de/repository/maven-releases"
             }
         }
+    }
     }
 }
