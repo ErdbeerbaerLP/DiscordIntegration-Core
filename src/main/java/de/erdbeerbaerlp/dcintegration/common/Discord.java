@@ -16,8 +16,11 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
@@ -43,8 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
+import static de.erdbeerbaerlp.dcintegration.common.util.Variables.*;
 
 @SuppressWarnings("unused")
 public class Discord extends Thread {
@@ -85,7 +87,7 @@ public class Discord extends Thread {
 
     private final HashMap<String, Webhook> webhookHashMap = new HashMap<>();
     private final HashMap<String, JDAWebhookClient> webhookClis = new HashMap<>();
-    private final HashMap<String, TextChannel> channelCache = new HashMap<>();
+    private final HashMap<String, StandardGuildMessageChannel> channelCache = new HashMap<>();
     /**
      * Current JDA instance
      */
@@ -394,7 +396,7 @@ public class Discord extends Thread {
      * @return the specified text channel
      */
 
-    public TextChannel getChannel() {
+    public StandardGuildMessageChannel getChannel() {
         return getChannel("default");
     }
 
@@ -402,9 +404,28 @@ public class Discord extends Thread {
      * @return the specified text channel (supports "default" to return the default server channel)
      */
 
-    public TextChannel getChannel(String id) {
+    private StandardGuildMessageChannel retrieveChannel(String id2){
+            final StandardGuildMessageChannel chan = jda.getTextChannelById(id2);
+            if (chan == null) {
+                for (final Guild g : jda.getGuilds()) {
+                    for (GuildChannel gChannel : g.getChannels(true)) {
+                        if (gChannel == null) continue;
+                        if (gChannel.getId().equals(id2)) {
+                            LOGGER.info("Channel Type: " + gChannel.getType());
+                            if(gChannel.getType() == ChannelType.TEXT || gChannel.getType() == ChannelType.NEWS || gChannel.getType() == ChannelType.STAGE){
+                                return (StandardGuildMessageChannel) gChannel;
+                            }else{
+                                LOGGER.error("Channel type is invalid!");
+                            }
+                        }
+                    }
+                }
+            }
+            return chan;
+        }
+    public StandardGuildMessageChannel getChannel(String id) {
         if (jda == null) return null;
-        TextChannel channel;
+        StandardGuildMessageChannel channel;
         final boolean deflt = id.equals("default") || id.equals(Configuration.instance().general.botChannel);
         if (deflt) id = Configuration.instance().general.botChannel;
         if (id.isEmpty()) {
@@ -413,10 +434,10 @@ public class Discord extends Thread {
             Variables.LOGGER.info("Falling back to default channel!");
             return getChannel();
         }
-        channel = channelCache.computeIfAbsent(id, (id2) -> jda.getTextChannelById(id2));
+        channel = channelCache.computeIfAbsent(id, this::retrieveChannel);
         if (channel == null) {
             Variables.LOGGER.error("Failed to get channel with ID '" + id + "', falling back to default channel");
-            channel = channelCache.computeIfAbsent(Configuration.instance().general.botChannel, jda::getTextChannelById);
+            channel = channelCache.computeIfAbsent(Configuration.instance().general.botChannel, this::retrieveChannel);
         }
         return channel;
     }
@@ -445,6 +466,8 @@ public class Discord extends Thread {
         final Thread t = new Thread(() -> {
             try {
                 CommandRegistry.updateSlashCommands();
+            } catch (IllegalStateException e) {
+                LOGGER.error(e);
             } catch (Exception e) {
                 e.printStackTrace();
                 Variables.LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
@@ -617,7 +640,7 @@ public class Discord extends Thread {
      */
     @SuppressWarnings("ConstantConditions")
 
-    public Webhook getWebhook(final TextChannel c) {
+    public Webhook getWebhook(final StandardGuildMessageChannel c) {
         if (!Configuration.instance().webhook.enable || c == null) return null;
         return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
             if (!PermissionUtil.checkPermission(c, c.getGuild().getMember(jda.getSelfUser()), Permission.MANAGE_WEBHOOKS)) {

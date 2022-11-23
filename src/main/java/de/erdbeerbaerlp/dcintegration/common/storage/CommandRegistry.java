@@ -5,7 +5,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -32,7 +32,7 @@ public class CommandRegistry {
      * Registers all commands to discord if changed
      */
     public static void updateSlashCommands() throws IllegalStateException {
-        final TextChannel channel = Variables.discord_instance.getChannel();
+        final StandardGuildMessageChannel channel = Variables.discord_instance.getChannel();
         if (channel == null)
             throw new IllegalStateException("Channel does not exist, check channel ID and bot permissions on both channel and category");
         final List<Command> cmds = channel.getGuild().retrieveCommands().complete();

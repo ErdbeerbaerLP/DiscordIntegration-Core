@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "2.5.0-SNAPSHOT"
+version = "2.5.1"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -44,7 +44,6 @@ shadowJar {
     relocate 'club.minnced', 'dcshadow.club.minnced'
     relocate 'com.sun', 'dcshadow.com.sun'
     relocate 'com.iwebpp', 'dcshadow.com.iwebpp'
-    relocate 'com.google.gson', 'dcshadow.com.google.gson'
     relocate 'com.neovisionaries', 'dcshadow.com.neovisionaries'
     relocate 'gnu', 'dcshadow.gnu'
     relocate 'org.apache.commons.collections4', 'dcshadow.org.apache.commons.collections4'
@@ -73,11 +72,8 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-alpha.21'
-    embed 'club.minnced:discord-webhooks:0.8.2'
-
-    //GSON
-    embed group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
+    embed('net.dv8tion:JDA:5.0.0-alpha.21')
+    embed('club.minnced:discord-webhooks:0.8.2')
 
 
     //Emoji-Java
@@ -85,13 +81,20 @@ dependencies {
 
     //Minecraft <==> Discord conversion
     embed 'net.kyori:adventure-api:4.11.0'
-    embed('net.kyori:adventure-text-serializer-gson:4.11.0')
-    embed "dev.vankka:MCDiscordReserializer:4.2.2"
+    embed('net.kyori:adventure-text-serializer-gson:4.10.1'){
+        exclude group: 'com.google.code.gson', module: 'gson'
+    }
+    embed "dev.vankka:mcdiscordreserializer:4.3.0"
     embed 'dev.vankka:SimpleAST:2.2.8'
-    embed 'net.kyori:adventure-text-serializer-legacy:4.11.0'
+    embed 'net.kyori:adventure-text-serializer-legacy:4.10.1'
+
+
+    compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.8.9'
 
     //Toml4j
-    embed("de.erdbeerbaerlp:toml4j:cf5b4655")
+    embed("de.erdbeerbaerlp:toml4j:cf5b4655"){
+        exclude group: 'com.google.code.gson', module: 'gson'
+    }
     //embed("Toml4J:toml4j-0.7.5-SNAPSHOT")
 
     //Apache commons lang3
@@ -102,8 +105,6 @@ dependencies {
 
     //Logger
     compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.1'
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j18-impl', version: '2.15.0'
 
 }
 tasks.build.dependsOn(tasks.shadowJar)
