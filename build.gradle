@@ -85,7 +85,7 @@ dependencies {
 
     //Minecraft <==> Discord conversion
     embed 'net.kyori:adventure-api:4.11.0'
-    embed('net.kyori:adventure-text-serializer-gson:4.11.0')
+    embed('net.kyori:adventure-text-serializer-gson:4.12.0')
     embed "dev.vankka:MCDiscordReserializer:4.2.2"
     embed 'dev.vankka:SimpleAST:2.2.8'
     embed 'net.kyori:adventure-text-serializer-legacy:4.11.0'
