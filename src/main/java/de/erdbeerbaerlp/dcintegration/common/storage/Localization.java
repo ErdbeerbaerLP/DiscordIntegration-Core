@@ -146,8 +146,11 @@ public class Localization {
     }
 
     public static class Commands {
-        @TomlComment("Shown in console when trying to use the discord command")
-        public String ingameOnly = "This command can only be executed ingame";
+        @TomlComment("Shown in console when trying to use a in-game only command")
+        public String ingameOnly = "This command can only be executed ingame!";
+
+        @TomlComment("Shown in-game when trying to use a console only command")
+        public String consoleOnly = "This command can only be executed from console!";
 
         @TomlComment("Shown when successfully reloading the config file")
         public String configReloaded = "Config reloaded!";

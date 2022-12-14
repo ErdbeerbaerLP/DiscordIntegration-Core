@@ -11,7 +11,6 @@ public class PlayerSettings {
     /**
      * Class used for key descriptions using reflection
      */
-    @SuppressWarnings("unused")
     public static final class Descriptions {
         private final String useDiscordNameInChannel = Localization.instance().personalSettings.descriptons.useDiscordNameInChannel;
         private final String ignoreDiscordChatIngame = Localization.instance().personalSettings.descriptons.ignoreDiscordChatIngame;

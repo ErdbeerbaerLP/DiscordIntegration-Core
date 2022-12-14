@@ -98,8 +98,9 @@ public class DiscordEventListener implements EventListener {
             }
         }
         if (event instanceof final MessageReceivedEvent ev) {
-            if (ev.getChannelType().equals(ChannelType.TEXT)) {
-                if (!ev.isWebhookMessage() && !ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
+
+            if ((Configuration.instance().general.allowWebhookMessages && !dc.recentMessages.containsKey(ev.getMessageId())) || !ev.isWebhookMessage())
+                if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
                     if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;
                     if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatInputChannelID.equals("default") ? dc.getChannel().getId() : Configuration.instance().advanced.chatInputChannelID)) {
                         final List<MessageEmbed> embeds = ev.getMessage().getEmbeds();
@@ -163,11 +164,11 @@ public class DiscordEventListener implements EventListener {
                     }
                     dc.callEventC((e) -> e.onDiscordMessagePost(ev));
                 }
-            }
         }
     }
 
-    private void processDiscordCommand(SlashCommandInteractionEvent ev, final String[] command, final MessageChannelUnion channel, User sender, final Discord dc) {
+    private void processDiscordCommand(SlashCommandInteractionEvent ev, final String[] command,
+                                       final MessageChannelUnion channel, User sender, final Discord dc) {
         boolean hasPermission = true;
         boolean executed = false;
         ReplyCallbackAction replyCallbackAction = ev.deferReply();

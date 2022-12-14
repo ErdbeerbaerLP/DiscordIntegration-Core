@@ -9,8 +9,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
@@ -24,6 +22,12 @@ public class AddonLoader {
     private static final FilenameFilter jarFilter = (dir, name) -> !new File(dir, name).isDirectory() && name.toLowerCase().endsWith(".jar");
     private static final HashMap<DiscordAddonMeta, DiscordIntegrationAddon> addons = new HashMap<>();
 
+    private static final AddonClassLoader classLoader = new AddonClassLoader(AddonLoader.class.getClassLoader());
+
+    public static AddonClassLoader getAddonClassLoader() {
+        return classLoader;
+    }
+
     public static void loadAddon(final Discord dc, final File jar) {
         try {
             final JarFile jf = new JarFile(jar);
@@ -36,8 +40,8 @@ public class AddonLoader {
                     Variables.LOGGER.error("Failed to load Addon '" + jar.getName() + "'! Toml is missing parameters! (Required are name, version, classPath)");
                 }
                 try {
-                    final URLClassLoader child = new URLClassLoader(new URL[]{jar.toURI().toURL()}, AddonLoader.class.getClassLoader());
-                    final Class<? extends DiscordIntegrationAddon> addonClass = Class.forName(addonMeta.getClassPath(), true, child).asSubclass(DiscordIntegrationAddon.class);
+                    classLoader.add(jar.toURI().toURL());
+                    final Class<? extends DiscordIntegrationAddon> addonClass = Class.forName(addonMeta.getClassPath(), true, classLoader).asSubclass(DiscordIntegrationAddon.class);
                     final DiscordIntegrationAddon addon = addonClass.getDeclaredConstructor().newInstance();
                     addons.put(addonMeta, addon);
                     try {

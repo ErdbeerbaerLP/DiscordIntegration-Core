@@ -7,7 +7,9 @@ import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
 import de.erdbeerbaerlp.dcintegration.common.addon.AddonLoader;
 import de.erdbeerbaerlp.dcintegration.common.api.DiscordEventHandler;
+import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.McCommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.*;
+import de.erdbeerbaerlp.dcintegration.common.storage.database.DBInterface;
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
 import de.erdbeerbaerlp.dcintegration.common.util.FieldHelper;
 import de.erdbeerbaerlp.dcintegration.common.util.ServerInterface;
@@ -17,7 +19,6 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -79,7 +81,7 @@ public class Discord extends Thread {
     /**
      * Holds messages recently forwarded to discord in format MessageID,Sender UUID
      */
-    private final HashMap<String, UUID> recentMessages = new HashMap<>(150);
+    final HashMap<String, UUID> recentMessages = new HashMap<>(150);
     /**
      * Pending messages from command sender
      */
@@ -191,7 +193,7 @@ public class Discord extends Thread {
                 final User usr = getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(uuid));
                 if (usr == null) return false;
                 final Guild g = getChannel().getGuild();
-                final Member mem = g.retrieveMember(usr).complete();
+                final Member mem = getMemberById(usr.getIdLong());
                 if (mem == null) return false;
                 for (String requiredRole : Configuration.instance().linking.requiredRoles) {
                     final Role role = g.getRoleById(requiredRole);
@@ -258,10 +260,19 @@ public class Discord extends Thread {
         return recentMessages.getOrDefault(messageID, dummyUUID);
     }
 
+    private static final Map<Long, Member> memberCache = new HashMap<>();
+    public Member getMemberById(Long userid) {
+        if (memberCache.containsKey(userid)) return memberCache.get(userid);
+        else {
+            final Member out = getChannel().getGuild().retrieveMember(UserSnowflake.fromId(userid)).complete();
+            memberCache.put(userid, out);
+            return out;
+        }
+    }
+    public DBInterface linkDatabase;
     @Override
     public void run() {
         while (true) {
-
             final JDABuilder b = JDABuilder.createDefault(Configuration.instance().general.botToken);
             b.enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_EMOJIS_AND_STICKERS, GatewayIntent.MESSAGE_CONTENT);
             b.setAutoReconnect(true);
@@ -291,13 +302,13 @@ public class Discord extends Thread {
             kill(true);
             return;
         }
-        if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().retrieveMember(jda.getSelfUser()).complete(), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
+        if (!PermissionUtil.checkPermission(getChannel(), getMemberById(jda.getSelfUser().getIdLong()), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
             Variables.LOGGER.error("ERROR! Bot does not have all permissions to work!");
             kill(true);
             throw new PermissionException("Bot requires message read, message write, embed links and manage messages");
         }
         if (Configuration.instance().webhook.enable)
-            if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().retrieveMember(jda.getSelfUser()).complete(), Permission.MANAGE_WEBHOOKS)) {
+            if (!PermissionUtil.checkPermission(getChannel(), getMemberById(jda.getSelfUser().getIdLong()), Permission.MANAGE_WEBHOOKS)) {
                 Variables.LOGGER.error("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
                 Configuration.instance().webhook.enable = false;
                 try {
@@ -316,22 +327,21 @@ public class Discord extends Thread {
             Variables.LOGGER.error("Error while loading the ignoring players list!");
             e.printStackTrace();
         }
-
-        //Cache all users and (nick-)names
-        Variables.LOGGER.info("Caching members...");
-        jda.getGuilds().forEach((g) -> g.loadMembers().onSuccess((m) -> Variables.LOGGER.info("All " + m.size() + " members cached for Guild " + g.getName())).onError((t) -> {
-            Variables.LOGGER.error("Encountered an error while caching members:");
-            t.printStackTrace();
-        }));
-
-        final Thread t = new Thread(() -> {
-            Variables.LOGGER.info("Loading DiscordIntegration addons...");
-            AddonLoader.loadAddons(this);
-            Variables.LOGGER.info("Addon loading complete!");
-        });
-        t.setName("Discord Integration - Addon-Loader");
-        t.setDaemon(true);
-        t.start();
+        McCommandRegistry.registerDefaultCommands();
+        Variables.LOGGER.info("Loading DiscordIntegration addons...");
+        AddonLoader.loadAddons(this);
+        Variables.LOGGER.info("Addon loading complete!");
+        LOGGER.info("Loading database...");
+        try {
+            linkDatabase = (DBInterface) Class.forName(Configuration.instance().linking.databaseClass,true,AddonLoader.getAddonClassLoader()).getDeclaredConstructor().newInstance();
+            linkDatabase.connect();
+            linkDatabase.initialize();
+            PlayerLinkController.loadLinksFromDatabase();
+            LOGGER.info("Database loaded");
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException |
+                 ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
         final Thread unlink = new Thread(() -> {
             for (PlayerLink p : PlayerLinkController.getAllLinks()) {
@@ -404,25 +414,26 @@ public class Discord extends Thread {
      * @return the specified text channel (supports "default" to return the default server channel)
      */
 
-    private StandardGuildMessageChannel retrieveChannel(String id2){
-            final StandardGuildMessageChannel chan = jda.getTextChannelById(id2);
-            if (chan == null) {
-                for (final Guild g : jda.getGuilds()) {
-                    for (GuildChannel gChannel : g.getChannels(true)) {
-                        if (gChannel == null) continue;
-                        if (gChannel.getId().equals(id2)) {
-                            LOGGER.info("Channel Type: " + gChannel.getType());
-                            if(gChannel.getType() == ChannelType.TEXT || gChannel.getType() == ChannelType.NEWS || gChannel.getType() == ChannelType.STAGE){
-                                return (StandardGuildMessageChannel) gChannel;
-                            }else{
-                                LOGGER.error("Channel type is invalid!");
-                            }
+    private StandardGuildMessageChannel retrieveChannel(String id2) {
+        final StandardGuildMessageChannel chan = jda.getTextChannelById(id2);
+        if (chan == null) {
+            for (final Guild g : jda.getGuilds()) {
+                for (GuildChannel gChannel : g.getChannels(true)) {
+                    if (gChannel == null) continue;
+                    if (gChannel.getId().equals(id2)) {
+                        LOGGER.info("Channel Type: " + gChannel.getType());
+                        if (gChannel.getType() == ChannelType.TEXT || gChannel.getType() == ChannelType.NEWS || gChannel.getType() == ChannelType.STAGE) {
+                            return (StandardGuildMessageChannel) gChannel;
+                        } else {
+                            LOGGER.error("Channel type is invalid!");
                         }
                     }
                 }
             }
-            return chan;
         }
+        return chan;
+    }
+
     public StandardGuildMessageChannel getChannel(String id) {
         if (jda == null) return null;
         StandardGuildMessageChannel channel;
@@ -463,22 +474,29 @@ public class Discord extends Thread {
      * Starts all sub-threads
      */
     public void startThreads() {
-        final Thread t = new Thread(() -> {
-            try {
-                CommandRegistry.updateSlashCommands();
-            } catch (IllegalStateException e) {
-                LOGGER.error(e);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Variables.LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
-            }
-        });
-        t.setDaemon(true);
-        t.start();
+        if(Configuration.instance().commands.enabled) {
+            final Thread t = new Thread(() -> {
+                try {
+                    CommandRegistry.updateSlashCommands();
+                } catch (IllegalStateException e) {
+                    LOGGER.error(e);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Variables.LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
+                }
+            });
+            t.setDaemon(true);
+            t.start();
+        }
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread();
         if (messageSender == null) messageSender = new MessageQueueThread();
         if (!messageSender.isAlive()) messageSender.start();
         if (!statusUpdater.isAlive()) statusUpdater.start();
+
+        if(PlayerLinkController.playerLinkedFile.exists()){
+            LOGGER.info("Old PlayerLinks.json found");
+            LOGGER.info("If you want to use the old data, please enter \"discord migrate\" into the server console");
+        }
     }
 
     /**
@@ -643,7 +661,7 @@ public class Discord extends Thread {
     public Webhook getWebhook(final StandardGuildMessageChannel c) {
         if (!Configuration.instance().webhook.enable || c == null) return null;
         return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
-            if (!PermissionUtil.checkPermission(c, c.getGuild().getMember(jda.getSelfUser()), Permission.MANAGE_WEBHOOKS)) {
+            if (!PermissionUtil.checkPermission(c, getMemberById(jda.getSelfUser().getIdLong()), Permission.MANAGE_WEBHOOKS)) {
                 Variables.LOGGER.info("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
                 Configuration.instance().webhook.enable = false;
                 try {
@@ -671,7 +689,7 @@ public class Discord extends Thread {
      * @return Sent message
      */
 
-    public CompletableFuture<Message> sendMessageReturns(String msg, TextChannel c) {
+    public CompletableFuture<Message> sendMessageReturns(String msg, StandardGuildMessageChannel c) {
         if (Configuration.instance().webhook.enable || msg.isEmpty() || c == null) return null;
         else return c.sendMessage(msg).submit();
     }
@@ -705,8 +723,10 @@ public class Discord extends Thread {
             if (Variables.discord_instance.isAlive()) Variables.discord_instance.interrupt();
             kill();
             Variables.discord_instance = new Discord(srv);
-            CommandRegistry.reRegisterAllCommands();
-            CommandRegistry.registerConfigCommands();
+            if(Configuration.instance().commands.enabled) {
+                CommandRegistry.reRegisterAllCommands();
+                CommandRegistry.registerConfigCommands();
+            }
             Variables.discord_instance.startThreads();
             return true;
         } catch (Exception e) {
@@ -756,7 +776,7 @@ public class Discord extends Thread {
         if (!isServerMessage && uUUID != null) {
             if (PlayerLinkController.isPlayerLinked(uUUID)) {
                 final PlayerSettings s = PlayerLinkController.getSettings(null, uUUID);
-                final Member dc = getChannel().getGuild().retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(uUUID)).complete();
+                final Member dc = getMemberById(Long.parseLong(PlayerLinkController.getDiscordFromPlayer(uUUID)));
                 if (dc != null)
                     if (s.useDiscordNameInChannel) {
                         playerName = dc.getEffectiveName();

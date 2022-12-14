@@ -193,7 +193,7 @@ public class MessageUtils {
             String name;
             final User u = jda.getUserById(id);
             if (u != null) {
-                final Member m = targetGuild.getMember(u);
+                final Member m = discord_instance.getMemberById(u.getIdLong());
                 if (m != null)
                     name = m.getEffectiveName();
                 else

@@ -10,7 +10,11 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 
 import static de.erdbeerbaerlp.dcintegration.common.util.Variables.*;
@@ -18,10 +22,24 @@ import static de.erdbeerbaerlp.dcintegration.common.util.Variables.*;
 @SuppressWarnings("unused")
 public class PlayerLinkController {
     /**
-     * Path to the json containing linked players
+     * Path to the old json containing linked players
      */
-    private static final File playerLinkedFile = new File(discordDataDir, "LinkedPlayers.json");
+    public static final File playerLinkedFile = new File(discordDataDir, "LinkedPlayers.json");
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    private static final ArrayList<PlayerLink> playerLinkCache = new ArrayList<>();
+
+    /**
+     * Used to (re-)load all links from the database
+     */
+    public static void loadLinksFromDatabase() {
+        playerLinkCache.clear();
+        playerLinkCache.addAll(Arrays.asList(discord_instance.linkDatabase.getAllLinks()));
+    }
+
+    public static void saveLinksToDatabase() {
+        playerLinkCache.forEach((l) -> discord_instance.linkDatabase.addLink(l));
+    }
 
 
     /**
@@ -44,15 +62,11 @@ public class PlayerLinkController {
      */
     public static boolean isBedrockPlayerLinked(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return false;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.floodgateUUID.isEmpty() && o.floodgateUUID.equals(player.toString())) {
-                    return true;
-                }
+
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.floodgateUUID.isEmpty() && o.floodgateUUID.equals(player.toString())) {
+                return true;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -65,15 +79,10 @@ public class PlayerLinkController {
      */
     public static boolean isJavaPlayerLinked(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return false;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(player.toString())) {
-                    return true;
-                }
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(player.toString())) {
+                return true;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -98,15 +107,10 @@ public class PlayerLinkController {
      */
     public static boolean isDiscordLinkedBedrock(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return false;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.discordID.isEmpty() && o.discordID.equals(discordID)) {
-                    return !o.floodgateUUID.isEmpty();
-                }
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.discordID.isEmpty() && o.discordID.equals(discordID)) {
+                return !o.floodgateUUID.isEmpty();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -119,15 +123,10 @@ public class PlayerLinkController {
      */
     public static boolean isDiscordLinkedJava(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return false;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.discordID.isEmpty() && o.discordID.equals(discordID)) {
-                    return !o.mcPlayerUUID.isEmpty();
-                }
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.discordID.isEmpty() && o.discordID.equals(discordID)) {
+                return !o.mcPlayerUUID.isEmpty();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -141,15 +140,10 @@ public class PlayerLinkController {
 
     public static UUID getPlayerFromDiscord(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return null;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.discordID.isEmpty() && !o.mcPlayerUUID.isEmpty() && o.discordID.equals(discordID)) {
-                    return UUID.fromString(o.mcPlayerUUID);
-                }
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.discordID.isEmpty() && !o.mcPlayerUUID.isEmpty() && o.discordID.equals(discordID)) {
+                return UUID.fromString(o.mcPlayerUUID);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -163,15 +157,10 @@ public class PlayerLinkController {
 
     public static UUID getBedrockPlayerFromDiscord(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return null;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.discordID.isEmpty() && !o.floodgateUUID.isEmpty() && o.discordID.equals(discordID)) {
-                    return UUID.fromString(o.floodgateUUID);
-                }
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.discordID.isEmpty() && !o.floodgateUUID.isEmpty() && o.discordID.equals(discordID)) {
+                return UUID.fromString(o.floodgateUUID);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -199,15 +188,10 @@ public class PlayerLinkController {
 
     public static String getDiscordFromJavaPlayer(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return null;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.discordID.isEmpty() && !o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(player.toString())) {
-                    return o.discordID;
-                }
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.discordID.isEmpty() && !o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(player.toString())) {
+                return o.discordID;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -221,15 +205,10 @@ public class PlayerLinkController {
 
     public static String getDiscordFromBedrockPlayer(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return null;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.discordID.isEmpty() && !o.floodgateUUID.isEmpty() && o.floodgateUUID.equals(player.toString())) {
-                    return o.discordID;
-                }
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.discordID.isEmpty() && !o.floodgateUUID.isEmpty() && o.floodgateUUID.equals(player.toString())) {
+                return o.discordID;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -250,17 +229,35 @@ public class PlayerLinkController {
         else if (player == null)
             player = isDiscordLinkedJava(discordID) ? getPlayerFromDiscord(discordID) : (isDiscordLinkedBedrock(discordID) ? getBedrockPlayerFromDiscord(discordID) : null);
         if (player == null || discordID == null) return new PlayerSettings();
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (!o.discordID.isEmpty() && (!o.mcPlayerUUID.isEmpty() || !o.floodgateUUID.isEmpty()) && o.discordID.equals(discordID) && (o.mcPlayerUUID.equals(player.toString()) || o.floodgateUUID.equals(player.toString()))) {
-                    return o.settings;
-                }
+        for (final PlayerLink o : getAllLinks()) {
+            if (!o.discordID.isEmpty() && (!o.mcPlayerUUID.isEmpty() || !o.floodgateUUID.isEmpty()) && o.discordID.equals(discordID) && (o.mcPlayerUUID.equals(player.toString()) || o.floodgateUUID.equals(player.toString()))) {
+                return o.settings;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
         return new PlayerSettings();
+    }
+
+    public static void migrateToDatabase() {
+        LOGGER.info("LinkedPlayers.toml migration started");
+        if (!playerLinkedFile.exists()) {
+            LOGGER.info("LinkedPlayers.toml migration failed - file does not exist");
+            return;
+        }
+        try {
+            final FileReader is = new FileReader(playerLinkedFile);
+            final JsonArray a = JsonParser.parseReader(is).getAsJsonArray();
+            is.close();
+            for (JsonElement e : a) {
+                final PlayerLink l = gson.fromJson(e, PlayerLink.class);
+                playerLinkCache.add(l);
+            }
+            saveLinksToDatabase();
+            playerLinkedFile.renameTo(new File(playerLinkedFile.getAbsolutePath()+".backup"));
+        }catch (IOException e) {
+            LOGGER.info("LinkedPlayers.json migration failed - "+e.getMessage());
+        }
+        LOGGER.info("LinkedPlayers.json migration complete");
     }
 
     /**
@@ -269,16 +266,18 @@ public class PlayerLinkController {
      * Use {@linkplain PlayerLinkController#linkPlayer(String, UUID)} for linking instead
      */
     public static void migrateLinkPlayer(String discordID, UUID player) {
-        try {
-            final JsonArray a = getJson();
-            final PlayerLink link = new PlayerLink();
-            link.discordID = discordID;
-            link.mcPlayerUUID = player.toString();
-            a.add(gson.toJsonTree(link));
-            saveJSON(a);
-        } catch (IOException e) {
-            e.printStackTrace();
+        final PlayerLink link = new PlayerLink();
+        link.discordID = discordID;
+        link.mcPlayerUUID = player.toString();
+        playerLinkCache.add(link);
+        saveLinksToDatabase();
+    }
+
+    private static PlayerLink getLinkByID(String id) {
+        for (PlayerLink playerLink : playerLinkCache) {
+            if (playerLink.discordID.equals(id)) return playerLink;
         }
+        return null;
     }
 
     /**
@@ -295,22 +294,21 @@ public class PlayerLinkController {
         if (isDiscordLinkedJava(discordID) || isPlayerLinked(player))
             throw new IllegalArgumentException("One link side already exists");
         try {
-            final JsonArray a = getJson();
             final PlayerLink link = isDiscordLinkedBedrock(discordID) ? getUser(discordID, getPlayerFromDiscord(discordID)) : new PlayerLink();
             link.discordID = discordID;
             link.mcPlayerUUID = player.toString();
             final boolean ignoringMessages = discord_instance.ignoringPlayers.contains(player);
-            link.settings.ignoreDiscordChatIngame = ignoringMessages;
+            new PlayerSettings().ignoreDiscordChatIngame = ignoringMessages; //TODO
             if (ignoringMessages) discord_instance.ignoringPlayers.remove(player);
 
             if (isDiscordLinkedBedrock(discordID)) { //Remove previous occurences
-                final JsonElement el = getBedrockUserRaw(discordID, getBedrockPlayerFromDiscord(discordID));
-                if (a.contains(el)) {
-                    a.remove(el);
+                final PlayerLink linkByID = getLinkByID(discordID);
+                if (linkByID != null) {
+                    playerLinkCache.remove(linkByID);
                 }
             }
-            a.add(gson.toJsonTree(link));
-            saveJSON(a);
+            playerLinkCache.add(link);
+            saveLinksToDatabase();
             discord_instance.callEventC((e) -> e.onPlayerLink(player, discordID));
             final Guild guild = discord_instance.getChannel().getGuild();
             final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
@@ -349,21 +347,20 @@ public class PlayerLinkController {
         if (isDiscordLinkedBedrock(discordID) || isPlayerLinked(bedrockPlayer))
             throw new IllegalArgumentException("One link side already exists");
         try {
-            final JsonArray a = getJson();
             final PlayerLink link = isDiscordLinkedJava(discordID) ? getUser(discordID, getPlayerFromDiscord(discordID)) : new PlayerLink();
             link.discordID = discordID;
             link.floodgateUUID = bedrockPlayer.toString();
             final boolean ignoringMessages = discord_instance.ignoringPlayers.contains(bedrockPlayer);
-            link.settings.ignoreDiscordChatIngame = ignoringMessages;
+            new PlayerSettings().ignoreDiscordChatIngame = ignoringMessages; //TODO
             if (ignoringMessages) discord_instance.ignoringPlayers.remove(bedrockPlayer);
             if (isDiscordLinkedJava(discordID)) { //Remove previous occurences
-                final JsonElement el = getUserRaw(discordID, getPlayerFromDiscord(discordID));
-                if (a.contains(el)) {
-                    a.remove(el);
+                final PlayerLink linkByID = getLinkByID(discordID);
+                if (linkByID != null) {
+                    playerLinkCache.remove(linkByID);
                 }
             }
-            a.add(gson.toJsonTree(link));
-            saveJSON(a);
+            playerLinkCache.add(link);
+            saveLinksToDatabase();
             discord_instance.callEventC((e) -> e.onBedrockPlayerLink(bedrockPlayer, discordID));
             final Guild guild = discord_instance.getChannel().getGuild();
             final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
@@ -396,19 +393,12 @@ public class PlayerLinkController {
         if (player == null || discordID == null) throw new NullPointerException();
         if (isDiscordLinked(discordID) && isPlayerLinked(player))
             try {
-                final JsonArray a = getJson();
                 final PlayerLink link = isDiscordLinkedBedrock(discordID) ? getBedrockUser(discordID, player) : getUser(discordID, player);
-                for (JsonElement e : a) {
-                    final PlayerLink l = gson.fromJson(e, PlayerLink.class);
-                    if (l.equals(link)) {
-                        a.remove(e);
-                        break;
-                    }
-                }
                 if (link == null) return false;
+                removePlayerLink(discordID);
                 link.settings = settings;
-                a.add(gson.toJsonTree(link));
-                saveJSON(a);
+                playerLinkCache.add(link);
+                saveLinksToDatabase();
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -416,15 +406,8 @@ public class PlayerLinkController {
         return false;
     }
 
-    /**
-     * Writes player links and settings into the json file
-     *
-     * @param a Json to save
-     */
-    private static void saveJSON(JsonArray a) throws IOException {
-        try (Writer writer = new FileWriter(playerLinkedFile)) {
-            gson.toJson(a, writer);
-        }
+    private static void removePlayerLink(String discordID) {
+        playerLinkCache.removeIf(link -> link.discordID.equals(discordID));
     }
 
     /**
@@ -437,30 +420,23 @@ public class PlayerLinkController {
     public static boolean unlinkPlayer(String discordID) {
         if (!discord_instance.srv.isOnlineMode()) return false;
         if (!isDiscordLinked(discordID)) return false;
-        try {
-            for (JsonElement e : getJson()) {
-                final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-                if (o.discordID != null && o.discordID.equals(discordID)) {
-                    final JsonArray json = getJson();
-                    json.remove(e);
-                    try (Writer writer = new FileWriter(playerLinkedFile)) {
-                        gson.toJson(json, writer);
-                    }
-                    discord_instance.callEventC((a) -> a.onPlayerUnlink(UUID.fromString(o.mcPlayerUUID), discordID));
-                    try {
-                        final Guild guild = discord_instance.getChannel().getGuild();
-                        guild.retrieveMemberById(discordID).submit().thenAccept((member) -> {
-                            final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
-                            if (member.getRoles().contains(linkedRole))
-                                guild.removeRoleFromMember(member, linkedRole).queue();
-                        });
-                    } catch (ErrorResponseException ignored) {
-                    }
-                    return true;
+
+        for (final PlayerLink o : getAllLinks()) {
+            if (o.discordID != null && o.discordID.equals(discordID)) {
+                removePlayerLink(o.discordID);
+                discord_instance.linkDatabase.removeLink(o.discordID);
+                discord_instance.callEventC((a) -> a.onPlayerUnlink(UUID.fromString(o.mcPlayerUUID), discordID));
+                try {
+                    final Guild guild = discord_instance.getChannel().getGuild();
+                    guild.retrieveMemberById(discordID).submit().thenAccept((member) -> {
+                        final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
+                        if (member.getRoles().contains(linkedRole))
+                            guild.removeRoleFromMember(member, linkedRole).queue();
+                    });
+                } catch (ErrorResponseException ignored) {
                 }
+                return true;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -475,34 +451,13 @@ public class PlayerLinkController {
     @SuppressWarnings("DuplicatedCode")
     private static PlayerLink getUser(String discordID, UUID player) throws IOException {
         if (!discord_instance.srv.isOnlineMode()) return null;
-        final JsonArray a = getJson();
-        for (JsonElement e : a) {
-            final PlayerLink l = gson.fromJson(e, PlayerLink.class);
+        for (final PlayerLink l : getAllLinks()) {
             if (l.discordID.equals(discordID) && l.mcPlayerUUID.equals(player.toString()))
                 return l;
         }
         return null;
     }
 
-    /**
-     * Gets the {@link PlayerLink} instance of the link
-     *
-     * @param discordID The discord ID of the link
-     * @param player    The player {@link UUID} of the link
-     * @return The {@link PlayerLink} instance
-     */
-    @SuppressWarnings("DuplicatedCode")
-
-    private static JsonElement getUserRaw(String discordID, UUID player) throws IOException {
-        if (!discord_instance.srv.isOnlineMode()) return null;
-        final JsonArray a = getJson();
-        for (JsonElement e : a) {
-            final PlayerLink l = gson.fromJson(e, PlayerLink.class);
-            if (l.discordID.equals(discordID) && l.mcPlayerUUID.equals(player.toString()))
-                return e;
-        }
-        return null;
-    }
 
     /**
      * Gets the {@link PlayerLink} instance of the link
@@ -515,69 +470,14 @@ public class PlayerLinkController {
 
     private static PlayerLink getBedrockUser(String discordID, UUID bedrockPlayer) throws IOException {
         if (!discord_instance.srv.isOnlineMode()) return null;
-        final JsonArray a = getJson();
-        for (JsonElement e : a) {
-            final PlayerLink l = gson.fromJson(e, PlayerLink.class);
+        for (final PlayerLink l : getAllLinks()) {
             if (l.discordID.equals(discordID) && l.floodgateUUID.equals(bedrockPlayer.toString()))
                 return l;
         }
         return null;
     }
 
-    /**
-     * Gets the {@link PlayerLink} instance of the link
-     *
-     * @param discordID     The discord ID of the link
-     * @param bedrockPlayer The player {@link UUID} of the link
-     * @return The {@link PlayerLink} instance
-     */
-    @SuppressWarnings("DuplicatedCode")
-
-    private static JsonElement getBedrockUserRaw(String discordID, UUID bedrockPlayer) throws IOException {
-        if (!discord_instance.srv.isOnlineMode()) return null;
-        final JsonArray a = getJson();
-        for (JsonElement e : a) {
-            final PlayerLink l = gson.fromJson(e, PlayerLink.class);
-            if (l.discordID.equals(discordID) && l.floodgateUUID.equals(bedrockPlayer.toString()))
-                return e;
-        }
-        return null;
-    }
-
-    /**
-     * Loads links and settings from json into an {@link JsonArray}
-     *
-     * @return {@link JsonArray} containing links and settings
-     */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-
-    private static JsonArray getJson() throws IOException, IllegalStateException {
-        if (!playerLinkedFile.exists()) {
-            playerLinkedFile.createNewFile();
-            try (Writer writer = new FileWriter(playerLinkedFile)) {
-                gson.toJson(new JsonArray(), writer);
-            }
-            return new JsonArray();
-        }
-        final FileReader is = new FileReader(playerLinkedFile);
-        final JsonArray a = JsonParser.parseReader(is).getAsJsonArray();
-        is.close();
-        return a;
-    }
-
-    /**
-     * Unused for now, might be needed in the future
-     *
-     * @return All Player links as array or an empty array if parsing the json fails
-     */
-
     public static PlayerLink[] getAllLinks() {
-        try {
-            return gson.fromJson(getJson(), PlayerLink[].class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new PlayerLink[0];
+        return playerLinkCache.toArray(new PlayerLink[0]);
     }
-
 }

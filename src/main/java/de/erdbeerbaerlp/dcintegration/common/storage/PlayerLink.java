@@ -5,6 +5,15 @@ public class PlayerLink {
     public String mcPlayerUUID = "";
     public String floodgateUUID = "";
     public PlayerSettings settings = new PlayerSettings();
+    public PlayerLink(){
+
+    }
+    public PlayerLink(String id, String mcPlayerUUID, String floodgateUUID, PlayerSettings settings) {
+        this.mcPlayerUUID = mcPlayerUUID;
+        this.floodgateUUID = floodgateUUID;
+        this.discordID = id;
+        this.settings = settings;
+    }
 
     @Override
     public boolean equals(Object o) {

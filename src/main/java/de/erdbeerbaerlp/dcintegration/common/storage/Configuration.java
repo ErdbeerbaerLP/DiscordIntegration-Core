@@ -153,6 +153,8 @@ public class Configuration {
         @TomlComment("Set to true to supress warning of unsafe mod download location")
         public boolean ignoreFileSource = false;
 
+        @TomlComment("Set to true to allow relaying webhook messages")
+        public boolean allowWebhookMessages = false;
     }
 
     public static class Messages {
@@ -180,6 +182,8 @@ public class Configuration {
     }
 
     public static class Commands {
+        @TomlComment({"Toggle the entire command feature", "Disabling this will disable registering any commands to discord"})
+        public boolean enabled = true;
         @TomlComment({"The Role IDs of your Admin Roles", "Now supports multiple roles which can access admin commands"})
         public String[] adminRoleIDs = new String[0];
 
@@ -203,7 +207,6 @@ public class Configuration {
 
         @TomlComment("Set to true to enable the \"Unknown Command\" message in all channels")
         public boolean showUnknownCommandEverywhere = false;
-
     }
 
     public static class Advanced {
@@ -273,6 +276,12 @@ public class Configuration {
 
         @TomlComment({"Set Discord nicknames to match Minecraft usernames when linked"})
         public boolean shouldNickname = false;
+
+        @TomlComment({"Enable global linking?", "Does not work in offline mode"})
+        public boolean globalLinking = true;
+
+        @TomlComment({"Database interface class", "This allows you to change your database implementation", "Do not change without knowing what you are doing"})
+        public String databaseClass = "de.erdbeerbaerlp.dcintegration.common.storage.database.SQLiteInterface";
 
         @TomlComment({"Role ID of an role an player should get when he links his discord account", "Leave as 0 to disable"})
         public String linkedRoleID = "0";
