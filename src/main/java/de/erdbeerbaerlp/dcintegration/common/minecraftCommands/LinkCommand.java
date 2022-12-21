@@ -23,7 +23,7 @@ public class LinkCommand implements MCSubCommand{
     public Component execute(String[] params, UUID playerUUID) {
         if (Configuration.instance().linking.enableLinking && Variables.discord_instance.srv.isOnlineMode() && !Configuration.instance().linking.whitelistMode) {
             if (PlayerLinkController.isPlayerLinked(playerUUID)) {
-                return Component.text(Localization.instance().linking.alreadyLinked.replace("%player%", Variables.discord_instance.getJDA().getUserById(PlayerLinkController.getDiscordFromBedrockPlayer(playerUUID)).getAsTag())).style(Style.style(TextColors.of(Color.RED)));
+                return Component.text(Localization.instance().linking.alreadyLinked.replace("%player%", Variables.discord_instance.getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(playerUUID)).getAsTag())).style(Style.style(TextColors.of(Color.RED)));
 
             }
             final int r = Variables.discord_instance.genLinkNumber(playerUUID);
