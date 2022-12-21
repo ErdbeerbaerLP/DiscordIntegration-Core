@@ -13,9 +13,10 @@ public class SQLiteInterface extends DBInterface {
     @Override
     public void connect() {
         try {
+            Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + Variables.discordDataDir.getAbsolutePath() + "/LinkedPlayers.db");
             new DBKeepalive().start();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

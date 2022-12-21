@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "2.6.0"
+version = "2.6.1"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -63,7 +63,6 @@ shadowJar {
     relocate "net.sf", "dcshadow.net.sf"
     relocate "org.hamcrest", "dcshadow.org.hamcrest"
     relocate "org.objenesis", "dcshadow.org.objenesis"
-    relocate "org.sqlite", "dcshadow.org.sqlite"
     relocate "kotlin", "dcshadow.kotlin"
     relocate "com.vdurmont", "dcshadow.com.vdurmont"
 }
