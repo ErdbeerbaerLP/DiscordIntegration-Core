@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.storage;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
 import de.erdbeerbaerlp.dcintegration.common.Discord;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import net.dv8tion.jda.api.entities.Guild;
@@ -10,9 +11,12 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
@@ -71,6 +75,10 @@ public class PlayerLinkController {
         return false;
     }
 
+
+    private static final String API_URL = "https://api.erdbeerbaerlp.de/dcintegration/link";
+
+
     /**
      * Checks if a player has linked their minecraft account with discord
      *
@@ -79,11 +87,30 @@ public class PlayerLinkController {
      */
     public static boolean isJavaPlayerLinked(UUID player) {
         if (!discord_instance.srv.isOnlineMode()) return false;
+
         for (final PlayerLink o : getAllLinks()) {
             if (!o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(player.toString())) {
                 return true;
             }
         }
+
+        //Check from global linking API
+        if (Configuration.instance().linking.globalLinking)
+            try {
+                final HttpsURLConnection connection = (HttpsURLConnection) new URL(API_URL + "?uuid=" + player.toString().replace("-", "")).openConnection();
+                connection.setRequestMethod("GET");
+                final JsonObject o = gson.fromJson(new JsonReader(new InputStreamReader(connection.getInputStream())), JsonObject.class);
+                if (o.has("dcID") && !o.get("dcID").getAsString().isEmpty()) {
+                    linkWithoutChecking(o.get("dcID").getAsString(), player);
+                    connection.disconnect();
+                    return true;
+                }
+
+
+                connection.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         return false;
     }
 
@@ -128,6 +155,23 @@ public class PlayerLinkController {
                 return !o.mcPlayerUUID.isEmpty();
             }
         }
+        //Check from global linking API
+        if (Configuration.instance().linking.globalLinking)
+            try {
+                final HttpsURLConnection connection = (HttpsURLConnection) new URL(API_URL + "?dcID=" + discordID).openConnection();
+                connection.setRequestMethod("GET");
+                final JsonObject o = gson.fromJson(new JsonReader(new InputStreamReader(connection.getInputStream())), JsonObject.class);
+                if (o.has("uuid") && !o.get("uuid").getAsString().isEmpty()) {
+                    linkWithoutChecking(discordID, UUID.fromString(o.get("uuid").getAsString().replaceAll(
+                            "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})",
+                            "$1-$2-$3-$4-$5")));
+                    connection.disconnect();
+                    return true;
+                }
+                connection.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         return false;
     }
 
@@ -253,9 +297,9 @@ public class PlayerLinkController {
                 playerLinkCache.add(l);
             }
             saveLinksToDatabase();
-            playerLinkedFile.renameTo(new File(playerLinkedFile.getAbsolutePath()+".backup"));
-        }catch (IOException e) {
-            LOGGER.info("LinkedPlayers.json migration failed - "+e.getMessage());
+            playerLinkedFile.renameTo(new File(playerLinkedFile.getAbsolutePath() + ".backup"));
+        } catch (IOException e) {
+            LOGGER.info("LinkedPlayers.json migration failed - " + e.getMessage());
         }
         LOGGER.info("LinkedPlayers.json migration complete");
     }
@@ -293,12 +337,16 @@ public class PlayerLinkController {
         if (!discord_instance.srv.isOnlineMode() || player.equals(Discord.dummyUUID)) return false;
         if (isDiscordLinkedJava(discordID) || isPlayerLinked(player))
             throw new IllegalArgumentException("One link side already exists");
+        return linkWithoutChecking(discordID, player);
+    }
+
+    private static boolean linkWithoutChecking(String discordID, UUID player) {
         try {
             final PlayerLink link = isDiscordLinkedBedrock(discordID) ? getUser(discordID, getPlayerFromDiscord(discordID)) : new PlayerLink();
             link.discordID = discordID;
             link.mcPlayerUUID = player.toString();
             final boolean ignoringMessages = discord_instance.ignoringPlayers.contains(player);
-            new PlayerSettings().ignoreDiscordChatIngame = ignoringMessages; //TODO
+            link.settings.ignoreDiscordChatIngame = ignoringMessages;
             if (ignoringMessages) discord_instance.ignoringPlayers.remove(player);
 
             if (isDiscordLinkedBedrock(discordID)) { //Remove previous occurences
@@ -351,7 +399,7 @@ public class PlayerLinkController {
             link.discordID = discordID;
             link.floodgateUUID = bedrockPlayer.toString();
             final boolean ignoringMessages = discord_instance.ignoringPlayers.contains(bedrockPlayer);
-            new PlayerSettings().ignoreDiscordChatIngame = ignoringMessages; //TODO
+            link.settings.ignoreDiscordChatIngame = ignoringMessages;
             if (ignoringMessages) discord_instance.ignoringPlayers.remove(bedrockPlayer);
             if (isDiscordLinkedJava(discordID)) { //Remove previous occurences
                 final PlayerLink linkByID = getLinkByID(discordID);
