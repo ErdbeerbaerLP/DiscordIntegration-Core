@@ -106,7 +106,7 @@ dependencies {
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
 
     //Logger
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.19.0'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.20.0'
 
 }
 tasks.build.dependsOn(tasks.shadowJar)
