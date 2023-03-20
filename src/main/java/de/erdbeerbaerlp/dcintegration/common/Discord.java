@@ -185,16 +185,13 @@ public class Discord extends Thread {
      * @return true if the player can join<br>
      * Also returns true if whitelist mode is off
      */
-    @SuppressWarnings("ConstantConditions")
     public boolean canPlayerJoin(UUID uuid) {
         if (!Configuration.instance().linking.whitelistMode) return true;
         if (PlayerLinkController.isPlayerLinked(uuid)) {
             if (Configuration.instance().linking.requiredRoles.length != 0) {
-                final User usr = getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(uuid));
-                if (usr == null) return false;
-                final Guild g = getChannel().getGuild();
-                final Member mem = getMemberById(usr.getIdLong());
+                final Member mem = getMemberById(PlayerLinkController.getDiscordFromPlayer(uuid));
                 if (mem == null) return false;
+                final Guild g = getChannel().getGuild();
                 for (String requiredRole : Configuration.instance().linking.requiredRoles) {
                     final Role role = g.getRoleById(requiredRole);
                     if (role == null) continue;
@@ -260,7 +257,10 @@ public class Discord extends Thread {
         return recentMessages.getOrDefault(messageID, dummyUUID);
     }
 
-    private static final Map<Long, Member> memberCache = new HashMap<>();
+    static final Map<Long, Member> memberCache = new HashMap<>();
+    public Member getMemberById(String userid) {
+        return getMemberById(Long.parseLong(userid));
+    }
     public Member getMemberById(Long userid) {
         if (memberCache.containsKey(userid)) return memberCache.get(userid);
         else {

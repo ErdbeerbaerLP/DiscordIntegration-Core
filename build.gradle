@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "2.6.2"
+version = "2.6.3-SNAPSHOT"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -72,7 +72,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-beta.3'
+    embed 'net.dv8tion:JDA:5.0.0-beta.6'
     embed 'club.minnced:discord-webhooks:0.8.2'
 
     //Emoji-Java

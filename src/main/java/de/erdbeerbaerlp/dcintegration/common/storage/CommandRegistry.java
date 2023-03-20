@@ -22,7 +22,7 @@ public class CommandRegistry {
     /**
      * Commands registered to Discord
      */
-    public static final HashMap<Long, DiscordCommand> registeredCMDs = new HashMap<>();
+    public static final HashMap<String, DiscordCommand> registeredCMDs = new HashMap<>();
     /**
      * Registered commands
      */
@@ -131,7 +131,7 @@ public class CommandRegistry {
         }
 
         final ArrayList<DiscordCommand> toRemove = new ArrayList<>();
-        for (DiscordCommand c : commands) {
+        for (final DiscordCommand c : commands) {
             if (!cmd.isConfigCommand() && cmd.equals(c)) return false;
             else if (cmd.isConfigCommand() && cmd.equals(c)) toRemove.add(c);
         }
@@ -146,10 +146,10 @@ public class CommandRegistry {
     }
 
     private static void addCmds(List<Command> cmds) {
-        for (Command cmd : cmds) {
-            for (DiscordCommand cfcmd : commands) {
+        for (final Command cmd : cmds) {
+            for (final DiscordCommand cfcmd : commands) {
                 if (cmd.getName().equals(((CommandData) cfcmd).getName())) {
-                    registeredCMDs.put(cmd.getIdLong(), cfcmd);
+                    registeredCMDs.put(cmd.getId(), cfcmd);
                     Variables.LOGGER.info("Added command " + cmd.getName() + " with ID " + cmd.getIdLong());
                 }
             }
@@ -161,7 +161,7 @@ public class CommandRegistry {
         final List<Role> gRoles = g.getRoles();
         final ArrayList<Role> adminRoles = new ArrayList<>();
 
-        for (Role r : gRoles) {
+        for (final Role r : gRoles) {
             if (ArrayUtils.contains(Configuration.instance().commands.adminRoleIDs, r.getId()))
                 adminRoles.add(r);
         }
@@ -177,7 +177,7 @@ public class CommandRegistry {
         Variables.LOGGER.info("Reloading " + cmds.size() + " commands");
         commands = new ArrayList<>();
 
-        for (DiscordCommand cmd : cmds) {
+        for (final DiscordCommand cmd : cmds) {
             if (cmd.isConfigCommand()) continue;
             commands.add(cmd);
         }

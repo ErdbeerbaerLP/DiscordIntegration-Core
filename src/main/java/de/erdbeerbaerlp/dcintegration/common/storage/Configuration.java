@@ -178,6 +178,9 @@ public class Configuration {
         @TomlComment("Should tamed entity death be visible in discord?")
         public boolean sendDeathMessagesForTamedAnimals = false;
 
+        @TomlComment("Should Discord users have their role color ingame?")
+        public boolean discordRoleColorIngame = true;
+
 
     }
 

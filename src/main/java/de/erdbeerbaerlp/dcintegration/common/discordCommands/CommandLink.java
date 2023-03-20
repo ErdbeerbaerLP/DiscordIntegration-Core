@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +28,6 @@ public class CommandLink extends DiscordCommand {
     }
 
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
         final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
@@ -42,7 +42,7 @@ public class CommandLink extends DiscordCommand {
                     }
                 });
                 if (!ok.get()) {
-                    reply.thenAccept((c) -> c.editOriginal(Localization.instance().linking.link_requiredRole).queue());
+                    reply.thenAccept((c) -> c.editOriginal(MessageEditData.fromContent(Localization.instance().linking.link_requiredRole)).queue());
                     return;
                 }
             }

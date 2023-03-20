@@ -4,6 +4,8 @@ import de.erdbeerbaerlp.dcintegration.common.discordCommands.DiscordCommand;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -61,5 +63,22 @@ public abstract class DiscordEventHandler {
      * Gets called when a player successfully links their Discord and Minecraft (Bedrock) account
      */
     public void onBedrockPlayerLink(final UUID bedrockUUID, final String discordID) {
+    }
+
+    /**
+     * Called before a player fully joined, but after whitelist check
+     * @param player UUID of the player joining
+     * @return non-null value will kick the player with the returned message, null will let player join
+     */
+    @Nullable
+    public Component onPlayerJoin(final UUID player){
+        return null;
+    }
+
+    /**
+     * Gets called after a player leaves the server
+     * @param player UUID of the player who left the server
+     */
+    public void onPlayerLeave(final UUID player){
     }
 }

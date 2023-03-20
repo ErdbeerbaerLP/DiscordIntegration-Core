@@ -98,6 +98,8 @@ public class PlayerLinkController {
         if (Configuration.instance().linking.globalLinking)
             try {
                 final HttpsURLConnection connection = (HttpsURLConnection) new URL(API_URL + "?uuid=" + player.toString().replace("-", "")).openConnection();
+                connection.setConnectTimeout(1000);
+                connection.setReadTimeout(1000);
                 connection.setRequestMethod("GET");
                 final JsonObject o = gson.fromJson(new JsonReader(new InputStreamReader(connection.getInputStream())), JsonObject.class);
                 if (o.has("dcID") && !o.get("dcID").getAsString().isEmpty()) {
@@ -160,6 +162,8 @@ public class PlayerLinkController {
             try {
                 final HttpsURLConnection connection = (HttpsURLConnection) new URL(API_URL + "?dcID=" + discordID).openConnection();
                 connection.setRequestMethod("GET");
+                connection.setConnectTimeout(1000);
+                connection.setReadTimeout(1000);
                 final JsonObject o = gson.fromJson(new JsonReader(new InputStreamReader(connection.getInputStream())), JsonObject.class);
                 if (o.has("uuid") && !o.get("uuid").getAsString().isEmpty()) {
                     linkWithoutChecking(discordID, UUID.fromString(o.get("uuid").getAsString().replaceAll(

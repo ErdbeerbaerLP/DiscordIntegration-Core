@@ -1,10 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common;
 
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.DiscordCommand;
-import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
-import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
+import de.erdbeerbaerlp.dcintegration.common.storage.*;
 import de.erdbeerbaerlp.dcintegration.common.util.ComponentUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
@@ -26,6 +23,7 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.entities.sticker.Sticker;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -84,6 +82,9 @@ public class DiscordEventListener implements EventListener {
                 }
             }
         }
+        if (event instanceof final GuildMemberUpdateEvent ev) {
+            Discord.memberCache.replace(ev.getMember().getIdLong(), ev.getMember());
+        }
         if (event instanceof final MessageReactionAddEvent ev) {
             final UUID sender = dc.getSenderUUIDFromMessageID(ev.getMessageId());
             if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatOutputChannelID.equals("default") ? Configuration.instance().general.botChannel : Configuration.instance().advanced.chatOutputChannelID))
@@ -98,7 +99,6 @@ public class DiscordEventListener implements EventListener {
             }
         }
         if (event instanceof final MessageReceivedEvent ev) {
-
             if ((Configuration.instance().general.allowWebhookMessages && !dc.recentMessages.containsKey(ev.getMessageId())) || !ev.isWebhookMessage())
                 if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
                     if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;
@@ -142,7 +142,10 @@ public class DiscordEventListener implements EventListener {
                         final int memberColor = (ev.getMember() != null ? ev.getMember().getColorRaw() : 0);
                         final TextReplacementConfig msgReplacer = ComponentUtils.replaceLiteral("%msg%", ComponentUtils.makeURLsClickable(outMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline()))));
                         final TextReplacementConfig idReplacer = ComponentUtils.replaceLiteral("%id%", ev.getAuthor().getId());
-                        Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName())).style(Style.style(TextColor.color(memberColor))
+                        Style.Builder memberStyle = Style.style();
+                        if (Configuration.instance().messages.discordRoleColorIngame)
+                            memberStyle = memberStyle.color(TextColor.color(memberColor));
+                        Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName())).style(memberStyle
                                 .clickEvent(ClickEvent.suggestCommand("<@" + ev.getAuthor().getId() + ">"))
                                 .hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%user#tag%", ev.getAuthor().getAsTag()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
                         if (ev.getAuthor().isBot()) {
@@ -151,8 +154,11 @@ public class DiscordEventListener implements EventListener {
                         final TextReplacementConfig userReplacer = ComponentUtils.replaceLiteral("%user%", user);
                         out = out.replaceText(userReplacer).replaceText(idReplacer).replaceText(msgReplacer);
                         if (hasReply) {
+                            memberStyle = Style.style();
+                            if (Configuration.instance().messages.discordRoleColorIngame)
+                                memberStyle = memberStyle.color(TextColor.color((reply.getMember() != null ? reply.getMember().getColorRaw() : 0)));
                             final Component repUser = Component.text((reply.getMember() != null ? reply.getMember().getEffectiveName() : reply.getAuthor().getName()))
-                                    .style(ComponentUtils.addUserHoverClick(Style.style(TextColor.color((reply.getMember() != null ? reply.getMember().getColorRaw() : 0))), reply.getAuthor(), reply.getMember()));
+                                    .style(ComponentUtils.addUserHoverClick(memberStyle.build(), reply.getAuthor(), reply.getMember()));
                             out = out.replaceText(ComponentUtils.replaceLiteral("%ruser%", repUser));
                             final String repMsg = MessageUtils.formatEmoteMessage(reply.getMentions().getCustomEmojis(), reply.getContentDisplay());
                             @SuppressWarnings("unchecked") final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), mcSerializerOptions);

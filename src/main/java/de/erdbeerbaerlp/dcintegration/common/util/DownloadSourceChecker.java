@@ -2,7 +2,10 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
+import java.net.URL;
+import java.util.ArrayList;
 
 @SuppressWarnings("unused")
 public class DownloadSourceChecker {
@@ -10,11 +13,7 @@ public class DownloadSourceChecker {
     /**
      * Wildcards for trusted sources
      */
-    public static final String[] trustedSources = new String[]{
-            "forgecdn.net/files/",
-            "modrinth.com/data/rbJ7eS5V/versions",
-            "erdbeerbaerlp.de"
-    };
+    public static final ArrayList<String> trustedSources = new ArrayList<>();
 
     /**
      * Checks if the mod was downloaded from a trusted source using NTFS alternate file streams
@@ -24,6 +23,26 @@ public class DownloadSourceChecker {
      */
     public static boolean checkDownloadSource(File f) {
         if (Configuration.instance().general.ignoreFileSource) return true;
+        try {
+            final HttpsURLConnection url = (HttpsURLConnection) new URL("https://api.erdbeerbaerlp.de/trusted-urls.txt").openConnection();
+            url.setConnectTimeout(3000);
+            url.setReadTimeout(3000);
+            url.connect();
+            if(url.getResponseCode() != 200) return true; //Ignore on error
+
+            // Read all lines and save to array
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(url.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                trustedSources.add(line);
+            }
+
+            // Close reader
+            reader.close();
+            url.disconnect();
+        } catch (IOException e) {
+            return true; //Ignore on error
+        }
         final File file = new File(f.getAbsolutePath() + ":Zone.Identifier:$DATA");
         try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
             for (String line : bf.lines().toList()) {

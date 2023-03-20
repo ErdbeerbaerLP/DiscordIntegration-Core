@@ -62,7 +62,7 @@ public class AddonConfigRegistry {
      */
 
     @Deprecated
-    public static <T extends AddonConfiguration> T registerConfig(Class<T> cfg, DiscordIntegrationAddon inst) {
+    public static <T> T registerConfig(Class<T> cfg, DiscordIntegrationAddon inst) {
         return loadConfig(cfg, inst);
     }
 
