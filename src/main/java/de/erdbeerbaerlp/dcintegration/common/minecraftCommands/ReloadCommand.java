@@ -18,6 +18,7 @@ public class ReloadCommand implements MCSubCommand{
     public Component execute(String[] params, UUID playerUUID) {
         try {
             Configuration.instance().loadConfig();
+            Localization.instance().loadConfig();
         } catch (IOException e) {
             System.err.println("Config loading failed");
             e.printStackTrace();

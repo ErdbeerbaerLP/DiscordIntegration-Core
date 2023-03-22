@@ -14,7 +14,7 @@ public class Variables {
     /**
      * Mod/Plugin version
      */
-    public static final String VERSION = "2.6.3";
+    public static final String VERSION = "2.6.4";
     /**
      * Discord Integration data directory
      */

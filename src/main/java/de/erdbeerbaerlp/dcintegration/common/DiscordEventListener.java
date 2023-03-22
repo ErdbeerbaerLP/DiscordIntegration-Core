@@ -73,6 +73,7 @@ public class DiscordEventListener implements EventListener {
         final JDA jda = dc.getJDA();
         if (jda == null) return;
         if (event instanceof SlashCommandInteractionEvent ev) {
+            if(!Configuration.instance().commands.enabled) return;
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
                 if (CommandRegistry.registeredCMDs.containsKey(ev.getCommandIdLong())) {
                     final DiscordCommand cfCommand = CommandRegistry.registeredCMDs.get(ev.getCommandIdLong());
@@ -99,6 +100,7 @@ public class DiscordEventListener implements EventListener {
             }
         }
         if (event instanceof final MessageReceivedEvent ev) {
+            if(Localization.instance().ingame_discordMessage.isBlank()) return;
             if ((Configuration.instance().general.allowWebhookMessages && !dc.recentMessages.containsKey(ev.getMessageId())) || !ev.isWebhookMessage())
                 if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
                     if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;

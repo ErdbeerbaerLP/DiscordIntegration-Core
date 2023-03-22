@@ -74,9 +74,11 @@ public class SQLiteInterface extends DBInterface {
             while (res.next()) {
                 links.add(new PlayerLink(res.getString(1), res.getString(2), res.getString(3), gson.fromJson(res.getString(4), PlayerSettings.class)));
             }
+            statement.closeOnCompletion();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return links.toArray(new PlayerLink[0]);
     }
 
