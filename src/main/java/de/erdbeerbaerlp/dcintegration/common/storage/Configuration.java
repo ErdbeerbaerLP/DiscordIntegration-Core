@@ -132,6 +132,9 @@ public class Configuration {
 
         @TomlComment({"The bot's status message", "", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
         public String botStatusName = "%online% players Online";
+        
+        @TomlComment({"The bot's status message for 1 online player", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
+        public String botStatusNameSingular = "%online player Online";
 
         @TomlComment({"Type of the bot's status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING,COMPETING"})
         public GameType botStatusType = GameType.PLAYING;
