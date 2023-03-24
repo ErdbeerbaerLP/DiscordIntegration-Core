@@ -953,9 +953,15 @@ public class Discord extends Thread {
         public void run() {
             while (true) {
                 if (jda != null) {
+                    if (srv.getOnlinePlayers() == 1) {
+                        final String game = Configuration.instance().general.botStatusNameSingular
+                            .replace("%online%", "" + srv.getOnlinePlayers())
+                            .replace("%max%", "" + srv.getMaxPlayers());
+                    } else {
                     final String game = Configuration.instance().general.botStatusName
                             .replace("%online%", "" + srv.getOnlinePlayers())
                             .replace("%max%", "" + srv.getMaxPlayers());
+                    }
                     switch (Configuration.instance().general.botStatusType) {
                         case DISABLED:
                             break;
