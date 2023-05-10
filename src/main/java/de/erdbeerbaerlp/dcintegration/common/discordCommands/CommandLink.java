@@ -2,22 +2,12 @@ package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
-import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
-import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 
 public class CommandLink extends DiscordCommand {
@@ -27,12 +17,12 @@ public class CommandLink extends DiscordCommand {
         addOption(OptionType.INTEGER, "code", "Link Code", true);
     }
 
-
+/* TODO
     @Override
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
         final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
         Member m = ev.getMember();
-        if (m == null) m = discord_instance.getMemberById(ev.getUser().getIdLong());
+        if (m == null) m = DiscordIntegration.INSTANCE.getMemberById(ev.getUser().getIdLong());
         if (m != null)
             if (Configuration.instance().linking.requiredRoles.length != 0) {
                 AtomicBoolean ok = new AtomicBoolean(false);
@@ -78,6 +68,11 @@ public class CommandLink extends DiscordCommand {
             }
         }
 
+
+    }*/
+
+    @Override
+    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
 
     }
 

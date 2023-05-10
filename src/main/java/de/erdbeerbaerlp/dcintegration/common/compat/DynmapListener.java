@@ -1,8 +1,8 @@
 package de.erdbeerbaerlp.dcintegration.common.compat;
 
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.api.DiscordEventHandler;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.dynmap.DynmapCommonAPI;
 import org.dynmap.DynmapCommonAPIListener;
@@ -27,15 +27,15 @@ public class DynmapListener extends DynmapCommonAPIListener {
     @Override
     public void apiEnabled(org.dynmap.DynmapCommonAPI api) {
         this.api = api;
-        if (Variables.discord_instance != null)
-            Variables.discord_instance.registerEventHandler(sender);
-        Variables.LOGGER.info("Dynmap listener registered");
+        if (DiscordIntegration.INSTANCE != null)
+            //TODO DiscordIntegration.INSTANCE.registerEventHandler(sender);
+        DiscordIntegration.LOGGER.info("Dynmap listener registered");
     }
 
     @Override
     public void apiDisabled(org.dynmap.DynmapCommonAPI api) {
-        if (Variables.discord_instance != null)
-            Variables.discord_instance.unregisterEventHandler(sender);
+        if (DiscordIntegration.INSTANCE != null);
+            //TODO DiscordIntegration.INSTANCE.unregisterEventHandler(sender);
     }
 
 
@@ -47,7 +47,7 @@ public class DynmapListener extends DynmapCommonAPIListener {
     }
 
     public void sendMessage(String name, String message) {
-        Variables.discord_instance.sendMessage(Variables.discord_instance.getChannel(Configuration.instance().dynmap.dynmapChannelID), Configuration.instance().dynmap.dcMessage.replace("%msg%", message).replace("%sender%", name.isEmpty() ? Configuration.instance().dynmap.unnamed : name), Configuration.instance().dynmap.avatarURL, Configuration.instance().dynmap.name);
+        // TODO Variables.discord_instance.sendMessage(DiscordIntegration.discord_instance.getChannel(Configuration.instance().dynmap.dynmapChannelID), Configuration.instance().dynmap.dcMessage.replace("%msg%", message).replace("%sender%", name.isEmpty() ? Configuration.instance().dynmap.unnamed : name), Configuration.instance().dynmap.avatarURL, Configuration.instance().dynmap.name);
     }
 
     /**

@@ -3,8 +3,7 @@ package de.erdbeerbaerlp.dcintegration.common.addon;
 
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
-import de.erdbeerbaerlp.dcintegration.common.Discord;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,20 +54,10 @@ public class AddonConfigRegistry {
         }
     }
 
-    /**
-     * Legacy version of {@link AddonConfigRegistry#loadConfig(Class, DiscordIntegrationAddon)}
-     *
-     * @deprecated Use {@link AddonConfigRegistry#loadConfig(Class, DiscordIntegrationAddon)} instead
-     */
-
-    @Deprecated
-    public static <T> T registerConfig(Class<T> cfg, DiscordIntegrationAddon inst) {
-        return loadConfig(cfg, inst);
-    }
 
     /**
      * Creates an Instance of your configuration and loads it<br>
-     * Should be called in {@link DiscordIntegrationAddon#load(Discord)}
+     * Should be called in {@link DiscordIntegrationAddon#load(DiscordIntegration)}
      *
      * @param cfg  Class of your Configuration
      * @param inst Instance of your Addon
@@ -82,7 +71,7 @@ public class AddonConfigRegistry {
             return loadConfig(conf, inst);
         } catch (RuntimeException | InstantiationException | IllegalAccessException | NoSuchMethodException |
                  InvocationTargetException e) {
-            Variables.LOGGER.error("An exception occurred while loading addon configuration " + cfg.getName());
+            DiscordIntegration.LOGGER.error("An exception occurred while loading addon configuration " + cfg.getName());
             e.printStackTrace();
         }
         return null;

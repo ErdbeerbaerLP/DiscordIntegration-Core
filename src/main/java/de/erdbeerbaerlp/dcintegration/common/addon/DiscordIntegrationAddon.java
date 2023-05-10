@@ -1,6 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.addon;
 
-import de.erdbeerbaerlp.dcintegration.common.Discord;
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 
 public interface DiscordIntegrationAddon {
 
@@ -8,9 +8,9 @@ public interface DiscordIntegrationAddon {
      * Gets called after loading an Addon<br>
      * Use it to register event handlers or semilar
      *
-     * @param dc {@link Discord} instance
+     * @param dc {@link DiscordIntegration} instance
      */
-    void load(final Discord dc);
+    void load(final DiscordIntegration dc);
 
     /**
      * Gets called when Discord Integration is reloading by the /discord reload command. Can be used to reload configs
@@ -22,8 +22,8 @@ public interface DiscordIntegrationAddon {
     /**
      * Gets called before unloading an Addon
      *
-     * @param dc {@link Discord} instance
+     * @param dc {@link DiscordIntegration} instance
      */
-    default void unload(final Discord dc) {
+    default void unload(final DiscordIntegration dc) {
     }
 }

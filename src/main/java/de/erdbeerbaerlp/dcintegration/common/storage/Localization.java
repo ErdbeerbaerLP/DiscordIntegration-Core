@@ -7,7 +7,7 @@ import com.moandjiezana.toml.TomlWriter;
 
 import java.io.IOException;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
+import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.messagesFile;
 
 @SuppressWarnings("unused")
 public class Localization {
@@ -16,17 +16,16 @@ public class Localization {
     private static Localization INSTANCE;
 
     static {
-
         //First instance of the Config
         INSTANCE = new Localization();
     }
 
     @TomlComment({"This is what will be displayed ingame when someone types into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The message"})
-    public String ingame_discordMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r <%user%> %msg%";
+    public String ingame_discordMessage = "§6[§5DISCORD§6]§r <%user%> %msg%";
     @TomlComment({"This is what will be displayed ingame when someone sends an reply into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The reply message", "%ruser% - The username of the message that got the reply", "%rmsg% - The replied message"})
-    public String ingame_discordReplyMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r \u00a7a%user%\u00a7r in reply to \u00a73%ruser%\u00a7r: %msg%";
+    public String ingame_discordReplyMessage = "§6[§5DISCORD§6]§r §a%user%§r in reply to §3%ruser%§r: %msg%";
     @TomlComment({"Message shown when hovering over the username of an discord message", "PLACEHOLDERS:", "%user% - The username/nickname (Someone123)", "%user#tag% - The username with tag (someone#0001)", "%id% - The user ID", "", "NOTE: using an @ here can cause ping sounds ingame"})
-    public String discordUserHover = "\u00a73Discord User %user#tag%\n\u00a7aClick to mention";
+    public String discordUserHover = "§3Discord User %user#tag%\n§aClick to mention";
     @TomlComment("This message will edited in / sent when the server finished starting")
     public String serverStarted = "Server Started!";
     @TomlComment({"Message to show while the server is starting", "This will be edited to SERVER_STARTED_MSG when webhook is false"})
@@ -48,7 +47,7 @@ public class Localization {
     @TomlComment({"The chat message in discord, sent from an player in-game", "", "PLACEHOLDERS:", "%player% - The player's name", "%msg% - The chat message"})
     public String discordChatMessage = "%player%: %msg%";
     @TomlComment({"Sent to a player when someone reacts to his messages", "PLACEHOLDERS:", "%name% - (Nick-)Name of the user who reacted (format: 'SomeNickName')", "%name2% - Name of the user who reacted with discord discriminator (format: 'SomeName#0123')", "%msg% - Content of the message which got the reaction", "%emote% - The reacted emote"})
-    public String reactionMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r\u00a77 %name% reacted to your message \"\u00a79%msg%\u00a77\" with '%emote%'";
+    public String reactionMessage = "§6[§5DISCORD§6]§r§7 %name% reacted to your message \"§9%msg%§7\" with '%emote%'";
     @TomlComment("Message shown for attachments")
     public String attachment = "Attachment";
     @TomlComment("Message shown for stickers")
@@ -127,9 +126,9 @@ public class Localization {
         public String linkNumberNAN = "This is not a number!";
 
         @TomlComment({"Message shown to players who are not whitelisted using discord", "No effect if discord whitelist is off"})
-        public String notWhitelistedCode = "\u00a7cYou are not whitelisted.\nJoin the discord server for more information\nhttps://discord.gg/someserver\nYour Whitelist-Code is: \u00a76%code%";
+        public String notWhitelistedCode = "§cYou are not whitelisted.\nJoin the discord server for more information\nhttps://discord.gg/someserver\nYour Whitelist-Code is: §6%code%";
         @TomlComment({"Message shown to players who are whitelisted using discord but don't have the required role anymore", "No effect if discord whitelist is off"})
-        public String notWhitelistedRole = "\u00a7cYou are whitelisted, but you need an role to join.\nSee the discord server for more information";
+        public String notWhitelistedRole = "§cYou are whitelisted, but you need an role to join.\nSee the discord server for more information";
 
         @TomlComment("Sent when trying to link without an required role")
         public String link_requiredRole = "You need to have an role to use this";

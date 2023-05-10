@@ -1,5 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -9,17 +10,15 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.concurrent.CompletableFuture;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
-
-public class CommandFromCFG extends DiscordCommand {
+public class CommandFromConfig extends DiscordCommand {
     private final String mcCmd;
     private final boolean admin;
     private final ConfigCommand.CommandArgument[] args;
     private final boolean hidden;
     private final String textToSend;
 
-    public CommandFromCFG(String cmd, String description, String mcCommand, boolean adminOnly, ConfigCommand.CommandArgument[] args, boolean hidden, String textToSend) throws IllegalArgumentException {
+    public CommandFromConfig(String cmd, String description, String mcCommand, boolean adminOnly, ConfigCommand.CommandArgument[] args, boolean hidden, String textToSend) throws IllegalArgumentException {
         super(cmd, description);
         this.textToSend = textToSend;
         this.isConfigCmd = true;
@@ -41,16 +40,6 @@ public class CommandFromCFG extends DiscordCommand {
         return admin;
     }
 
-    /**
-     * Sets the description for the help command
-     */
-
-    @Override
-    public String getCommandUsage() {
-        if (useArgs) return super.getCommandUsage() + " " + argText;
-        else return super.getCommandUsage();
-    }
-
     @Override
     public void execute(final SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
         reply = reply.setEphemeral(hidden);
@@ -65,7 +54,7 @@ public class CommandFromCFG extends DiscordCommand {
                 cmd = cmd.replace("%" + arg.name + "%", option == null ? "" : option.getAsString());
 
             }
-            discord_instance.srv.runMcCommand(cmd, submit, ev.getUser());
+            DiscordIntegration.INSTANCE.getServerInterface().runMcCommand(cmd, submit, ev.getUser());
         }
     }
 

@@ -1,25 +1,15 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
-import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
-import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class CommandLinkcheck extends DiscordCommand {
 
@@ -28,7 +18,7 @@ public class CommandLinkcheck extends DiscordCommand {
         addOption(OptionType.USER, "discorduser", Localization.instance().commands.cmdLinkcheck_userargDesc, false);
         addOption(OptionType.STRING, "mcplayer", Localization.instance().commands.cmdLinkcheck_mcargDesc, false);
     }
-
+/*TODO
     @Override
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
         final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
@@ -85,17 +75,22 @@ public class CommandLinkcheck extends DiscordCommand {
                 }
             }
         }
-    }
+    }*/
 
     @Override
     public boolean adminOnly() {
         return true;
     }
 
+    @Override
+    public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
+
+    }
+
     private MessageEmbed buildEmbed(UUID uuid, User user) {
         final EmbedBuilder b = new EmbedBuilder();
         b.addField(Localization.instance().commands.cmdLinkcheck_discordAcc, "<@!" + user.getId() + ">", true);
-        final String mcname = Variables.discord_instance.srv.getNameFromUUID(uuid);
+        final String mcname = DiscordIntegration.INSTANCE.getServerInterface().getNameFromUUID(uuid);
         b.addField(Localization.instance().commands.cmdLinkcheck_minecraftAcc, mcname + "\n" + uuid, true);
         return b.build();
     }

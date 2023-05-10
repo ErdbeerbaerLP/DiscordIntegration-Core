@@ -72,7 +72,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-beta.6'
+    embed 'net.dv8tion:JDA:5.0.0-beta.9'
     embed 'club.minnced:discord-webhooks:0.8.2'
 
     //Emoji-Java
@@ -99,9 +99,6 @@ dependencies {
     //Apache commons lang3
     embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
 
-    //SQLite
-    embed 'org.xerial:sqlite-jdbc:3.41.0.0'
-
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
 
@@ -111,6 +108,18 @@ dependencies {
 }
 tasks.build.dependsOn(tasks.shadowJar)
 
+test {
+    // Enable JUnit 5 (Gradle 4.6+).
+    useJUnitPlatform()
+
+    // Always run tests, even when nothing changed.
+    dependsOn 'cleanTest'
+
+    // Show test results.
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
 java {
     withJavadocJar()
     withSourcesJar()

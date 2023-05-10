@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.minecraftCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.addon.AddonLoader;
+import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.kyori.adventure.text.Component;
@@ -23,7 +24,9 @@ public class ReloadCommand implements MCSubCommand{
             System.err.println("Config loading failed");
             e.printStackTrace();
         }
+        CommandRegistry.reRegisterAllCommands();
         AddonLoader.reloadAll();
+        CommandRegistry.updateSlashCommands();
         return Component.text(Localization.instance().commands.configReloaded);
     }
 

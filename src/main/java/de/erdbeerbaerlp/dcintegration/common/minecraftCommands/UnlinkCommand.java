@@ -1,6 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.minecraftCommands;
 
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import net.kyori.adventure.text.Component;
 
 import java.util.UUID;
@@ -14,7 +14,7 @@ public class UnlinkCommand implements MCSubCommand {
 
     @Override
     public Component execute(String[] params, UUID playerUUID) {
-        if (PlayerLinkController.unlinkPlayer(params[0]))
+        if (LinkManager.unlinkPlayer(params[0]))
             return Component.text("Successfully unlinked");
         else return Component.text("Failed to unlink");
     }

@@ -1,10 +1,11 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerLink;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerSettings;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -18,12 +19,15 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
-
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 
 public class CommandSettings extends DiscordCommand {
+    protected CommandSettings(String name, String desc) {
+        super(name, desc);
+    }
+
     public CommandSettings() {
         super("settings", Localization.instance().commands.descriptions.settings);
         final ArrayList<Command.Choice> settings = new ArrayList<>();
@@ -41,7 +45,7 @@ public class CommandSettings extends DiscordCommand {
     @Override
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
         final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
-        if (!PlayerLinkController.isDiscordLinked(ev.getUser().getId())) {
+        if (!LinkManager.isDiscordUserLinked(ev.getUser().getId())) {
             reply.thenAccept((c) -> c.sendMessage(Localization.instance().linking.notLinked.replace("%method%", Configuration.instance().linking.whitelistMode ? (Localization.instance().linking.linkMethodWhitelistCode.replace("%prefix%", "/")) : Localization.instance().linking.linkMethodIngame)).queue());
             return;
         }
@@ -52,11 +56,11 @@ public class CommandSettings extends DiscordCommand {
             switch (subcommandName) {
                 case "get":
                     if (key != null) {
-                        if (discord_instance.getSettings().containsKey(key.getAsString())) {
-                            final PlayerSettings settings = PlayerLinkController.getSettings(ev.getUser().getId(), null);
+                        if (CommandSettings.getSettings().containsKey(key.getAsString())) {
+                            final PlayerLink link = LinkManager.getLink(ev.getUser().getId(), null);
                             reply.thenAccept((c) -> {
                                 try {
-                                    c.sendMessage(Localization.instance().personalSettings.personalSettingGet.replace("%bool%", settings.getClass().getField(key.getAsString()).getBoolean(settings) ? "true" : "false")).queue();
+                                    c.sendMessage(Localization.instance().personalSettings.personalSettingGet.replace("%bool%", link.settings.getClass().getField(key.getAsString()).getBoolean(link) ? "true" : "false")).queue();
                                 } catch (IllegalAccessException | NoSuchFieldException e) {
                                     e.printStackTrace();
                                 }
@@ -66,11 +70,11 @@ public class CommandSettings extends DiscordCommand {
                             reply.thenAccept((c) -> c.sendMessage(Localization.instance().personalSettings.invalidPersonalSettingKey.replace("%key%", key.getAsString())).queue());
                     } else {
                         final EmbedBuilder b = new EmbedBuilder();
-                        final PlayerSettings settings = PlayerLinkController.getSettings(ev.getUser().getId(), null);
-                        discord_instance.getSettings().forEach((name, desc) -> {
+                        final PlayerLink link = LinkManager.getLink(ev.getUser().getId(), null);
+                        CommandSettings.getSettings().forEach((name, desc) -> {
                             if (!(!Configuration.instance().webhook.enable && name.equals("useDiscordNameInChannel"))) {
                                 try {
-                                    b.addField(name + " == " + (((boolean) settings.getClass().getDeclaredField(name).get(settings)) ? "true" : "false"), desc, false);
+                                    b.addField(name + " == " + (((boolean) link.settings.getClass().getDeclaredField(name).get(link)) ? "true" : "false"), desc, false);
                                 } catch (IllegalAccessException | NoSuchFieldException e) {
                                     b.addField(name + " == Unknown", desc, false);
                                 }
@@ -83,12 +87,12 @@ public class CommandSettings extends DiscordCommand {
                 case "set":
                     if (key != null) {
                         final String keyStr = key.getAsString();
-                        if (discord_instance.getSettings().containsKey(keyStr)) {
+                        if (getSettings().containsKey(keyStr)) {
                             if (ArrayUtils.contains(Configuration.instance().linking.settingsBlacklist, keyStr)) {
                                 reply.thenAccept((c) -> c.sendMessage(Localization.instance().personalSettings.settingUpdateBlocked).queue());
                                 return;
                             }
-                            final PlayerSettings settings = PlayerLinkController.getSettings(ev.getUser().getId(), null);
+                            final PlayerLink link = LinkManager.getLink(ev.getUser().getId(), null);
                             boolean newval;
                             try {
                                 if (value != null) {
@@ -99,8 +103,8 @@ public class CommandSettings extends DiscordCommand {
                             }
                             final boolean newValue = newval;
                             try {
-                                settings.getClass().getDeclaredField(keyStr).set(settings, newValue);
-                                PlayerLinkController.updatePlayerSettings(ev.getUser().getId(), null, settings);
+                                link.settings.getClass().getDeclaredField(keyStr).set(link, newValue);
+                                LinkManager.addLink(link);
                             } catch (IllegalAccessException | NoSuchFieldException e) {
                                 e.printStackTrace();
                                 reply.thenAccept((c) -> c.sendMessage(Localization.instance().personalSettings.settingUpdateFailed).queue());
@@ -113,7 +117,32 @@ public class CommandSettings extends DiscordCommand {
                     break;
             }
         } else {
-            Variables.LOGGER.error("SUBCOMMAND == NULL");
+            DiscordIntegration.LOGGER.error("SUBCOMMAND == NULL");
         }
     }
+
+    /**
+     * Gets a list of all personal settings and their descriptions
+     *
+     * @return HashMap with the setting keys as key and the setting descriptions as value
+     */
+
+    private static HashMap<String, String> getSettings() {
+        final HashMap<String, String> out = new HashMap<>();
+        final Field[] fields = PlayerSettings.class.getFields();
+        final Field[] descFields = PlayerSettings.Descriptions.class.getDeclaredFields();
+        for (Field f : fields) {
+            out.put(f.getName(), "No Description Provided");
+        }
+        for (Field f : descFields) {
+            f.setAccessible(true);
+            try {
+                out.put(f.getName(), (String) f.get(new PlayerSettings.Descriptions()));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return out;
+    }
+
 }
