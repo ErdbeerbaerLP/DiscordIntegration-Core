@@ -17,6 +17,7 @@ import dev.vankka.simpleast.core.parser.Rule;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
@@ -141,7 +142,7 @@ public class DiscordEventListener implements EventListener {
                         final Message reply = ev.getMessage().getReferencedMessage();
                         final boolean hasReply = reply != null;
                         Component out = LegacyComponentSerializer.legacySection().deserialize(hasReply ? Localization.instance().ingame_discordReplyMessage : Localization.instance().ingame_discordMessage);
-                        final int memberColor = (ev.getMember() != null ? ev.getMember().getColorRaw() : 0);
+                        final int memberColor = (ev.getMember() != null ? ev.getMember().getColorRaw() : Role.DEFAULT_COLOR_RAW);
                         final TextReplacementConfig msgReplacer = ComponentUtils.replaceLiteral("%msg%", ComponentUtils.makeURLsClickable(outMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline()))));
                         final TextReplacementConfig idReplacer = ComponentUtils.replaceLiteral("%id%", ev.getAuthor().getId());
                         Style.Builder memberStyle = Style.style();
@@ -158,7 +159,7 @@ public class DiscordEventListener implements EventListener {
                         if (hasReply) {
                             memberStyle = Style.style();
                             if (Configuration.instance().messages.discordRoleColorIngame)
-                                memberStyle = memberStyle.color(TextColor.color((reply.getMember() != null ? reply.getMember().getColorRaw() : 0)));
+                                memberStyle = memberStyle.color(TextColor.color((reply.getMember() != null ? reply.getMember().getColorRaw() : Role.DEFAULT_COLOR_RAW)));
                             final Component repUser = Component.text((reply.getMember() != null ? reply.getMember().getEffectiveName() : reply.getAuthor().getName()))
                                     .style(ComponentUtils.addUserHoverClick(memberStyle.build(), reply.getAuthor(), reply.getMember()));
                             out = out.replaceText(ComponentUtils.replaceLiteral("%ruser%", repUser));
