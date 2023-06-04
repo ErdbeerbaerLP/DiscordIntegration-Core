@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.entities.sticker.Sticker;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -74,6 +75,9 @@ public class DiscordEventListener implements EventListener {
         final Discord dc = Variables.discord_instance;
         final JDA jda = dc.getJDA();
         if (jda == null) return;
+        if (event instanceof final GuildMemberUpdateEvent ev) {
+            Discord.memberCache.replace(ev.getMember().getIdLong(), ev.getMember());
+        }
         if (event instanceof SlashCommandInteractionEvent ev) {
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
                 if (CommandRegistry.registeredCMDs.containsKey(ev.getCommandIdLong())) {
@@ -89,7 +93,7 @@ public class DiscordEventListener implements EventListener {
             if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatOutputChannelID.equals("default") ? Configuration.instance().general.botChannel : Configuration.instance().advanced.chatOutputChannelID))
                 if (sender != Discord.dummyUUID) {
                     if (!PlayerLinkController.getSettings(ev.getUserId(), null).ignoreReactions)
-                        dc.srv.sendMCReaction(ev.retrieveMember().complete(), ev.retrieveMessage(), sender, ev.getEmoji());
+                        dc.srv.sendMCReaction(dc.getMemberById(ev.getUserIdLong()), ev.retrieveMessage(), sender, ev.getEmoji());
                 }
         }
         if (event instanceof GuildMemberRemoveEvent) {

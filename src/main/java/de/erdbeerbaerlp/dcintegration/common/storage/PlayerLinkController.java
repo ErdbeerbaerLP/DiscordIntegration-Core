@@ -314,7 +314,7 @@ public class PlayerLinkController {
             discord_instance.callEventC((e) -> e.onPlayerLink(player, discordID));
             final Guild guild = discord_instance.getChannel().getGuild();
             final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
-            final Member member = guild.retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID))).complete();
+            final Member member = discord_instance.getMemberById(Long.valueOf(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID))));
             if (linkedRole != null && !member.getRoles().contains(linkedRole))
                 guild.addRoleToMember(member, linkedRole).queue();
             if (Configuration.instance().linking.shouldNickname) {
@@ -367,7 +367,7 @@ public class PlayerLinkController {
             discord_instance.callEventC((e) -> e.onBedrockPlayerLink(bedrockPlayer, discordID));
             final Guild guild = discord_instance.getChannel().getGuild();
             final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
-            final Member member = guild.retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID))).complete();
+            final Member member = discord_instance.getMemberById(Long.valueOf(PlayerLinkController.getDiscordFromPlayer(UUID.fromString(link.mcPlayerUUID))));
             if (linkedRole != null && !member.getRoles().contains(linkedRole))
                 guild.addRoleToMember(member, linkedRole).queue();
             return true;
@@ -448,12 +448,13 @@ public class PlayerLinkController {
                     }
                     discord_instance.callEventC((a) -> a.onPlayerUnlink(UUID.fromString(o.mcPlayerUUID), discordID));
                     try {
+
                         final Guild guild = discord_instance.getChannel().getGuild();
-                        guild.retrieveMemberById(discordID).submit().thenAccept((member) -> {
-                            final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
-                            if (member.getRoles().contains(linkedRole))
-                                guild.removeRoleFromMember(member, linkedRole).queue();
-                        });
+                        final Member member = discord_instance.getMemberById(Long.valueOf(discordID));
+                        final Role linkedRole = guild.getRoleById(Configuration.instance().linking.linkedRoleID);
+                        if (member.getRoles().contains(linkedRole))
+                            guild.removeRoleFromMember(member, linkedRole).queue();
+
                     } catch (ErrorResponseException ignored) {
                     }
                     return true;

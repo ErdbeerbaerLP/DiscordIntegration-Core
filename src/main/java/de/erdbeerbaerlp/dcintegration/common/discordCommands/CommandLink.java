@@ -32,7 +32,7 @@ public class CommandLink extends DiscordCommand {
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction replyCallbackAction) {
         final CompletableFuture<InteractionHook> reply = replyCallbackAction.setEphemeral(true).submit();
         Member m = ev.getMember();
-        if (m == null) m = ev.getGuild().retrieveMember(ev.getUser()).complete();
+        if (m == null) m = discord_instance.getMemberById(ev.getUser().getIdLong());
         if (m != null)
             if (Configuration.instance().linking.requiredRoles.length != 0) {
                 AtomicBoolean ok = new AtomicBoolean(false);

@@ -83,7 +83,7 @@ public class MessageUtils {
         if (Configuration.instance().linking.enableLinking && PlayerLinkController.isPlayerLinked(p)) {
             final PlayerSettings settings = PlayerLinkController.getSettings(null, p);
             if (settings.useDiscordNameInChannel) {
-                return Variables.discord_instance.getChannel().getGuild().getMemberById(PlayerLinkController.getDiscordFromPlayer(p)).getEffectiveName();
+                return Variables.discord_instance.getMemberById(Long.valueOf(PlayerLinkController.getDiscordFromPlayer(p))).getEffectiveName();
             }
         }
         return null;
@@ -193,7 +193,7 @@ public class MessageUtils {
             String name;
             final User u = jda.getUserById(id);
             if (u != null) {
-                final Member m = targetGuild.getMember(u);
+                final Member m = discord_instance.getMemberById(u.getIdLong());
                 if (m != null)
                     name = m.getEffectiveName();
                 else

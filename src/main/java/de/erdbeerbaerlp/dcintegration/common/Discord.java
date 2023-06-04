@@ -191,7 +191,7 @@ public class Discord extends Thread {
                 final User usr = getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(uuid));
                 if (usr == null) return false;
                 final Guild g = getChannel().getGuild();
-                final Member mem = g.retrieveMember(usr).complete();
+                final Member mem = getMemberById(usr.getIdLong());
                 if (mem == null) return false;
                 for (String requiredRole : Configuration.instance().linking.requiredRoles) {
                     final Role role = g.getRoleById(requiredRole);
@@ -205,7 +205,15 @@ public class Discord extends Thread {
         }
         return false;
     }
-
+    static final Map<Long, Member> memberCache = new HashMap<>();
+    public Member getMemberById(Long userid) {
+        if (memberCache.containsKey(userid)) return memberCache.get(userid);
+        else {
+            final Member out = getMemberById(userid);
+            memberCache.put(userid, out);
+            return out;
+        }
+    }
     /**
      * Registers an event handler
      *
@@ -291,13 +299,13 @@ public class Discord extends Thread {
             kill(true);
             return;
         }
-        if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().retrieveMember(jda.getSelfUser()).complete(), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
+        if (!PermissionUtil.checkPermission(getChannel(), getMemberById(jda.getSelfUser().getIdLong()), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
             Variables.LOGGER.error("ERROR! Bot does not have all permissions to work!");
             kill(true);
             throw new PermissionException("Bot requires message read, message write, embed links and manage messages");
         }
         if (Configuration.instance().webhook.enable)
-            if (!PermissionUtil.checkPermission(getChannel(), getChannel().getGuild().retrieveMember(jda.getSelfUser()).complete(), Permission.MANAGE_WEBHOOKS)) {
+            if (!PermissionUtil.checkPermission(getChannel(), getMemberById(jda.getSelfUser().getIdLong()), Permission.MANAGE_WEBHOOKS)) {
                 Variables.LOGGER.error("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
                 Configuration.instance().webhook.enable = false;
                 try {
@@ -336,7 +344,7 @@ public class Discord extends Thread {
         final Thread unlink = new Thread(() -> {
             for (PlayerLink p : PlayerLinkController.getAllLinks()) {
                 try {
-                    getChannel().getGuild().retrieveMemberById(p.discordID).submit();
+                    getMemberById(Long.valueOf(p.discordID));
                 } catch (ErrorResponseException e) {
                     PlayerLinkController.unlinkPlayer(p.discordID);
                 }
@@ -756,7 +764,7 @@ public class Discord extends Thread {
         if (!isServerMessage && uUUID != null) {
             if (PlayerLinkController.isPlayerLinked(uUUID)) {
                 final PlayerSettings s = PlayerLinkController.getSettings(null, uUUID);
-                final Member dc = getChannel().getGuild().retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(uUUID)).complete();
+                final Member dc = getMemberById(Long.valueOf(PlayerLinkController.getDiscordFromPlayer(uUUID)));
                 if (dc != null)
                     if (s.useDiscordNameInChannel) {
                         playerName = dc.getEffectiveName();
