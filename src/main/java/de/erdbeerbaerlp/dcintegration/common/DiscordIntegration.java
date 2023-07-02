@@ -90,6 +90,9 @@ public class DiscordIntegration {
 
     @SuppressWarnings("rawtypes")
     public static final MinecraftSerializerOptions mcSerializerOptions;
+    /**
+     * API Version of the mod. Gets changed on every plugin breaking update
+     */
     public static final int apiVersion = 3;
 
     static {

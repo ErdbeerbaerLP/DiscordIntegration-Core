@@ -52,8 +52,8 @@ class DiscordEventListener implements EventListener {
         if (event instanceof SlashCommandInteractionEvent ev) {
             if (!Configuration.instance().commands.enabled) return;
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
-                if (CommandRegistry.registeredCMDs.containsKey(ev.getCommandIdLong())) {
-                    final DiscordCommand cfCommand = CommandRegistry.registeredCMDs.get(ev.getCommandIdLong());
+                if (CommandRegistry.registeredCMDs.containsKey(ev.getCommandId())) {
+                    final DiscordCommand cfCommand = CommandRegistry.registeredCMDs.get(ev.getCommandId());
                     String cmd = cfCommand.getName();
                     String args = ev.getOption("args") != null ? ev.getOption("args").getAsString() : "";
                     processDiscordCommand(ev, ArrayUtils.addAll(new String[]{cmd}, args.split(" ")), ev.getChannel(), ev.getUser(), dc);

@@ -54,6 +54,7 @@ public class LinkManager {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
         if (Configuration.instance().linking.globalLinking)
             if (nonexistentPlayerUUIDs.contains(uuid.toString())) return false;
+        if(isJavaPlayerLinked(uuid)) return true;
         try {
             final HttpsURLConnection connection = (HttpsURLConnection) new URL(API_URL + "?uuid=" + uuid.toString().replace("-", "")).openConnection();
             connection.setConnectTimeout(1000);

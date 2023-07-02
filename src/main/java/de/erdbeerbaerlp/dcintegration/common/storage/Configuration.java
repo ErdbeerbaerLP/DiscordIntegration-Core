@@ -8,7 +8,9 @@ import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.GameType;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
+import net.dv8tion.jda.api.EmbedBuilder;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -208,6 +210,11 @@ public class Configuration {
             EmbedEntry(boolean defaultEnabled, String defaultColor){
                 this.asEmbed = defaultEnabled;
                 this.colorHexCode = defaultColor;
+            }
+
+            public EmbedBuilder toEmbed(){
+                return new EmbedBuilder()
+                      .setColor(Color.decode(this.colorHexCode));
             }
         }
     }
