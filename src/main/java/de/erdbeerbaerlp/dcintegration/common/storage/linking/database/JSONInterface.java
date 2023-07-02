@@ -9,6 +9,9 @@ import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerLink;
 
 import java.io.*;
 
+/**
+ * Default JSON database implementation
+ */
 public class JSONInterface extends DBInterface {
 
     public static final File jsonFile = new File(DiscordIntegration.discordDataDir, "LinkedPlayers.json");

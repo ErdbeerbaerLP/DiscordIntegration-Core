@@ -1,9 +1,16 @@
 package de.erdbeerbaerlp.dcintegration.common.storage.linking;
 
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
 
+import javax.net.ssl.HttpsURLConnection;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,6 +21,10 @@ public class LinkManager {
     private static final String API_URL = "https://api.erdbeerbaerlp.de/dcintegration/link";
     private static final ArrayList<PlayerLink> linkCache = new ArrayList<>();
 
+    /**
+     * Player UUID cache for players not on global linking API
+     */
+    private static final ArrayList<String> nonexistentPlayerUUIDs = new ArrayList<>();
 
     /**
      * Pending /discord link requests
@@ -33,11 +44,46 @@ public class LinkManager {
         linkCache.forEach((l) -> DiscordIntegration.INSTANCE.getDatabaseInterface().addLink(l));
     }
 
+    /**
+     * Checks Global Linking API and stores player in local database if it exists
+     *
+     * @param uuid Player UUID to check
+     * @return true if link exists and was created
+     */
+    public static boolean checkGlobalAPI(final UUID uuid) {
+        if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
+        if (Configuration.instance().linking.globalLinking)
+            if (nonexistentPlayerUUIDs.contains(uuid.toString())) return false;
+        try {
+            final HttpsURLConnection connection = (HttpsURLConnection) new URL(API_URL + "?uuid=" + uuid.toString().replace("-", "")).openConnection();
+            connection.setConnectTimeout(1000);
+            connection.setReadTimeout(1000);
+            connection.setRequestMethod("GET");
+            final JsonObject o = DiscordIntegration.gson.fromJson(new JsonReader(new InputStreamReader(connection.getInputStream())), JsonObject.class);
+            if (o.has("dcID") && !o.get("dcID").getAsString().isEmpty()) {
+                connection.disconnect();
+                if (addLink(new PlayerLink(o.get("dcID").getAsString(), uuid.toString(), null, new PlayerSettings())))
+                    return true;
+            }
+            connection.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        nonexistentPlayerUUIDs.add(uuid.toString());
+        return false;
+
+    }
+
     public static ArrayList<PlayerLink> getAllLinks() {
         return linkCache;
     }
 
-
+    /**
+     * Unlinks a player from the local database
+     *
+     * @param discordID discord ID of the player to unlink
+     * @return true if the unlink process was successful
+     */
     public static boolean unlinkPlayer(String discordID) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
         linkCache.removeIf(link -> link.discordID.equals(discordID));
@@ -137,6 +183,13 @@ public class LinkManager {
         return false;
     }
 
+
+    /**
+     * Adds a player link to the local database
+     *
+     * @param l PlayerLink object to save to the database
+     * @return true if successful
+     */
     public static boolean addLink(final PlayerLink l) {
         if (l.discordID == null) return false;
         PlayerLink tmp = null;

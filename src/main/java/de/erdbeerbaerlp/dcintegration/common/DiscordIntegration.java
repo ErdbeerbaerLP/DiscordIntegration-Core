@@ -2,6 +2,8 @@ package de.erdbeerbaerlp.dcintegration.common;
 
 import club.minnced.discord.webhook.external.JDAWebhookClient;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import de.erdbeerbaerlp.dcintegration.common.addon.AddonLoader;
 import de.erdbeerbaerlp.dcintegration.common.api.DiscordEventHandler;
 import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.McCommandRegistry;
@@ -75,6 +77,7 @@ public class DiscordIntegration {
      * Cache file for players which ignore discord chat
      */
     private static final File IGNORED_PLAYERS = new File(discordDataDir, ".PlayerIgnores");
+    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     /**
      * ArrayList with players which ignore the discord chat
