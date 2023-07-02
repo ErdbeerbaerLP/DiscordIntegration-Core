@@ -26,9 +26,16 @@ public class StatusUpdateThread extends Thread {
             final JDA jda = dc.getJDA();
             while (true) {
                 if (jda != null) {
-                    final String game = Configuration.instance().general.botStatusName
-                            .replace("%online%", "" + dc.getServerInterface().getOnlinePlayers())
-                            .replace("%max%", "" + dc.getServerInterface().getMaxPlayers());
+                    String game;
+                    if (dc.getServerInterface().getOnlinePlayers() == 1) {
+                        game = Configuration.instance().general.botStatusNameSingular
+                                .replace("%online%", "" + dc.getServerInterface().getOnlinePlayers())
+                                .replace("%max%", "" + dc.getServerInterface().getMaxPlayers());
+                    } else {
+                        game = Configuration.instance().general.botStatusName
+                                .replace("%online%", "" + dc.getServerInterface().getOnlinePlayers())
+                                .replace("%max%", "" + dc.getServerInterface().getMaxPlayers());
+                    }
                     switch (Configuration.instance().general.botStatusType) {
                         case DISABLED:
                             break;
