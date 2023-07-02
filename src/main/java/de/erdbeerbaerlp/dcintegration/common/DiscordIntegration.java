@@ -520,6 +520,7 @@ public class DiscordIntegration {
                      NoSuchMethodException |
                      ClassNotFoundException e) {
                 if (sqLite) {
+                    Configuration.instance().linking.databaseClass = "de.erdbeerbaerlp.dcintegration.common.storage.linking.database.JSONInterface";
                     linkDbInterface = new JSONInterface();
                     linkDbInterface.connect();
                     linkDbInterface.initialize();
@@ -806,12 +807,37 @@ public class DiscordIntegration {
      * @return Sent message
      */
 
-    public CompletableFuture<Message> sendMessageReturns(String msg, StandardGuildMessageChannel c) {
+    public CompletableFuture<Message> sendMessageReturns(String msg, GuildMessageChannel c) {
         if (Configuration.instance().webhook.enable || msg.isEmpty() || c == null) return null;
         else return c.sendMessage(msg).submit();
     }
 
-
+    /**
+     * Checks if a Player can join (also checking roles)
+     *
+     * @param uuid Player UUID
+     * @return true if the player can join<br>
+     * Also returns true if whitelist mode is off
+     */
+    public boolean canPlayerJoin(UUID uuid) {
+        if (!Configuration.instance().linking.whitelistMode) return true;
+        if (LinkManager.isPlayerLinked(uuid)) {
+            if (Configuration.instance().linking.requiredRoles.length != 0) {
+                final Member mem = getMemberById(LinkManager.getLink(null,uuid).discordID);
+                if (mem == null) return false;
+                final Guild g = getChannel().getGuild();
+                for (String requiredRole : Configuration.instance().linking.requiredRoles) {
+                    final Role role = g.getRoleById(requiredRole);
+                    if (role == null) continue;
+                    if (mem.getRoles().contains(role)) {
+                        return true;
+                    }
+                }
+                return false;
+            } else return true;
+        }
+        return false;
+    }
     /**
      * Sends a message to discord
      *

@@ -24,8 +24,8 @@ public class Localization {
     public String ingame_discordMessage = "§6[§5DISCORD§6]§r <%user%> %msg%";
     @TomlComment({"This is what will be displayed ingame when someone sends an reply into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The reply message", "%ruser% - The username of the message that got the reply", "%rmsg% - The replied message"})
     public String ingame_discordReplyMessage = "§6[§5DISCORD§6]§r §a%user%§r in reply to §3%ruser%§r: %msg%";
-    @TomlComment({"Message shown when hovering over the username of an discord message", "PLACEHOLDERS:", "%user% - The username/nickname (Someone123)", "%user#tag% - The username with tag (someone#0001)", "%id% - The user ID", "", "NOTE: using an @ here can cause ping sounds ingame"})
-    public String discordUserHover = "§3Discord User %user#tag%\n§aClick to mention";
+    @TomlComment({"Message shown when hovering over the username of an discord message", "PLACEHOLDERS:", "%user% - The users display name (Someone123)", "%user#tag% - The users username (@username) or user tag (User#0001)", "%id% - The user ID", "", "NOTE: using an @ here can cause ping sounds ingame"})
+    public String discordUserHover = "§3Discord User %username%\n§aClick to mention";
     @TomlComment("This message will edited in / sent when the server finished starting")
     public String serverStarted = "Server Started!";
     @TomlComment({"Message to show while the server is starting", "This will be edited to SERVER_STARTED_MSG when webhook is false"})

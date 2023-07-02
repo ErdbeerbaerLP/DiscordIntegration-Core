@@ -81,7 +81,7 @@ class DiscordEventListener implements EventListener {
 
 
         if (event instanceof final MessageReceivedEvent ev) {
-            if(Localization.instance().ingame_discordMessage.isBlank()) return;
+            if (Localization.instance().ingame_discordMessage.isBlank()) return;
             if ((Configuration.instance().general.allowWebhookMessages && !dc.recentMessages.containsKey(ev.getMessageId())) || !ev.isWebhookMessage())
                 if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
                     if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;
@@ -128,9 +128,11 @@ class DiscordEventListener implements EventListener {
                         Style.Builder memberStyle = Style.style();
                         if (Configuration.instance().messages.discordRoleColorIngame)
                             memberStyle.color(TextColor.color(memberColor));
-                        Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName())).style(memberStyle
-                                .clickEvent(ClickEvent.suggestCommand("<@" + ev.getAuthor().getId() + ">"))
-                                .hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%user#tag%", ev.getAuthor().getAsTag()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
+                        Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName()));
+                        if (Configuration.instance().messages.enableHoverMessage)
+                            user = user.style(memberStyle
+                                    .clickEvent(ClickEvent.suggestCommand("<@" + ev.getAuthor().getId() + ">"))
+                                    .hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%user#tag%", !ev.getAuthor().getDiscriminator().equals("0000") ? ev.getAuthor().getAsTag() : ev.getAuthor().getName()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getEffectiveName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
                         if (ev.getAuthor().isBot()) {
                             user = ComponentUtils.append(user, Component.text("[BOT]").style(Style.style(TextColors.DISCORD_BLURPLE).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().bot)))));
                         }

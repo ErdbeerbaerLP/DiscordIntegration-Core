@@ -176,6 +176,8 @@ public class Configuration {
 
         @TomlComment("Should Discord users have their role color ingame?")
         public boolean discordRoleColorIngame = true;
+        @TomlComment("Should you be able to hover and click on the discord username ingame?")
+        public boolean enableHoverMessage = true;
     }
 
     public static class EmbedMode {
