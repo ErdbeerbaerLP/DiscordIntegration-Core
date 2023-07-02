@@ -163,7 +163,6 @@ public class DiscordIntegration {
     private Thread messageSender, statusUpdater, launchThread;
 
 
-
     public DiscordIntegration(final McServerInterface serverInterface) {
         this.serverInterface = serverInterface;
         try {
@@ -233,6 +232,9 @@ public class DiscordIntegration {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void loadConfigs() throws IOException {
+        if (!discordDataDir.exists()) {
+            discordDataDir.mkdirs();
+        }
         Configuration.instance().loadConfig();
         if (!Configuration.instance().messages.language.equals("local")) {
             final File backupFile = new File(messagesFile, ".bak");
@@ -419,6 +421,7 @@ public class DiscordIntegration {
     public DBInterface getDatabaseInterface() {
         return linkDbInterface;
     }
+
     /**
      * Gets the sender's {@link UUID} from a recently sent message
      *
@@ -429,6 +432,7 @@ public class DiscordIntegration {
     public UUID getSenderUUIDFromMessageID(String messageID) {
         return recentMessages.getOrDefault(messageID, dummyUUID);
     }
+
     /**
      * Thread used to start the discord bot
      */
@@ -823,7 +827,7 @@ public class DiscordIntegration {
         if (!Configuration.instance().linking.whitelistMode) return true;
         if (LinkManager.isPlayerLinked(uuid)) {
             if (Configuration.instance().linking.requiredRoles.length != 0) {
-                final Member mem = getMemberById(LinkManager.getLink(null,uuid).discordID);
+                final Member mem = getMemberById(LinkManager.getLink(null, uuid).discordID);
                 if (mem == null) return false;
                 final Guild g = getChannel().getGuild();
                 for (String requiredRole : Configuration.instance().linking.requiredRoles) {
@@ -838,6 +842,7 @@ public class DiscordIntegration {
         }
         return false;
     }
+
     /**
      * Sends a message to discord
      *
