@@ -145,4 +145,8 @@ public class CommandSettings extends DiscordCommand {
         return out;
     }
 
+    @Override
+    public boolean adminOnly() {
+        return false;
+    }
 }

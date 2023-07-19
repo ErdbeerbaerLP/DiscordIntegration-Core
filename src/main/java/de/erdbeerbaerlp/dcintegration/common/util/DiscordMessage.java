@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Queue;
 
 @SuppressWarnings("unused")
@@ -99,16 +100,17 @@ public final class DiscordMessage {
 
     public MessageCreateData buildMessages() {
         final MessageCreateBuilder out = new MessageCreateBuilder();
-        if (isSystemMessage) {
+        if (!isSystemMessage) {
             final ArrayList<Message.MentionType> mentions = new ArrayList<>();
             mentions.add(Message.MentionType.USER);
             mentions.add(Message.MentionType.CHANNEL);
             mentions.add(Message.MentionType.EMOJI);
             out.setAllowedMentions(mentions);
-        }
+        } else
+            out.setAllowedMentions(Arrays.asList(Message.MentionType.values()));
         if (!message.isEmpty()) {
             if (isNotRaw) {
-                    out.setContent(MessageUtils.convertMCToMarkdown(message));
+                out.setContent(MessageUtils.convertMCToMarkdown(message));
             } else {
                 out.setContent(message);
             }
@@ -155,7 +157,7 @@ public final class DiscordMessage {
         String content;
         if (!message.isEmpty()) {
             if (isNotRaw) {
-                    content = MessageUtils.convertMCToMarkdown(message);
+                content = MessageUtils.convertMCToMarkdown(message);
             } else {
                 content = message;
             }
@@ -181,7 +183,11 @@ public final class DiscordMessage {
             eb.setTimestamp(embed.getTimestamp());
             if (embed.getTitle() != null)
                 eb.setTitle(new WebhookEmbed.EmbedTitle(embed.getTitle(), embed.getUrl()));
-            out.set(out.size() - 1, out.get(out.size() - 1).addEmbeds(eb.build()));
+            if (out.isEmpty())
+                out.add(new WebhookMessageBuilder().setAllowedMentions(isSystemMessage ? AllowedMentions.all() : AllowedMentions.none().withParseUsers(true)).addEmbeds(eb.build()));
+            else
+                out.set(out.size() - 1, out.get(out.size() - 1).setAllowedMentions(isSystemMessage ? AllowedMentions.all() : AllowedMentions.none().withParseUsers(true)).addEmbeds(eb.build()));
+
         }
         return out;
     }

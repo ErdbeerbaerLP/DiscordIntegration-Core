@@ -37,11 +37,14 @@ public class LinkManager {
 
     public static void load() {
         linkCache.clear();
-        linkCache.addAll(Arrays.asList(DiscordIntegration.INSTANCE.getDatabaseInterface().getAllLinks()));
+        if (Configuration.instance().linking.enableLinking)
+            linkCache.addAll(Arrays.asList(DiscordIntegration.INSTANCE.getDatabaseInterface().getAllLinks()));
     }
 
     public static void save() {
-        linkCache.forEach((l) -> DiscordIntegration.INSTANCE.getDatabaseInterface().addLink(l));
+
+        if (Configuration.instance().linking.enableLinking)
+            linkCache.forEach((l) -> DiscordIntegration.INSTANCE.getDatabaseInterface().addLink(l));
     }
 
     /**
@@ -52,9 +55,10 @@ public class LinkManager {
      */
     public static boolean checkGlobalAPI(final UUID uuid) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
+        if (!Configuration.instance().linking.enableLinking) return false;
         if (Configuration.instance().linking.globalLinking)
             if (nonexistentPlayerUUIDs.contains(uuid.toString())) return false;
-        if(isJavaPlayerLinked(uuid)) return true;
+        if (isJavaPlayerLinked(uuid)) return true;
         try {
             final HttpsURLConnection connection = (HttpsURLConnection) new URL(API_URL + "?uuid=" + uuid.toString().replace("-", "")).openConnection();
             connection.setConnectTimeout(1000);
@@ -87,6 +91,7 @@ public class LinkManager {
      */
     public static boolean unlinkPlayer(String discordID) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
+        if (!Configuration.instance().linking.enableLinking) return false;
         linkCache.removeIf(link -> link.discordID.equals(discordID));
         DiscordIntegration.INSTANCE.getDatabaseInterface().removeLink(discordID);
         return true;
@@ -101,7 +106,7 @@ public class LinkManager {
      */
     public static boolean isJavaPlayerLinked(UUID player) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
-
+        if (!Configuration.instance().linking.enableLinking) return false;
         for (final PlayerLink o : getAllLinks()) {
             if (!o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(player.toString())) {
                 return true;
@@ -118,6 +123,7 @@ public class LinkManager {
      */
     public static boolean isDiscordUserLinkedToJava(String discordID) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
+        if(!Configuration.instance().linking.enableLinking) return false;
         for (final PlayerLink o : getAllLinks()) {
             if (!o.discordID.isEmpty() && o.discordID.equals(discordID)) {
                 return !o.mcPlayerUUID.isEmpty();
@@ -134,6 +140,7 @@ public class LinkManager {
      */
     public static boolean isDiscordUserLinked(String discordID) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
+        if(!Configuration.instance().linking.enableLinking) return false;
         if (isDiscordUserLinkedToJava(discordID)) return true;
         return isDiscordUserLinkedToBedrock(discordID);
     }
@@ -146,6 +153,7 @@ public class LinkManager {
      */
     public static boolean isDiscordUserLinkedToBedrock(String discordID) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
+        if(!Configuration.instance().linking.enableLinking) return false;
         for (final PlayerLink o : getAllLinks()) {
             if (!o.discordID.isEmpty() && o.discordID.equals(discordID)) {
                 return !o.floodgateUUID.isEmpty();
@@ -163,6 +171,7 @@ public class LinkManager {
      */
     public static boolean isPlayerLinked(UUID player) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
+        if(!Configuration.instance().linking.enableLinking) return false;
         if (isJavaPlayerLinked(player)) return true;
         return isBedrockPlayerLinked(player);
     }
@@ -175,6 +184,7 @@ public class LinkManager {
      */
     public static boolean isBedrockPlayerLinked(UUID player) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
+        if(!Configuration.instance().linking.enableLinking) return false;
 
         for (final PlayerLink o : getAllLinks()) {
             if (!o.floodgateUUID.isEmpty() && o.floodgateUUID.equals(player.toString())) {
@@ -192,6 +202,7 @@ public class LinkManager {
      * @return true if successful
      */
     public static boolean addLink(final PlayerLink l) {
+        if(!Configuration.instance().linking.enableLinking) return false;
         if (l.discordID == null) return false;
         PlayerLink tmp = null;
         for (final PlayerLink link : getAllLinks()) {
@@ -211,6 +222,7 @@ public class LinkManager {
      * @return PlayerLink object
      */
     public static PlayerLink getLink(final String discordID, final UUID uuid) {
+        if(!Configuration.instance().linking.enableLinking) return null;
         if (uuid == null && discordID == null) return null;
         if (discordID != null) {
             for (final PlayerLink l : getAllLinks()) {

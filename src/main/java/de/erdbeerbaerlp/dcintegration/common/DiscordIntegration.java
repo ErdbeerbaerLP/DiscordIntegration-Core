@@ -38,7 +38,9 @@ import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestConfig;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -323,8 +325,8 @@ public class DiscordIntegration {
                 jda.removeEventListener(listener);
             }
             stopThreads();
-            /*unregisterAllEventHandlers();
-            webhookClis.forEach((i, w) -> w.close()); TODO*/
+            unregisterAllEventHandlers();
+            webhookClis.forEach((i, w) -> w.close());
             try {
                 if (instant) jda.shutdownNow();
                 else jda.shutdown();
@@ -439,6 +441,13 @@ public class DiscordIntegration {
         return recentMessages.getOrDefault(messageID, dummyUUID);
     }
 
+    public boolean hasAdminRole(List<Role> roles) {
+        for (final Role role : roles) {
+            if (ArrayUtils.contains(Configuration.instance().commands.adminRoleIDs, role.getId())) return true;
+        }
+        return false;
+    }
+
     /**
      * Thread used to start the discord bot
      */
@@ -518,39 +527,42 @@ public class DiscordIntegration {
             LOGGER.info("Loading DiscordIntegration Addons...");
             AddonLoader.loadAddons(DiscordIntegration.this);
             LOGGER.info("Addon loading complete!");
-            LOGGER.info("Loading Linking Database...");
-            final boolean sqLite = Configuration.instance().linking.databaseClass.equals("de.erdbeerbaerlp.dcintegration.common.storage.linking.database.SQLiteInterface");
-            try {
-                linkDbInterface = (DBInterface) Class.forName(Configuration.instance().linking.databaseClass, true, AddonLoader.getAddonClassLoader()).getDeclaredConstructor().newInstance();
-                linkDbInterface.connect();
-                linkDbInterface.initialize();
-                LinkManager.load();
-                LOGGER.info("Linking Database loaded");
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException |
-                     ClassNotFoundException e) {
-                if (sqLite) {
-                    Configuration.instance().linking.databaseClass = "de.erdbeerbaerlp.dcintegration.common.storage.linking.database.JSONInterface";
-                    linkDbInterface = new JSONInterface();
+
+            if (Configuration.instance().linking.enableLinking) {
+                LOGGER.info("Loading Linking Database...");
+                final boolean sqLite = Configuration.instance().linking.databaseClass.equals("de.erdbeerbaerlp.dcintegration.common.storage.linking.database.SQLiteInterface");
+                try {
+                    linkDbInterface = (DBInterface) Class.forName(Configuration.instance().linking.databaseClass, true, AddonLoader.getAddonClassLoader()).getDeclaredConstructor().newInstance();
                     linkDbInterface.connect();
                     linkDbInterface.initialize();
-                } else
-                    e.printStackTrace();
-            }
-
-            final Thread unlink = new Thread(() -> {
-                for (final PlayerLink p : LinkManager.getAllLinks()) {
-                    try {
-                        getChannel().getGuild().retrieveMemberById(p.discordID).submit();
-                    } catch (ErrorResponseException e) {
-                        LinkManager.unlinkPlayer(p.discordID);
-                    }
+                    LinkManager.load();
+                    LOGGER.info("Linking Database loaded");
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException |
+                         ClassNotFoundException e) {
+                    if (sqLite) {
+                        Configuration.instance().linking.databaseClass = "de.erdbeerbaerlp.dcintegration.common.storage.linking.database.JSONInterface";
+                        linkDbInterface = new JSONInterface();
+                        linkDbInterface.connect();
+                        linkDbInterface.initialize();
+                    } else
+                        e.printStackTrace();
                 }
-            });
-            unlink.setName("Discord Integration Link Check");
-            unlink.setDaemon(true);
-            if (Configuration.instance().linking.unlinkOnLeave) unlink.start();
 
+
+                final Thread unlink = new Thread(() -> {
+                    for (final PlayerLink p : LinkManager.getAllLinks()) {
+                        try {
+                            getChannel().getGuild().retrieveMemberById(p.discordID).submit();
+                        } catch (ErrorResponseException e) {
+                            LinkManager.unlinkPlayer(p.discordID);
+                        }
+                    }
+                });
+                unlink.setName("Discord Integration Link Check");
+                unlink.setDaemon(true);
+                if (Configuration.instance().linking.unlinkOnLeave) unlink.start();
+            }
         }
 
     }
@@ -710,6 +722,15 @@ public class DiscordIntegration {
     }
 
     /**
+     * Sends a message as server
+     *
+     * @param msg Message
+     */
+    public void sendMessage(DiscordMessage msg) {
+        sendMessage(Configuration.instance().webhook.serverName, "0000000", msg, getChannel(Configuration.instance().advanced.serverChannelID));
+    }
+
+    /**
      * Sends a message embed as player
      *
      * @param playerName Player Name
@@ -817,8 +838,8 @@ public class DiscordIntegration {
      * @return Sent message
      */
 
-    public CompletableFuture<Message> sendMessageReturns(String msg, GuildMessageChannel c) {
-        if (Configuration.instance().webhook.enable || msg.isEmpty() || c == null) return null;
+    public CompletableFuture<Message> sendMessageReturns(MessageCreateData msg, GuildMessageChannel c) {
+        if (Configuration.instance().webhook.enable || c == null) return null;
         else return c.sendMessage(msg).submit();
     }
 

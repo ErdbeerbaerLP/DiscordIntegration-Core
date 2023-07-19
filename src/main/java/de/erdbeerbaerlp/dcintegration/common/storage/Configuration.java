@@ -201,6 +201,8 @@ public class Configuration {
         public EmbedEntry deathMessage = new EmbedEntry(true, TextColors.BLACK.asHexString());
         @TomlComment("Advancement messages")
         public EmbedEntry advancementMessage = new EmbedEntry(true, TextColors.DISCORD_YELLOW.asHexString());
+        @TomlComment("Player chat messages")
+        public ChatEmbedEntry chatMessages = new ChatEmbedEntry(true, TextColors.of(Color.GRAY).asHexString());
 
         public static class EmbedEntry{
             @TomlComment("Send as embed?")
@@ -215,6 +217,14 @@ public class Configuration {
             public EmbedBuilder toEmbed(){
                 return new EmbedBuilder()
                       .setColor(Color.decode(this.colorHexCode));
+            }
+        }
+        public static class ChatEmbedEntry extends EmbedEntry{
+            @TomlComment("Generate unique chat colors from player uuid?")
+            public boolean generateUniqueColors = true;
+
+            ChatEmbedEntry(boolean defaultEnabled, String defaultColor) {
+                super(defaultEnabled, defaultColor);
             }
         }
     }

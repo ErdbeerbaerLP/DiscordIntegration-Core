@@ -90,10 +90,9 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * @return wether or not the user can execute this command
      */
     public boolean canUserExecuteCommand(User user) {
-        Member m = DiscordIntegration.INSTANCE.getMemberById(user.getIdLong());
+        final Member m = DiscordIntegration.INSTANCE.getMemberById(user.getIdLong());
         if (m == null) return false;
-        //TODO return !this.adminOnly() || DiscordIntegration.INSTANCE.hasAdminRole(m.getRoles());
-        return false;
+        return !this.adminOnly() || DiscordIntegration.INSTANCE.hasAdminRole(m.getRoles());
     }
 
     public final boolean equals(DiscordCommand cmd) {

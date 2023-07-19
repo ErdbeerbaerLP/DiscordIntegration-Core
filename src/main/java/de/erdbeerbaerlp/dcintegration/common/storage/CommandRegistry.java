@@ -58,9 +58,9 @@ public class CommandRegistry {
         boolean regenGlobalCommands = globalCmds.size() > 0 && Configuration.instance().commands.useLocalCommands;
 
         if (commands.size() == localCmds.size())
-            for (DiscordCommand cmd : commands) {
+            for (final DiscordCommand cmd : commands) {
                 Command cm = null;
-                for (Command c : localCmds) {
+                for (final Command c : localCmds) {
                     if (((CommandData) cmd).getName().equals(c.getName())) {
                         cm = c;
                         break;
@@ -76,12 +76,33 @@ public class CommandRegistry {
                 }
             }
         else regenLocalCommands = true;
+
+        if (commands.size() == globalCmds.size())
+            for (final DiscordCommand cmd : commands) {
+                Command cm = null;
+                for (final Command c : globalCmds) {
+                    if (((CommandData) cmd).getName().equals(c.getName())) {
+                        cm = c;
+                        break;
+                    }
+                }
+                if (cm == null) {
+                    regenGlobalCommands = true;
+                    break;
+                }
+                if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
+                    regenGlobalCommands = true;
+                    break;
+                }
+            }
+        else regenGlobalCommands = true;
+
         if (regenLocalCommands) {
-            DiscordIntegration.LOGGER.info("Regenerating commands...");
+            DiscordIntegration.LOGGER.info("Regenerating local commands...");
             CommandListUpdateAction commandListUpdateAction = channel.getGuild().updateCommands();
 
             if (Configuration.instance().commands.useLocalCommands)
-                for (DiscordCommand cmd : commands) {
+                for (final DiscordCommand cmd : commands) {
                     commandListUpdateAction = commandListUpdateAction.addCommands(cmd);
                 }
             final CompletableFuture<List<Command>> submit = commandListUpdateAction.submit();
@@ -89,11 +110,11 @@ public class CommandRegistry {
             if (Configuration.instance().commands.useLocalCommands)
                 submit.thenAccept(CommandRegistry::addCmds);
         } else {
-            DiscordIntegration.LOGGER.info("No need to regenerate commands");
+            DiscordIntegration.LOGGER.info("No need to regenerate local commands");
             addCmds(localCmds);
         }
         if (regenGlobalCommands) {
-            DiscordIntegration.LOGGER.info("Regenerating commands...");
+            DiscordIntegration.LOGGER.info("Regenerating global commands...");
             CommandListUpdateAction commandListUpdateAction = DiscordIntegration.INSTANCE.getJDA().updateCommands();
             if (!Configuration.instance().commands.useLocalCommands)
                 for (DiscordCommand cmd : commands) {
@@ -103,7 +124,7 @@ public class CommandRegistry {
             if (!Configuration.instance().commands.useLocalCommands)
                 submit.thenAccept(CommandRegistry::addCmds);
         } else {
-            DiscordIntegration.LOGGER.info("No need to regenerate commands");
+            DiscordIntegration.LOGGER.info("No need to regenerate global commands");
             addCmds(localCmds);
         }
     }
@@ -155,7 +176,7 @@ public class CommandRegistry {
             if (!cmd.isConfigCommand() && cmd.equals(c)) return false;
             else if (cmd.isConfigCommand() && cmd.equals(c)) toRemove.add(c);
         }
-        for (DiscordCommand cm : toRemove)
+        for (final DiscordCommand cm : toRemove)
             commands.remove(cm);
         commands.add(cmd);
         if (cmd instanceof CommandFromConfig) {
