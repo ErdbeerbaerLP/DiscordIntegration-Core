@@ -4,14 +4,19 @@ import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlComment;
 import com.moandjiezana.toml.TomlIgnore;
 import com.moandjiezana.toml.TomlWriter;
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.GameType;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.utils.data.DataObject;
 
 import java.awt.*;
 import java.io.IOException;
+import java.io.StringReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.configFile;
@@ -186,7 +191,7 @@ public class Configuration {
     }
 
     public static class EmbedMode {
-        @TomlComment({"Enabling this will send configured messages as embed messages","See below configuration options of this category to see what messages can be moved to embeds"})
+        @TomlComment({"Enabling this will send configured messages as embed messages", "See below configuration options of this category to see what messages can be moved to embeds"})
         public boolean enabled = false;
 
         @TomlComment("Starting & Started Messages")
@@ -204,22 +209,31 @@ public class Configuration {
         @TomlComment("Player chat messages")
         public ChatEmbedEntry chatMessages = new ChatEmbedEntry(true, TextColors.of(Color.GRAY).asHexString());
 
-        public static class EmbedEntry{
+        public static class EmbedEntry {
             @TomlComment("Send as embed?")
             public boolean asEmbed;
             @TomlComment("Color of embed bar")
             public String colorHexCode;
-            EmbedEntry(boolean defaultEnabled, String defaultColor){
+            @TomlComment("Custom embed JSON, will overwrite color setting. For more info, check the documentation at https://example.com or ask on discord.")
+            public String customJSON = "";
+
+            EmbedEntry(boolean defaultEnabled, String defaultColor) {
                 this.asEmbed = defaultEnabled;
                 this.colorHexCode = defaultColor;
             }
 
-            public EmbedBuilder toEmbed(){
-                return new EmbedBuilder()
-                      .setColor(Color.decode(this.colorHexCode));
+            public EmbedBuilder toEmbed() {
+                    return new EmbedBuilder()
+                            .setColor(Color.decode(this.colorHexCode));
+            }
+
+            public EmbedBuilder toEmbedJson(String jsonString){
+                final DataObject json = DataObject.fromJson(jsonString);
+                return EmbedBuilder.fromData(json);
             }
         }
-        public static class ChatEmbedEntry extends EmbedEntry{
+
+        public static class ChatEmbedEntry extends EmbedEntry {
             @TomlComment("Generate unique chat colors from player uuid?")
             public boolean generateUniqueColors = true;
 
@@ -253,7 +267,7 @@ public class Configuration {
         @TomlComment({"Show uptime command only for the user who runs it"})
         public boolean hideUptimeCmd = false;
 
-        @TomlComment({"Enables using local commands for faster registration","Local Commands will register all slash commands directly to the server instead of to the bot","Setting this to true requires the bot to be invited with the scope 'application.commands' to work"})
+        @TomlComment({"Enables using local commands for faster registration", "Local Commands will register all slash commands directly to the server instead of to the bot", "Setting this to true requires the bot to be invited with the scope 'application.commands' to work"})
         public boolean useLocalCommands = false;
     }
 
