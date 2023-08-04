@@ -3,6 +3,7 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import de.erdbeerbaerlp.dcintegration.common.WorkThread;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class UpdateChecker {
      */
     public static void runUpdateCheck(String url) {
         if (!Configuration.instance().general.enableUpdateChecker) return;
-        final Thread thread = new Thread(() -> {
+        WorkThread.executeJob(() -> {
             final StringBuilder changelog = new StringBuilder();
             try {
                 final HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
@@ -61,10 +62,6 @@ public class UpdateChecker {
                 e.printStackTrace();
             }
         });
-        thread.setDaemon(true);
-        thread.setName("Discord Integration - Update checker");
-        thread.start();
-
     }
 
     /**
