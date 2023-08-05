@@ -4,19 +4,15 @@ import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlComment;
 import com.moandjiezana.toml.TomlIgnore;
 import com.moandjiezana.toml.TomlWriter;
-import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.GameType;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.data.DataObject;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.file.Files;
 import java.util.ArrayList;
 
 import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.configFile;
@@ -214,7 +210,7 @@ public class Configuration {
             public boolean asEmbed;
             @TomlComment("Color of embed bar")
             public String colorHexCode;
-            @TomlComment("Custom embed JSON, will overwrite color setting. For more info, check the documentation at https://example.com or ask on discord.")
+            @TomlComment("Custom embed JSON, will overwrite color setting. For more info, check the documentation at https://github.com/ErdbeerbaerLP/DiscordIntegration-Core/wiki/embed-mode or ask on discord.")
             public String customJSON = "";
 
             EmbedEntry(boolean defaultEnabled, String defaultColor) {

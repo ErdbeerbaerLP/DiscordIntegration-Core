@@ -115,8 +115,10 @@ public final class DiscordMessage {
                 out.setContent(message);
             }
         }
-        if (embed != null)
+        if (embed != null) {
             out.setEmbeds(embed);
+
+        }
         return out.build();
     }
 

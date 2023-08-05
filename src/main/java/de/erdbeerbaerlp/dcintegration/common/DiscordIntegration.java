@@ -29,6 +29,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -352,16 +353,23 @@ public class DiscordIntegration {
      */
 
     private GuildMessageChannel retrieveChannel(final String id2) {
-        final GuildMessageChannel chan = jda.getTextChannelById(id2);
+        final StandardGuildMessageChannel chan = jda.getTextChannelById(id2);
         if (chan == null) {
             for (final Guild g : jda.getGuilds()) {
                 for (final GuildChannel gChannel : g.getChannels(true)) {
                     if (gChannel == null) continue;
                     if (gChannel.getId().equals(id2)) {
-                        if (gChannel instanceof GuildMessageChannel)
-                            return (GuildMessageChannel) gChannel;
+                        if (gChannel instanceof StandardGuildMessageChannel)
+                            return (StandardGuildMessageChannel) gChannel;
                         else
                             LOGGER.error("Target Channel ID is not a valid message channel!");
+                    } else {
+                        if (gChannel instanceof StandardGuildMessageChannel)
+                            for (final ThreadChannel c : ((StandardGuildMessageChannel) gChannel).getThreadChannels()) {
+                                if (c.getId().equals(id2)) {
+                                    return c;
+                                }
+                            }
                     }
                 }
             }
@@ -640,7 +648,28 @@ public class DiscordIntegration {
 
     public Webhook getWebhook(final GuildMessageChannel ic) {
         if (!Configuration.instance().webhook.enable || ic == null) return null;
-        if (ic instanceof StandardGuildMessageChannel c) {
+        if (ic instanceof ThreadChannel c) {
+            return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
+                if (!PermissionUtil.checkPermission(c.getParentChannel(), getMemberById(jda.getSelfUser().getIdLong()), Permission.MANAGE_WEBHOOKS)) {
+                    LOGGER.info("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
+                    Configuration.instance().webhook.enable = false;
+                    try {
+                        Configuration.instance().saveConfig();
+                    } catch (IOException e) {
+                        LOGGER.error("FAILED TO SAVE CONFIGURATION");
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+                for (final Webhook web : c.getParentMessageChannel().asStandardGuildMessageChannel().retrieveWebhooks().complete()) {
+                    if (web.getName().equals(Configuration.instance().webhook.webhookName)) {
+                        return web;
+                    }
+                }
+
+                return c.getParentMessageChannel().asStandardGuildMessageChannel().createWebhook(Configuration.instance().webhook.webhookName).complete();
+            });
+        } else if (ic instanceof StandardGuildMessageChannel c) {
             return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
                 if (!PermissionUtil.checkPermission(c, getMemberById(jda.getSelfUser().getIdLong()), Permission.MANAGE_WEBHOOKS)) {
                     LOGGER.info("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
@@ -669,15 +698,20 @@ public class DiscordIntegration {
     /**
      * Returns the corresponding {@link WebhookClient} for the given Channel ID
      *
-     * @param channel Channel ID
+     * @param channelID Channel ID
      * @return Webhook Client for the Channel ID
      */
 
-    public JDAWebhookClient getWebhookCli(String channel) {
-        return webhookClis.computeIfAbsent(channel, (id) -> {
-            final Webhook wh = getWebhook(getChannel(id));
+    public JDAWebhookClient getWebhookCli(String channelID) {
+        return webhookClis.computeIfAbsent(channelID, (id) -> {
+            final GuildMessageChannel channel = getChannel(id);
+            final Webhook wh = getWebhook(channel);
             if (wh == null) return null;
-            return JDAWebhookClient.from(wh);
+            JDAWebhookClient cli = JDAWebhookClient.from(wh);
+            if (channel instanceof ThreadChannel c) {
+                cli = cli.onThread(c.getIdLong());
+            }
+            return cli;
         });
     }
 

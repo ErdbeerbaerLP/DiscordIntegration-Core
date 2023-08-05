@@ -54,50 +54,56 @@ public class CommandRegistry {
             throw new IllegalStateException("Channel does not exist, check channel ID and bot permissions on both channel and category. Also make sure to enable all intents for the bot on https://discord.com/developers/applications/" + DiscordIntegration.INSTANCE.getJDA().getSelfUser().getApplicationId() + "/bot");
         final List<Command> localCmds = channel.getGuild().retrieveCommands().complete();
         final List<Command> globalCmds = DiscordIntegration.INSTANCE.getJDA().retrieveCommands().complete();
-        boolean regenLocalCommands = localCmds.size() > 0 && !Configuration.instance().commands.useLocalCommands;
-        boolean regenGlobalCommands = globalCmds.size() > 0 && Configuration.instance().commands.useLocalCommands;
 
-        if (commands.size() == localCmds.size())
-            for (final DiscordCommand cmd : commands) {
-                Command cm = null;
-                for (final Command c : localCmds) {
-                    if (((CommandData) cmd).getName().equals(c.getName())) {
-                        cm = c;
+        final boolean localCommandsStale = !localCmds.isEmpty() && !Configuration.instance().commands.useLocalCommands;
+        final boolean globalCommandsStale = !globalCmds.isEmpty() && Configuration.instance().commands.useLocalCommands;
+
+        boolean regenLocal = false;
+        boolean regenGlobal = false;
+        if (Configuration.instance().commands.useLocalCommands) {
+            if (commands.size() == localCmds.size()) {
+                for (final DiscordCommand cmd : commands) {
+                    Command cm = null;
+                    for (final Command c : localCmds) {
+                        if (((CommandData) cmd).getName().equals(c.getName())) {
+                            cm = c;
+                            break;
+                        }
+                    }
+                    if (cm == null) {
+                        regenLocal = true;
+                        break;
+                    }
+                    if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
+                        regenLocal = true;
                         break;
                     }
                 }
-                if (cm == null) {
-                    regenLocalCommands = true;
-                    break;
-                }
-                if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
-                    regenLocalCommands = true;
-                    break;
-                }
-            }
-        else regenLocalCommands = true;
-
-        if (commands.size() == globalCmds.size())
-            for (final DiscordCommand cmd : commands) {
-                Command cm = null;
-                for (final Command c : globalCmds) {
-                    if (((CommandData) cmd).getName().equals(c.getName())) {
-                        cm = c;
+            }else regenLocal = true;
+        }else{
+            if (commands.size() == globalCmds.size()) {
+                for (final DiscordCommand cmd : commands) {
+                    Command cm = null;
+                    for (final Command c : globalCmds) {
+                        if (((CommandData) cmd).getName().equals(c.getName())) {
+                            cm = c;
+                            break;
+                        }
+                    }
+                    if (cm == null) {
+                        regenGlobal = true;
+                        break;
+                    }
+                    if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
+                        regenGlobal = true;
                         break;
                     }
                 }
-                if (cm == null) {
-                    regenGlobalCommands = true;
-                    break;
-                }
-                if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
-                    regenGlobalCommands = true;
-                    break;
-                }
-            }
-        else regenGlobalCommands = true;
+            }else regenGlobal = true;
+        }
 
-        if (regenLocalCommands) {
+
+        if (regenLocal || localCommandsStale) {
             DiscordIntegration.LOGGER.info("Regenerating local commands...");
             CommandListUpdateAction commandListUpdateAction = channel.getGuild().updateCommands();
 
@@ -113,7 +119,7 @@ public class CommandRegistry {
             DiscordIntegration.LOGGER.info("No need to regenerate local commands");
             addCmds(localCmds);
         }
-        if (regenGlobalCommands) {
+        if (regenGlobal || globalCommandsStale) {
             DiscordIntegration.LOGGER.info("Regenerating global commands...");
             CommandListUpdateAction commandListUpdateAction = DiscordIntegration.INSTANCE.getJDA().updateCommands();
             if (!Configuration.instance().commands.useLocalCommands)
@@ -125,7 +131,7 @@ public class CommandRegistry {
                 submit.thenAccept(CommandRegistry::addCmds);
         } else {
             DiscordIntegration.LOGGER.info("No need to regenerate global commands");
-            addCmds(localCmds);
+            addCmds(globalCmds);
         }
     }
 

@@ -212,6 +212,7 @@ public class Localization {
         public String cmdLinkcheck_discordAcc = "Discord-Account: ";
 
         public String cmdLinkcheck_minecraftAcc = "Minecraft Account: ";
+        public String cmdLinkcheck_minecraftAccFloodgate = "Minecraft (Bedrock) UUID: ";
 
         public String cmdLinkcheck_cannotGetPlayer = "Error getting player information! Maybe you used an invalid name / UUID";
 
