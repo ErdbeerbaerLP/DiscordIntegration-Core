@@ -343,7 +343,8 @@ public class Discord extends Thread {
             e.printStackTrace();
         }
 
-        final Thread unlink = new Thread(() -> {
+        if (Configuration.instance().linking.unlinkOnLeave)
+            WorkThread.executeJob(() -> {
             for (PlayerLink p : PlayerLinkController.getAllLinks()) {
                 try {
                     getChannel().getGuild().retrieveMemberById(p.discordID).submit();
@@ -352,10 +353,6 @@ public class Discord extends Thread {
                 }
             }
         });
-        unlink.setName("Discord Integration Link Check");
-        unlink.setDaemon(true);
-        if (Configuration.instance().linking.unlinkOnLeave) unlink.start();
-
     }
 
     /**
@@ -475,7 +472,7 @@ public class Discord extends Thread {
      */
     public void startThreads() {
         if(Configuration.instance().commands.enabled) {
-            final Thread t = new Thread(() -> {
+            WorkThread.executeJob(() -> {
                 try {
                     CommandRegistry.updateSlashCommands();
                 } catch (IllegalStateException e) {
@@ -485,8 +482,6 @@ public class Discord extends Thread {
                     Variables.LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
                 }
             });
-            t.setDaemon(true);
-            t.start();
         }
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread();
         if (messageSender == null) messageSender = new MessageQueueThread();
@@ -627,7 +622,7 @@ public class Discord extends Thread {
      */
     public void sendMessage(String name, DiscordMessage message, String avatarURL, MessageChannel channel, boolean isChatMessage, String uuid) {
         if (jda == null || channel == null) return;
-        final Thread t = new Thread(() -> {
+        WorkThread.executeJob(() -> {
             try {
                 if (Configuration.instance().webhook.enable) {
                     if (isChatMessage) message.setIsChatMessage();
@@ -635,7 +630,7 @@ public class Discord extends Thread {
                     messages.forEach((builder) -> {
                         builder.setUsername(name);
                         builder.setAvatarUrl(avatarURL);
-                        getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> addRecentMessage(a.getId() + "", UUID.fromString(uuid)));
+                        getWebhookCli(channel.getId()).send(builder.build()).thenAccept((a) -> addRecentMessage(String.valueOf(a.getId()), UUID.fromString(uuid)));
                     });
                 } else if (isChatMessage) {
                     message.setMessage(Localization.instance().discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
@@ -648,9 +643,6 @@ public class Discord extends Thread {
                 e.printStackTrace();
             }
         });
-        t.setDaemon(true);
-        t.setName("Discord Integration - SendMessage");
-        t.start();
     }
 
     /**
@@ -769,27 +761,32 @@ public class Discord extends Thread {
      */
     @SuppressWarnings("ConstantConditions")
     public void sendMessage(String playerName, String uuid, DiscordMessage msg, MessageChannel channel) {
-        if (channel == null) return;
-        final boolean isServerMessage = playerName.equals(Configuration.instance().webhook.serverName) && uuid.equals("0000000");
-        final UUID uUUID = uuid.equals("0000000") ? null : UUID.fromString(uuid);
-        String avatarURL = "";
-        if (!isServerMessage && uUUID != null) {
-            if (PlayerLinkController.isPlayerLinked(uUUID)) {
-                final PlayerSettings s = PlayerLinkController.getSettings(null, uUUID);
-                final Member dc = getMemberById(Long.parseLong(PlayerLinkController.getDiscordFromPlayer(uUUID)));
-                if (dc != null)
-                    if (s.useDiscordNameInChannel) {
-                        playerName = dc.getEffectiveName();
-                        avatarURL = dc.getUser().getAvatarUrl();
-                    }
+        WorkThread.executeJob(() -> {
+            // need to pull variable into local scope (thread safety checks)
+            String playerName2 = playerName;
+
+            if (channel == null) return;
+            final boolean isServerMessage = playerName2.equals(Configuration.instance().webhook.serverName) && uuid.equals("0000000");
+            final UUID uUUID = uuid.equals("0000000") ? null : UUID.fromString(uuid);
+            String avatarURL = "";
+            if (!isServerMessage && uUUID != null) {
+                if (PlayerLinkController.isPlayerLinked(uUUID)) {
+                    final PlayerSettings s = PlayerLinkController.getSettings(null, uUUID);
+                    final Member dc = getMemberById(Long.parseLong(PlayerLinkController.getDiscordFromPlayer(uUUID)));
+                    if (dc != null)
+                        if (s.useDiscordNameInChannel) {
+                            playerName2 = dc.getEffectiveName();
+                            avatarURL = dc.getUser().getAvatarUrl();
+                        }
+                }
+                if (avatarURL != null && avatarURL.isEmpty())
+                    avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", uUUID.toString()).replace("%uuid_dashless%", uUUID.toString().replace("-", "")).replace("%name%", playerName).replace("%randomUUID%", UUID.randomUUID().toString());
             }
-            if (avatarURL != null && avatarURL.isEmpty())
-                avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", uUUID.toString()).replace("%uuid_dashless%", uUUID.toString().replace("-", "")).replace("%name%", playerName).replace("%randomUUID%", UUID.randomUUID().toString());
-        }
-        if (isServerMessage) {
-            avatarURL = Configuration.instance().webhook.serverAvatarURL;
-        }
-        sendMessage(playerName, msg, avatarURL, channel, !isServerMessage, uuid);
+            if (isServerMessage) {
+                avatarURL = Configuration.instance().webhook.serverAvatarURL;
+            }
+            sendMessage(playerName2, msg, avatarURL, channel, !isServerMessage, uuid);
+        });
     }
 
     /**
@@ -954,8 +951,8 @@ public class Discord extends Thread {
             while (true) {
                 if (jda != null) {
                     final String game = Configuration.instance().general.botStatusName
-                            .replace("%online%", "" + srv.getOnlinePlayers())
-                            .replace("%max%", "" + srv.getMaxPlayers());
+                            .replace("%online%", String.valueOf(srv.getOnlinePlayers()))
+                            .replace("%max%", String.valueOf(srv.getMaxPlayers()));
                     switch (Configuration.instance().general.botStatusType) {
                         case DISABLED:
                             break;
