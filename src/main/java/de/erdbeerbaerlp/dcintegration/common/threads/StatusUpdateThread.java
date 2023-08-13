@@ -2,6 +2,7 @@ package de.erdbeerbaerlp.dcintegration.common.threads;
 
 import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Activity;
 import org.apache.commons.collections4.KeyValue;
@@ -62,11 +63,10 @@ public class StatusUpdateThread extends Thread {
             }
             // Removing of expired numbers
             final ArrayList<Integer> remove = new ArrayList<>();
-            //clearLinks(remove, pendingLinks);
-            //clearLinks(remove, pendingBedrockLinks); TODO
+            clearLinks(remove, LinkManager.pendingLinks);
+            clearLinks(remove, LinkManager.pendingBedrockLinks);
             remove.clear();
             try {
-                //noinspection BusyWait
                 sleep(1000);
             } catch (InterruptedException e) {
                 return;
