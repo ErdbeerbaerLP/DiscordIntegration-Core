@@ -278,7 +278,7 @@ public class DiscordIntegration {
      */
     public void startThreads() {
         if (Configuration.instance().commands.enabled) {
-            final Thread t = new Thread(() -> {
+            WorkThread.executeJob(() -> {
                 try {
                     CommandRegistry.updateSlashCommands();
                 } catch (IllegalStateException e) {
@@ -288,8 +288,6 @@ public class DiscordIntegration {
                     LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
                 }
             });
-            t.setDaemon(true);
-            t.start();
         }
         if (statusUpdater == null) statusUpdater = new StatusUpdateThread(this);
         if (messageSender == null) messageSender = new MessageQueueThread(this);
@@ -558,18 +556,16 @@ public class DiscordIntegration {
                 }
 
 
-                final Thread unlink = new Thread(() -> {
-                    for (final PlayerLink p : LinkManager.getAllLinks()) {
-                        try {
-                            getChannel().getGuild().retrieveMemberById(p.discordID).submit();
-                        } catch (ErrorResponseException e) {
-                            LinkManager.unlinkPlayer(p.discordID);
+                if (Configuration.instance().linking.unlinkOnLeave)
+                    WorkThread.executeJob(() -> {
+                        for (final PlayerLink p : LinkManager.getAllLinks()) {
+                            try {
+                                getChannel().getGuild().retrieveMemberById(p.discordID).submit();
+                            } catch (ErrorResponseException e) {
+                                LinkManager.unlinkPlayer(p.discordID);
+                            }
                         }
-                    }
-                });
-                unlink.setName("Discord Integration Link Check");
-                unlink.setDaemon(true);
-                if (Configuration.instance().linking.unlinkOnLeave) unlink.start();
+                    });
             }
         }
 
@@ -836,7 +832,7 @@ public class DiscordIntegration {
      */
     public void sendMessage(String name, DiscordMessage message, String avatarURL, MessageChannel channel, boolean isChatMessage, String uuid) {
         if (jda == null || channel == null) return;
-        final Thread t = new Thread(() -> {
+        WorkThread.executeJob(() -> {
             try {
                 if (Configuration.instance().webhook.enable) {
                     if (isChatMessage) message.setIsChatMessage();
@@ -846,7 +842,7 @@ public class DiscordIntegration {
                         builder.setAvatarUrl(avatarURL);
                         final JDAWebhookClient webhookCli = getWebhookCli(channel.getId());
                         if (webhookCli != null)
-                            webhookCli.send(builder.build()).thenAccept((a) -> rememberRecentMessage(a.getId() + "", UUID.fromString(uuid)));
+                            webhookCli.send(builder.build()).thenAccept((a) -> rememberRecentMessage(String.valueOf(a.getId()), UUID.fromString(uuid)));
                     });
                 } else if (isChatMessage) {
                     message.setMessage(Localization.instance().discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
@@ -859,9 +855,6 @@ public class DiscordIntegration {
                 e.printStackTrace();
             }
         });
-        t.setDaemon(true);
-        t.setName("Discord Integration - SendMessage");
-        t.start();
     }
 
     /**
@@ -933,27 +926,30 @@ public class DiscordIntegration {
      */
     @SuppressWarnings("ConstantConditions")
     public void sendMessage(String playerName, String uuid, DiscordMessage msg, MessageChannel channel) {
-        if (channel == null) return;
-        final boolean isServerMessage = playerName.equals(Configuration.instance().webhook.serverName) && uuid.equals("0000000");
-        final UUID uUUID = uuid.equals("0000000") ? null : UUID.fromString(uuid);
-        String avatarURL = "";
-        if (!isServerMessage && uUUID != null) {
-            if (LinkManager.isPlayerLinked(uUUID)) {
-                final PlayerLink l = LinkManager.getLink(null, uUUID);
-                final Member dc = getMemberById(Long.parseLong(l.discordID));
-                if (dc != null)
-                    if (l.settings.useDiscordNameInChannel) {
-                        playerName = dc.getEffectiveName();
-                        avatarURL = dc.getUser().getAvatarUrl();
-                    }
+        WorkThread.executeJob(() -> {
+            String pName = playerName;
+            if (channel == null) return;
+            final boolean isServerMessage = pName.equals(Configuration.instance().webhook.serverName) && uuid.equals("0000000");
+            final UUID uUUID = uuid.equals("0000000") ? null : UUID.fromString(uuid);
+            String avatarURL = "";
+            if (!isServerMessage && uUUID != null) {
+                if (LinkManager.isPlayerLinked(uUUID)) {
+                    final PlayerLink l = LinkManager.getLink(null, uUUID);
+                    final Member dc = getMemberById(Long.parseLong(l.discordID));
+                    if (dc != null)
+                        if (l.settings.useDiscordNameInChannel) {
+                            pName = dc.getEffectiveName();
+                            avatarURL = dc.getUser().getAvatarUrl();
+                        }
+                }
+                if (avatarURL != null && avatarURL.isEmpty())
+                    avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", uUUID.toString()).replace("%uuid_dashless%", uUUID.toString().replace("-", "")).replace("%name%", pName).replace("%randomUUID%", UUID.randomUUID().toString());
             }
-            if (avatarURL != null && avatarURL.isEmpty())
-                avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", uUUID.toString()).replace("%uuid_dashless%", uUUID.toString().replace("-", "")).replace("%name%", playerName).replace("%randomUUID%", UUID.randomUUID().toString());
-        }
-        if (isServerMessage) {
-            avatarURL = Configuration.instance().webhook.serverAvatarURL;
-        }
-        sendMessage(playerName, msg, avatarURL, channel, !isServerMessage, uuid);
+            if (isServerMessage) {
+                avatarURL = Configuration.instance().webhook.serverAvatarURL;
+            }
+            sendMessage(pName, msg, avatarURL, channel, !isServerMessage, uuid);
+        });
     }
 
     /**
