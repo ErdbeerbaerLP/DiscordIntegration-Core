@@ -246,7 +246,7 @@ public class LinkManager {
         if (l.discordID == null) return false;
         PlayerLink tmp = null;
         for (final PlayerLink link : getAllLinks()) {
-            if (link.discordID.equals(l.discordID) || link.mcPlayerUUID.equals(l.mcPlayerUUID) || link.floodgateUUID.equals(l.floodgateUUID))
+            if (link.discordID.equals(l.discordID) || (link.mcPlayerUUID != null && link.mcPlayerUUID.equals(l.mcPlayerUUID)) || (link.floodgateUUID != null && link.floodgateUUID.equals(l.floodgateUUID)))
                 tmp = link;
         }
         if (tmp != null) linkCache.remove(tmp);

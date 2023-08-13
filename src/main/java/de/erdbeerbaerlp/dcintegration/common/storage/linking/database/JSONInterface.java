@@ -54,7 +54,7 @@ public class JSONInterface extends DBInterface {
                 break;
             }
         }
-        json.add(gson.toJson(link));
+        json.add(gson.toJsonTree(link).getAsJsonObject());
         try (Writer writer = new FileWriter(jsonFile)) {
             gson.toJson(json, writer);
         } catch (IOException ex) {

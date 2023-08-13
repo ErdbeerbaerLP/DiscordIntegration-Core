@@ -56,6 +56,7 @@ public class CommandLink extends DiscordCommand {
                 if (LinkManager.pendingLinks.containsKey(num)) {
                     final boolean linked = LinkManager.linkPlayer(ev.getUser().getId(), LinkManager.pendingLinks.get(num).getValue());
                     if (linked) {
+                        LinkManager.save();
                         reply.thenAccept((c) -> c.editOriginal(Localization.instance().linking.linkSuccessful.replace("%prefix%", "/").replace("%player%", MessageUtils.getNameFromUUID(UUID.fromString(LinkManager.getLink(ev.getUser().getId(), null).mcPlayerUUID)))).queue());
                         DiscordIntegration.INSTANCE.getServerInterface().sendIngameMessage(Localization.instance().linking.linkSuccessfulIngame.replace("%name%", ev.getUser().getName()).replace("%name#tag%", ev.getUser().getAsTag()), LinkManager.pendingLinks.get(num).getValue());
                     } else
@@ -63,6 +64,7 @@ public class CommandLink extends DiscordCommand {
                 } else if (LinkManager.pendingBedrockLinks.containsKey(num)) {
                     final boolean linked = LinkManager.linkBedrockPlayer(ev.getUser().getId(), LinkManager.pendingBedrockLinks.get(num).getValue());
                     if (linked) {
+                        LinkManager.save();
                         reply.thenAccept((c) -> c.editOriginal(Localization.instance().linking.linkSuccessful.replace("%prefix%", "/").replace("%player%", MessageUtils.getNameFromUUID(UUID.fromString(LinkManager.getLink(ev.getUser().getId(), null).floodgateUUID)))).queue());
                         DiscordIntegration.INSTANCE.getServerInterface().sendIngameMessage(Localization.instance().linking.linkSuccessfulIngame.replace("%name%", ev.getUser().getName()).replace("%name#tag%", ev.getUser().getAsTag()), LinkManager.pendingBedrockLinks.get(num).getValue());
                     } else
