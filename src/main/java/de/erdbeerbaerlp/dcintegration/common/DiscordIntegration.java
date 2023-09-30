@@ -271,6 +271,12 @@ public class DiscordIntegration {
             LOGGER.info("Fixed webhook name containing the word \"Discord\".");
             Configuration.instance().saveConfig();
         }
+
+        if (Localization.instance().advancementMessage.contains("%msg%") || Localization.instance().advancementMessage.contains("%name%") ) {
+            Localization.instance().advancementMessage = Localization.instance().advancementMessage.replace("%msg%","%advMsg%").replace("%name%", "%advName%");
+            LOGGER.info("Migrated advancement message string");
+            Localization.instance().saveConfig();
+        }
     }
 
     /**

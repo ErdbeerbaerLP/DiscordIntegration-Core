@@ -62,6 +62,8 @@ public class Configuration {
 
     @TomlComment("General options for the bot")
     public General general = new General();
+    @TomlComment("Some settings that can be tweaked to increase compatibility with other mods, if required")
+    public Compatibility compatibility = new Compatibility();
 
     @TomlComment("Configuration options for commands")
     public Commands commands = new Commands();
@@ -140,11 +142,11 @@ public class Configuration {
         @TomlComment({"The bot's status message", "", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
         public String botStatusName = "%online% players online";
         @TomlComment({"The bot's status message for 1 online player, set to empty to use botStatusName", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
-        public String botStatusNameSingular = "%online player online";
+        public String botStatusNameSingular = "%online% player online";
         @TomlComment({"The bot's status message for no online players, set to empty to use botStatusName", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
         public String botStatusNameEmpty = "No-one is online";
-        @TomlComment({"Type of the bot's status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING,COMPETING"})
-        public GameType botStatusType = GameType.PLAYING;
+        @TomlComment({"Type of the bot's status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING,COMPETING,CUSTOM"})
+        public GameType botStatusType = GameType.CUSTOM;
 
         @TomlComment({"URL of the bot's stream when using the status type 'STREAMING'", "Has to start with https://twitch.tv/ or https://www.youtube.com/watch?v="})
         public String streamingURL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
@@ -157,14 +159,15 @@ public class Configuration {
 
         @TomlComment({"Set to false to disable config migration from other mods/plugins to this one", "This does not prevent updating of this config after mod updates"})
         public boolean allowConfigMigration = true;
-
-        @TomlComment("Attempt to parse id-based mentions to names in in-game chat")
-        public boolean parseMentionsIngame = true;
         @TomlComment("Set to true to supress warning of unsafe mod download location")
         public boolean ignoreFileSource = false;
-
         @TomlComment("Set to true to allow relaying webhook messages")
         public boolean allowWebhookMessages = false;
+    }
+
+    public static class Compatibility {
+        @TomlComment({"Disables modifying sent chat messages ingame to show who was pinged. (Will not convert <@1234567890> to @User)","This may fix mods also modifying sent messages"})
+        public boolean disableParsingMentionsIngame = false;
     }
 
     public static class Messages {
@@ -176,6 +179,9 @@ public class Configuration {
 
         @TomlComment("Should /me output be sent to discord?")
         public boolean sendOnMeCommand = true;
+
+        @TomlComment({"Adding an selector (ex. @a ) here will relay all /tellraw messages sent with that exact same selector to discord.", "Leave blank to disable"})
+        public String tellrawSelector = "";
 
         @TomlComment({"When an /say command's message starts with this prefix, it will not be sent to discord", "Useful for hiding system messages by prepending it with this"})
         public String sayCommandIgnoredPrefix = "§4§6§k§r";

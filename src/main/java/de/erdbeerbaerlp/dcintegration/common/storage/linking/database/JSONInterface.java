@@ -49,7 +49,7 @@ public class JSONInterface extends DBInterface {
         final JsonArray json = getJson();
         for (final JsonElement e : json) {
             final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-            if (o.discordID.equals(link.discordID) || o.floodgateUUID.equals(link.floodgateUUID) || o.mcPlayerUUID.equals(link.mcPlayerUUID)) {
+            if (o.discordID.equals(link.discordID) || (o.floodgateUUID != null && o.floodgateUUID.equals(link.floodgateUUID)) || (o.mcPlayerUUID != null && o.mcPlayerUUID.equals(link.mcPlayerUUID))) {
                 json.remove(e);
                 break;
             }

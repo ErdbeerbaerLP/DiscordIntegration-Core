@@ -67,7 +67,7 @@ public class LinkManager {
             final JsonObject o = DiscordIntegration.gson.fromJson(new JsonReader(new InputStreamReader(connection.getInputStream())), JsonObject.class);
             if (o.has("dcID") && !o.get("dcID").getAsString().isEmpty()) {
                 connection.disconnect();
-                if (addLink(new PlayerLink(o.get("dcID").getAsString(), uuid.toString(), null, new PlayerSettings()))){
+                if (addLink(new PlayerLink(o.get("dcID").getAsString(), uuid.toString(), "", new PlayerSettings()))){
                     save();
                     return true;
                 }
@@ -113,7 +113,7 @@ public class LinkManager {
             return false;
         if (isDiscordUserLinkedToJava(discordID) || isPlayerLinked(player))
             throw new IllegalArgumentException("One link side already exists");
-        return addLink(new PlayerLink(discordID, player.toString(), null, new PlayerSettings()));
+        return addLink(new PlayerLink(discordID, player.toString(), "", new PlayerSettings()));
     }
 
     /**
@@ -131,7 +131,7 @@ public class LinkManager {
         if (isDiscordUserLinkedToBedrock(discordID) || isPlayerLinked(bedrockPlayer))
             throw new IllegalArgumentException("One link side already exists");
         final boolean ignoringMessages = DiscordIntegration.INSTANCE.ignoringPlayers.contains(bedrockPlayer);
-        final PlayerLink link = isDiscordUserLinkedToJava(discordID) ? getLink(discordID, null) : new PlayerLink(discordID, null, bedrockPlayer.toString(), new PlayerSettings());
+        final PlayerLink link = isDiscordUserLinkedToJava(discordID) ? getLink(discordID, null) : new PlayerLink(discordID, "", bedrockPlayer.toString(), new PlayerSettings());
         link.floodgateUUID = bedrockPlayer.toString();
         link.settings.ignoreDiscordChatIngame = ignoringMessages;
         if (ignoringMessages) DiscordIntegration.INSTANCE.ignoringPlayers.remove(bedrockPlayer);
@@ -196,7 +196,7 @@ public class LinkManager {
         if (!Configuration.instance().linking.enableLinking) return false;
         for (final PlayerLink o : getAllLinks()) {
             if (!o.discordID.isEmpty() && o.discordID.equals(discordID)) {
-                return !o.floodgateUUID.isEmpty();
+                return o.floodgateUUID != null && !o.floodgateUUID.isEmpty();
             }
         }
         return false;

@@ -59,6 +59,9 @@ public class StatusUpdateThread extends Thread {
                     case STREAMING:
                         jda.getPresence().setActivity(Activity.streaming(game, Configuration.instance().general.streamingURL)); //URL is required to show up as "Streaming"
                         break;
+                    case CUSTOM:
+                        jda.getPresence().setActivity(Activity.customStatus(game));
+                        break;
                 }
             }
             // Removing of expired numbers
