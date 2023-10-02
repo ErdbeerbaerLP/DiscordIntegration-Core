@@ -72,7 +72,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-beta.14'
+    embed 'net.dv8tion:JDA:5.0.0-beta.15'
     embed 'club.minnced:discord-webhooks:0.8.4'
 
     //Emoji-Java
