@@ -47,11 +47,13 @@ class DiscordEventListener implements EventListener {
         final JDA jda = dc.getJDA();
         if (jda == null) return;
 
-        if (event instanceof final GuildMemberUpdateEvent ev) {
+        if (event instanceof GuildMemberUpdateEvent) {
+            final GuildMemberUpdateEvent ev = (GuildMemberUpdateEvent) event;
             DiscordIntegration.memberCache.replace(ev.getMember().getIdLong(), ev.getMember());
         }
 
-        if (event instanceof SlashCommandInteractionEvent ev) {
+        if (event instanceof SlashCommandInteractionEvent) {
+            SlashCommandInteractionEvent ev = (SlashCommandInteractionEvent) event;
             if (!Configuration.instance().commands.enabled) return;
             if (ev.getChannelType().equals(ChannelType.TEXT)) {
                 if (CommandRegistry.registeredCMDs.containsKey(ev.getCommandId())) {
@@ -64,7 +66,8 @@ class DiscordEventListener implements EventListener {
         }
 
 
-        if (event instanceof final MessageReactionAddEvent ev) {
+        if (event instanceof MessageReactionAddEvent) {
+            final MessageReactionAddEvent ev = (MessageReactionAddEvent) event;
 
             final UUID sender = dc.getSenderUUIDFromMessageID(ev.getMessageId());
             if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatOutputChannelID.equals("default") ? Configuration.instance().general.botChannel : Configuration.instance().advanced.chatOutputChannelID))
@@ -75,15 +78,17 @@ class DiscordEventListener implements EventListener {
         }
 
 
-        if (event instanceof GuildMemberRemoveEvent ev) {
+        if (event instanceof GuildMemberRemoveEvent) {
+            GuildMemberRemoveEvent ev = (GuildMemberRemoveEvent) event;
             if (Configuration.instance().linking.unlinkOnLeave && LinkManager.isDiscordUserLinked(ev.getUser().getId())) {
                 LinkManager.unlinkPlayer(((GuildMemberRemoveEvent) event).getUser().getId());
             }
         }
 
 
-        if (event instanceof final MessageReceivedEvent ev) {
-            if (Localization.instance().ingame_discordMessage.isBlank()) return;
+        if (event instanceof MessageReceivedEvent) {
+            final MessageReceivedEvent ev = (MessageReceivedEvent) event;
+            if (Localization.instance().ingame_discordMessage.isEmpty()) return;
             if ((Configuration.instance().general.allowWebhookMessages && !dc.recentMessages.containsKey(ev.getMessageId())) || !ev.isWebhookMessage())
                 if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
                     if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;

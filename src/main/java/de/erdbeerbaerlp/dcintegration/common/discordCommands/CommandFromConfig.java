@@ -43,11 +43,11 @@ public class CommandFromConfig extends DiscordCommand {
     @Override
     public void execute(final SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
         reply = reply.setEphemeral(hidden);
-        if (!textToSend.isBlank()) {
+        if (!textToSend.isEmpty()) {
             reply = reply.setContent(textToSend);
         }
         final CompletableFuture<InteractionHook> submit = reply.submit();
-        if (!mcCmd.isBlank()) {
+        if (!mcCmd.isEmpty()) {
             String cmd = mcCmd;
             for (ConfigCommand.CommandArgument arg : args) {
                 final OptionMapping option = ev.getOption(arg.name);
