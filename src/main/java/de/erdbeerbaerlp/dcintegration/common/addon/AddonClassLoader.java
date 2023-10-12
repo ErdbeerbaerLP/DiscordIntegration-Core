@@ -9,7 +9,7 @@ final class AddonClassLoader extends URLClassLoader {
         registerAsParallelCapable();
     }
     public AddonClassLoader(ClassLoader p) {
-        super("classpath", new URL[0], p);
+        super(new URL[0], p);
     }
     void add(URL url) {
         addURL(url);

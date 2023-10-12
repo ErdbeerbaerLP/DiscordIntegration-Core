@@ -103,11 +103,11 @@ public class CommandLinkcheck extends DiscordCommand {
         final Member user = DiscordIntegration.INSTANCE.getMemberById(link.discordID);
         final EmbedBuilder b = new EmbedBuilder();
         b.addField(Localization.instance().commands.cmdLinkcheck_discordAcc, user.getAsMention(), true);
-        if(link.mcPlayerUUID != null && !link.mcPlayerUUID.isBlank()) {
+        if(link.mcPlayerUUID != null && !link.mcPlayerUUID.isEmpty()) {
             final String mcname = DiscordIntegration.INSTANCE.getServerInterface().getNameFromUUID(UUID.fromString(link.mcPlayerUUID));
             b.addField(Localization.instance().commands.cmdLinkcheck_minecraftAcc, mcname + "\n" + link.mcPlayerUUID, true);
         }
-        if(link.floodgateUUID != null && !link.floodgateUUID.isBlank()) {
+        if(link.floodgateUUID != null && !link.floodgateUUID.isEmpty()) {
             b.addField(Localization.instance().commands.cmdLinkcheck_minecraftAccFloodgate, link.floodgateUUID, true);
         }
         return b.build();
