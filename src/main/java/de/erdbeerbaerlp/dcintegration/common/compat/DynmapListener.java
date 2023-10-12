@@ -28,14 +28,14 @@ public class DynmapListener extends DynmapCommonAPIListener {
     public void apiEnabled(org.dynmap.DynmapCommonAPI api) {
         this.api = api;
         if (DiscordIntegration.INSTANCE != null)
-            //TODO DiscordIntegration.INSTANCE.registerEventHandler(sender);
+            DiscordIntegration.INSTANCE.registerEventHandler(sender);
         DiscordIntegration.LOGGER.info("Dynmap listener registered");
     }
 
     @Override
     public void apiDisabled(org.dynmap.DynmapCommonAPI api) {
-        if (DiscordIntegration.INSTANCE != null);
-            //TODO DiscordIntegration.INSTANCE.unregisterEventHandler(sender);
+        if (DiscordIntegration.INSTANCE != null)
+            DiscordIntegration.INSTANCE.unregisterEventHandler(sender);
     }
 
 
@@ -47,7 +47,7 @@ public class DynmapListener extends DynmapCommonAPIListener {
     }
 
     public void sendMessage(String name, String message) {
-        // TODO Variables.discord_instance.sendMessage(DiscordIntegration.discord_instance.getChannel(Configuration.instance().dynmap.dynmapChannelID), Configuration.instance().dynmap.dcMessage.replace("%msg%", message).replace("%sender%", name.isEmpty() ? Configuration.instance().dynmap.unnamed : name), Configuration.instance().dynmap.avatarURL, Configuration.instance().dynmap.name);
+        DiscordIntegration.INSTANCE.sendMessage(DiscordIntegration.INSTANCE.getChannel(Configuration.instance().dynmap.dynmapChannelID), Configuration.instance().dynmap.dcMessage.replace("%msg%", message).replace("%sender%", name.isEmpty() ? Configuration.instance().dynmap.unnamed : name), Configuration.instance().dynmap.avatarURL, Configuration.instance().dynmap.name);
     }
 
     /**

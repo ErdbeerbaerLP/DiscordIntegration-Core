@@ -6,11 +6,11 @@ buildscript {
 plugins {
     id 'maven-publish'
     id 'java'
-    id 'com.github.johnrengelman.shadow' version "8.1.1"
+    id 'com.github.johnrengelman.shadow' version "7.1.2"
 }
 
 //Build variables
-version = "3.0.3"
+version = "3.0.3-j8"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -65,6 +65,7 @@ shadowJar {
     relocate "org.objenesis", "dcshadow.org.objenesis"
     relocate "kotlin", "dcshadow.kotlin"
     relocate "com.vdurmont", "dcshadow.com.vdurmont"
+    relocate "com.google.gson", "dcshadow.com.google.gson"
 }
 //Dependencies
 dependencies {
@@ -88,13 +89,10 @@ dependencies {
     embed 'net.kyori:adventure-text-serializer-legacy:4.14.0'
 
 
-    compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+    embed group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
 
     //Toml4j
-    embed("de.erdbeerbaerlp:toml4j:cf5b4655"){
-        exclude group: 'com.google.code.gson', module: 'gson'
-    }
-    //embed("Toml4J:toml4j-0.7.5-SNAPSHOT")
+    embed("de.erdbeerbaerlp:toml4j:2073e86")
 
     //Apache commons lang3
     embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.13.0'

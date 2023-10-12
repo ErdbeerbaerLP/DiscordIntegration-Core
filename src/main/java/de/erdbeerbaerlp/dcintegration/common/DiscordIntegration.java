@@ -100,9 +100,8 @@ public class DiscordIntegration {
 
     static {
         List<Rule<Object, Node<Object>, Object>> rules = new ArrayList<>(DiscordMarkdownRules.createAllRulesForDiscord(false));
-        rules.add(new Rule<>(Pattern.compile("(.*)")) {
-            @Override
-            public ParseSpec<Object, Node<Object>, Object> parse(Matcher matcher, Parser<Object, Node<Object>, Object> parser, Object state) {
+        rules.add(new Rule<Object, Node<Object>, Object>(Pattern.compile("(.*)")) {
+            public ParseSpec parse(Matcher matcher, Parser parser, Object state) {
                 return ParseSpec.createTerminal(new TextNode<>(matcher.group()), state);
             }
         });
@@ -650,7 +649,8 @@ public class DiscordIntegration {
 
     public Webhook getWebhook(final GuildMessageChannel ic) {
         if (!Configuration.instance().webhook.enable || ic == null) return null;
-        if (ic instanceof ThreadChannel c) {
+        if (ic instanceof ThreadChannel) {
+            ThreadChannel c = (ThreadChannel)ic;
             return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
                 if (!PermissionUtil.checkPermission(c.getParentChannel(), getMemberById(jda.getSelfUser().getIdLong()), Permission.MANAGE_WEBHOOKS)) {
                     LOGGER.info("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
@@ -671,7 +671,8 @@ public class DiscordIntegration {
 
                 return c.getParentMessageChannel().asStandardGuildMessageChannel().createWebhook(Configuration.instance().webhook.webhookName).complete();
             });
-        } else if (ic instanceof StandardGuildMessageChannel c) {
+        } else if (ic instanceof StandardGuildMessageChannel) {
+            StandardGuildMessageChannel c = (StandardGuildMessageChannel) ic;
             return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
                 if (!PermissionUtil.checkPermission(c, getMemberById(jda.getSelfUser().getIdLong()), Permission.MANAGE_WEBHOOKS)) {
                     LOGGER.info("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
@@ -710,7 +711,8 @@ public class DiscordIntegration {
             final Webhook wh = getWebhook(channel);
             if (wh == null) return null;
             JDAWebhookClient cli = JDAWebhookClient.from(wh);
-            if (channel instanceof ThreadChannel c) {
+            if (channel instanceof ThreadChannel) {
+                ThreadChannel c = (ThreadChannel) channel;
                 cli = cli.onThread(c.getIdLong());
             }
             return cli;
