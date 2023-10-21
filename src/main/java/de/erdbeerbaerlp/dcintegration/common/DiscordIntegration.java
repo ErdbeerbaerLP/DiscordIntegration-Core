@@ -41,6 +41,8 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestConfig;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
+import okhttp3.OkHttpClient;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -59,6 +61,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.time.Duration;
 
 public class DiscordIntegration {
 
@@ -336,10 +339,23 @@ public class DiscordIntegration {
             stopThreads();
             unregisterAllEventHandlers();
             webhookClis.forEach((i, w) -> w.close());
+            OkHttpClient client = jda.getHttpClient();
+            
             try {
-                if (instant) jda.shutdownNow();
-                else jda.shutdown();
-            } catch (LinkageError ignored) { //Fix exception logged when reloading
+                if (instant) {
+                    jda.shutdownNow();
+                    client.dispatcher().cancelAll();
+                    client.connectionPool().evictAll();
+                    client.dispatcher().executorService().shutdown();
+                } else {
+                    if (!this.jda.awaitShutdown(Duration.ofSeconds(5))) {
+                        client.dispatcher().cancelAll();
+                        client.connectionPool().evictAll();
+                        client.dispatcher().executorService().shutdown();
+                    }
+                }
+            } catch (LinkageError ignored) { // Fix exception logged when reloading
+            } catch (InterruptedException ignored) { // Interruption is fine when shutting down
             }
             jda = null;
             INSTANCE = null;
