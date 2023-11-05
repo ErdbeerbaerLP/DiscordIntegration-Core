@@ -9,30 +9,21 @@ import java.util.TimerTask;
 public class MessageQueueTask extends TimerTask {
     private final DiscordIntegration dc;
     public static final HashMap<String, ArrayList<String>> messages = new HashMap<>();
+
     public MessageQueueTask(final DiscordIntegration dc) {
         this.dc = dc;
     }
 
     @Override
     public void run() {
-        while (true) {
-
-            if (!messages.isEmpty()) {
-                messages.forEach((channel, msgs) -> {
-                    StringBuilder s = new StringBuilder();
-                    for (final String msg : msgs)
-                        s.append(msg).append("\n");
-                    dc.sendMessage(s.toString().trim(), dc.getChannel(channel));
-                });
-                messages.clear();
-            }
-            try {
-                //noinspection BusyWait
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                return;
-            }
+        if (!messages.isEmpty()) {
+            messages.forEach((channel, msgs) -> {
+                StringBuilder s = new StringBuilder();
+                for (final String msg : msgs)
+                    s.append(msg).append("\n");
+                dc.sendMessage(s.toString().trim(), dc.getChannel(channel));
+            });
+            messages.clear();
         }
-
     }
 }

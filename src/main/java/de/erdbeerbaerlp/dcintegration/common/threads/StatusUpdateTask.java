@@ -60,11 +60,11 @@ public class StatusUpdateTask extends TimerTask {
     @NotNull
     private String getString() {
         final String game;
-        if (dc.getServerInterface().getOnlinePlayers() == 1 && !Configuration.instance().general.botStatusNameSingular.isBlank()) {
+        if (dc.getServerInterface().getOnlinePlayers() == 1 && !Configuration.instance().general.botStatusNameSingular.isEmpty()) {
             game = Configuration.instance().general.botStatusNameSingular
                     .replace("%online%", String.valueOf(dc.getServerInterface().getOnlinePlayers()))
                     .replace("%max%", String.valueOf(dc.getServerInterface().getMaxPlayers()));
-        } else if (dc.getServerInterface().getOnlinePlayers() == 0 && !Configuration.instance().general.botStatusNameEmpty.isBlank()) {
+        } else if (dc.getServerInterface().getOnlinePlayers() == 0 && !Configuration.instance().general.botStatusNameEmpty.isEmpty()) {
             game = Configuration.instance().general.botStatusNameEmpty
                     .replace("%online%", String.valueOf(dc.getServerInterface().getOnlinePlayers()))
                     .replace("%max%", String.valueOf(dc.getServerInterface().getMaxPlayers()));
