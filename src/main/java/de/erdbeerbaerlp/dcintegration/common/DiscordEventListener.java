@@ -10,6 +10,7 @@ import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import dev.vankka.mcdiscordreserializer.minecraft.MinecraftSerializer;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
@@ -139,11 +140,12 @@ class DiscordEventListener implements EventListener {
                         final TextReplacementConfig userReplacer = ComponentUtils.replaceLiteral("%user%", user);
                         out = out.replaceText(userReplacer).replaceText(idReplacer).replaceText(msgReplacer);
                         if (hasReply) {
+                            Member replyMember = reply.isWebhookMessage() ? null : dc.getMemberById(reply.getAuthor().getIdLong());
                             memberStyle = Style.style();
                             if (Configuration.instance().messages.discordRoleColorIngame)
-                                memberStyle.color(TextColor.color((reply.getMember() != null ? reply.getMember().getColorRaw() : 0)));
-                            final Component repUser = Component.text((reply.getMember() != null ? reply.getMember().getEffectiveName() : reply.getAuthor().getName()))
-                                    .style(ComponentUtils.addUserHoverClick(memberStyle.build(), reply.getAuthor(), reply.getMember()));
+                                memberStyle.color(TextColor.color((replyMember != null ? replyMember.getColorRaw() : 0)));
+                            final Component repUser = Component.text((replyMember != null ? replyMember.getEffectiveName() : reply.getAuthor().getName()))
+                                    .style(ComponentUtils.addUserHoverClick(memberStyle.build(), reply.getAuthor(), replyMember));
                             out = out.replaceText(ComponentUtils.replaceLiteral("%ruser%", repUser));
                             final String repMsg = MessageUtils.formatEmoteMessage(reply.getMentions().getCustomEmojis(), reply.getContentDisplay());
                             final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), DiscordIntegration.mcSerializerOptions);
