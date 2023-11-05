@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "3.0.3"
+version = "3.0.4"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -34,6 +34,10 @@ configurations {
     embed
     compileOnly.extendsFrom(embed)
 }
+ext {
+    version = project.version
+}
+
 shadowJar {
     //noinspection GroovyAccessibility
     archiveClassifier = ""
@@ -66,6 +70,7 @@ shadowJar {
     relocate "kotlin", "dcshadow.kotlin"
     relocate "com.vdurmont", "dcshadow.com.vdurmont"
 }
+
 //Dependencies
 dependencies {
 

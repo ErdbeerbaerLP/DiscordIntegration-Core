@@ -14,8 +14,8 @@ import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerLink;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.database.DBInterface;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.database.JSONInterface;
-import de.erdbeerbaerlp.dcintegration.common.threads.MessageQueueThread;
-import de.erdbeerbaerlp.dcintegration.common.threads.StatusUpdateThread;
+import de.erdbeerbaerlp.dcintegration.common.threads.MessageQueueTask;
+import de.erdbeerbaerlp.dcintegration.common.threads.StatusUpdateTask;
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
 import de.erdbeerbaerlp.dcintegration.common.util.McServerInterface;
 import dev.vankka.mcdiscordreserializer.minecraft.MinecraftSerializerOptions;
@@ -54,6 +54,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -69,7 +70,7 @@ public class DiscordIntegration {
     /**
      * Mod/Plugin version
      */
-    public static final String VERSION = "3.0.0";
+    public static final String VERSION = DiscordIntegration.class.getPackage().getImplementationVersion();;
 
     /**
      * Discord Integration data directory
@@ -169,7 +170,10 @@ public class DiscordIntegration {
      */
     private final McServerInterface serverInterface;
 
-    private Thread messageSender, statusUpdater, launchThread;
+    private Thread launchThread;
+    private TimerTask messageSender, statusUpdater;
+    private static Timer timer = new Timer();
+
 
 
     public DiscordIntegration(final McServerInterface serverInterface) {
@@ -295,10 +299,10 @@ public class DiscordIntegration {
                 }
             });
         }
-        if (statusUpdater == null) statusUpdater = new StatusUpdateThread(this);
-        if (messageSender == null) messageSender = new MessageQueueThread(this);
-        if (!messageSender.isAlive()) messageSender.start();
-        if (!statusUpdater.isAlive()) statusUpdater.start();
+        if (statusUpdater == null) statusUpdater = new StatusUpdateTask(this);
+        if (messageSender == null) messageSender = new MessageQueueTask(this);
+        timer.scheduleAtFixedRate(statusUpdater,0, TimeUnit.SECONDS.toMillis(10));
+        timer.scheduleAtFixedRate(messageSender,0, TimeUnit.SECONDS.toMillis(1));
 
         if (JSONInterface.jsonFile.exists() && !Configuration.instance().linking.databaseClass.equals(JSONInterface.class.getCanonicalName())) {
             LOGGER.info("PlayerLinks.json found, but using custom database implementation");
@@ -310,8 +314,8 @@ public class DiscordIntegration {
      * Stops all sub-threads
      */
     public void stopThreads() {
-        if (messageSender != null && messageSender.isAlive()) messageSender.interrupt();
-        if (statusUpdater != null && statusUpdater.isAlive()) statusUpdater.interrupt();
+        timer.cancel();
+        timer.purge();
         if (launchThread.isAlive()) launchThread.interrupt();
     }
 
@@ -547,20 +551,26 @@ public class DiscordIntegration {
                     linkDbInterface = (DBInterface) Class.forName(Configuration.instance().linking.databaseClass, true, AddonLoader.getAddonClassLoader()).getDeclaredConstructor().newInstance();
                     linkDbInterface.connect();
                     linkDbInterface.initialize();
-                    LinkManager.load();
-                    LOGGER.info("Linking Database loaded");
+                    LOGGER.info("Linking Database initialized!");
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException |
                          ClassNotFoundException e) {
                     if (sqLite) {
                         Configuration.instance().linking.databaseClass = "de.erdbeerbaerlp.dcintegration.common.storage.linking.database.JSONInterface";
+                        try {
+                            Configuration.instance().saveConfig();
+                        } catch (IOException ex) {
+                            LOGGER.error("Failed to save configuration change");
+                            ex.printStackTrace();
+                        }
                         linkDbInterface = new JSONInterface();
                         linkDbInterface.connect();
                         linkDbInterface.initialize();
+                        LOGGER.info("Linking Database initialized!");
                     } else
                         e.printStackTrace();
                 }
-
+                LinkManager.load();
 
                 if (Configuration.instance().linking.unlinkOnLeave)
                     WorkThread.executeJob(() -> {
@@ -728,12 +738,12 @@ public class DiscordIntegration {
     public void sendMessageFuture(String msg, String channelID) {
         if (msg.isEmpty() || channelID.isEmpty()) return;
         final ArrayList<String> msgs;
-        if (MessageQueueThread.messages.containsKey(channelID))
-            msgs = MessageQueueThread.messages.get(channelID);
+        if (MessageQueueTask.messages.containsKey(channelID))
+            msgs = MessageQueueTask.messages.get(channelID);
         else
             msgs = new ArrayList<>();
         msgs.add(msg);
-        MessageQueueThread.messages.put(channelID, msgs);
+        MessageQueueTask.messages.put(channelID, msgs);
     }
 
     /**

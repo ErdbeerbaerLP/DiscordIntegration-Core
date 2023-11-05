@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class LinkManager {
 
     private static final String API_URL = "https://api.erdbeerbaerlp.de/dcintegration/link";
-    private static final ArrayList<PlayerLink> linkCache = new ArrayList<>();
+    private static ArrayList<PlayerLink> linkCache = new ArrayList<>();
 
     /**
      * Player UUID cache for players not on global linking API
@@ -36,13 +36,13 @@ public class LinkManager {
     public static final HashMap<Integer, KeyValue<Instant, UUID>> pendingBedrockLinks = new HashMap<>();
 
     public static void load() {
-        linkCache.clear();
-        if (Configuration.instance().linking.enableLinking)
-            linkCache.addAll(Arrays.asList(DiscordIntegration.INSTANCE.getDatabaseInterface().getAllLinks()));
+        if (Configuration.instance().linking.enableLinking) {
+            linkCache = new ArrayList<>(Arrays.asList(DiscordIntegration.INSTANCE.getDatabaseInterface().getAllLinks()));
+            DiscordIntegration.LOGGER.info("LinkManager load | cache: "+linkCache);
+        }
     }
 
     public static void save() {
-
         if (Configuration.instance().linking.enableLinking)
             linkCache.forEach((l) -> DiscordIntegration.INSTANCE.getDatabaseInterface().addLink(l));
     }
@@ -67,7 +67,7 @@ public class LinkManager {
             final JsonObject o = DiscordIntegration.gson.fromJson(new JsonReader(new InputStreamReader(connection.getInputStream())), JsonObject.class);
             if (o.has("dcID") && !o.get("dcID").getAsString().isEmpty()) {
                 connection.disconnect();
-                if (addLink(new PlayerLink(o.get("dcID").getAsString(), uuid.toString(), "", new PlayerSettings()))){
+                if (addLink(new PlayerLink(o.get("dcID").getAsString(), uuid.toString(), "", o.get("settings") == null ? new PlayerSettings() : DiscordIntegration.gson.fromJson(o.get("settings"), PlayerSettings.class)))) {
                     save();
                     return true;
                 }
@@ -113,6 +113,8 @@ public class LinkManager {
             return false;
         if (isDiscordUserLinkedToJava(discordID) || isPlayerLinked(player))
             throw new IllegalArgumentException("One link side already exists");
+
+        DiscordIntegration.LOGGER.info("LinkManager linkPlayer | discordID:" + discordID + ", player:" + player);
         return addLink(new PlayerLink(discordID, player.toString(), "", new PlayerSettings()));
     }
 
@@ -148,7 +150,7 @@ public class LinkManager {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
         if (!Configuration.instance().linking.enableLinking) return false;
         for (final PlayerLink o : getAllLinks()) {
-            if (o.mcPlayerUUID != null &&!o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(player.toString())) {
+            if (o.mcPlayerUUID != null && !o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(player.toString())) {
                 return true;
             }
         }
@@ -166,7 +168,7 @@ public class LinkManager {
         if (!Configuration.instance().linking.enableLinking) return false;
         for (final PlayerLink o : getAllLinks()) {
             if (!o.discordID.isEmpty() && o.discordID.equals(discordID)) {
-                return !o.mcPlayerUUID.isEmpty();
+                return !(o.mcPlayerUUID == null || o.mcPlayerUUID.isEmpty());
             }
         }
         return false;
@@ -246,10 +248,11 @@ public class LinkManager {
         if (l.discordID == null) return false;
         PlayerLink tmp = null;
         for (final PlayerLink link : getAllLinks()) {
-            if (link.discordID.equals(l.discordID) || (link.mcPlayerUUID != null && link.mcPlayerUUID.equals(l.mcPlayerUUID)) || (link.floodgateUUID != null && link.floodgateUUID.equals(l.floodgateUUID)))
+            if (link.discordID.equals(l.discordID) || (link.mcPlayerUUID != null && !link.mcPlayerUUID.isEmpty() && link.mcPlayerUUID.equals(l.mcPlayerUUID)) || (link.floodgateUUID != null && !link.floodgateUUID.isEmpty() && link.floodgateUUID.equals(l.floodgateUUID)))
                 tmp = link;
         }
         if (tmp != null) linkCache.remove(tmp);
+        DiscordIntegration.LOGGER.info("LinkManager addLink | tmp:" + tmp + ", l:" + l + ", linkCache:" + linkCache);
         linkCache.add(l);
         return true;
     }

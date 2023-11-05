@@ -24,6 +24,16 @@ public class PlayerLink {
     }
 
     @Override
+    public String toString() {
+        return "PlayerLink{" +
+                "discordID='" + discordID + '\'' +
+                ", mcPlayerUUID='" + mcPlayerUUID + '\'' +
+                ", floodgateUUID='" + floodgateUUID + '\'' +
+                ", settings=" + settings +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         int result = discordID.hashCode();
         result = 31 * result + mcPlayerUUID.hashCode();

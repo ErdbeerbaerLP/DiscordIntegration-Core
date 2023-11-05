@@ -4,14 +4,13 @@ import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TimerTask;
 
-public class MessageQueueThread extends Thread {
+public class MessageQueueTask extends TimerTask {
     private final DiscordIntegration dc;
     public static final HashMap<String, ArrayList<String>> messages = new HashMap<>();
-    public MessageQueueThread(final DiscordIntegration dc) {
+    public MessageQueueTask(final DiscordIntegration dc) {
         this.dc = dc;
-        setName("Discord Integration - Message Queue");
-        setDaemon(true);
     }
 
     @Override

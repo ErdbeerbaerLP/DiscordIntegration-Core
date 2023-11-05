@@ -46,17 +46,22 @@ public class JSONInterface extends DBInterface {
 
     @Override
     public void addLink(final PlayerLink link) {
+        DiscordIntegration.LOGGER.info("JSONInterface addLink | Saving "+link);
         final JsonArray json = getJson();
+        DiscordIntegration.LOGGER.info("JSONInterface addLink | json (old): " + json);
         for (final JsonElement e : json) {
             final PlayerLink o = gson.fromJson(e, PlayerLink.class);
-            if (o.discordID.equals(link.discordID) || (o.floodgateUUID != null && o.floodgateUUID.equals(link.floodgateUUID)) || (o.mcPlayerUUID != null && o.mcPlayerUUID.equals(link.mcPlayerUUID))) {
+            if (o.discordID.equals(link.discordID) || (o.floodgateUUID != null && !o.floodgateUUID.isEmpty() && o.floodgateUUID.equals(link.floodgateUUID)) || (o.mcPlayerUUID != null && !o.mcPlayerUUID.isEmpty() && o.mcPlayerUUID.equals(link.mcPlayerUUID))) {
                 json.remove(e);
+                DiscordIntegration.LOGGER.info("JSONInterface addLink | Removing old link from json "+o.discordID);
                 break;
             }
         }
         json.add(gson.toJsonTree(link).getAsJsonObject());
+        DiscordIntegration.LOGGER.info("JSONInterface addLink | json (new): " + json);
         try (Writer writer = new FileWriter(jsonFile)) {
             gson.toJson(json, writer);
+            DiscordIntegration.LOGGER.info("JSONInterface addLink | Written to File");
         } catch (IOException ex) {
             ex.printStackTrace();
         }

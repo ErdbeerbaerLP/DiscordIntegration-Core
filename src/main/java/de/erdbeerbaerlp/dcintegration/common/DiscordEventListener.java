@@ -34,6 +34,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.UUID;
@@ -90,35 +91,7 @@ class DiscordEventListener implements EventListener {
                         final List<MessageEmbed> embeds = ev.getMessage().getEmbeds();
                         String msg = ev.getMessage().getContentDisplay();
                         msg = MessageUtils.formatEmoteMessage(ev.getMessage().getMentions().getCustomEmojis(), msg);
-                        Component attachmentComponent = Component.empty();
-                        if (!ev.getMessage().getAttachments().isEmpty()) {
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().attachment + ":").decorate(TextDecoration.UNDERLINED));
-                        }
-                        for (Message.Attachment a : ev.getMessage().getAttachments()) {
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
-                        }
-                        for (MessageEmbed e : embeds) {
-                            if (e.isEmpty()) continue;
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----[" + Localization.instance().embed + "]-----\n"));
-                            if (e.getAuthor() != null && e.getAuthor().getName() != null && !e.getAuthor().getName().trim().isEmpty()) {
-                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getAuthor().getName() + "\n").decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC));
-                            }
-                            if (e.getTitle() != null && !e.getTitle().trim().isEmpty()) {
-                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getTitle() + "\n").decorate(TextDecoration.BOLD));
-                            }
-                            if (e.getDescription() != null && !e.getDescription().trim().isEmpty()) {
-                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().embedMessage + ":\n" + e.getDescription() + "\n"));
-                            }
-                            if (e.getImage() != null && e.getImage().getUrl() != null && !e.getImage().getUrl().isEmpty()) {
-                                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().embedImage + ": " + e.getImage().getUrl() + "\n"));
-                            }
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
-                        }
-                        for (Sticker s : ev.getMessage().getStickers())
-                            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n" + Localization.instance().sticker + ": " + s.getName()));
-
+                        final Component attachmentComponent = getAttachmentComp(ev, embeds);
                         @SuppressWarnings("unchecked") final Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), DiscordIntegration.mcSerializerOptions);
                         final Message reply = ev.getMessage().getReferencedMessage();
                         final boolean hasReply = reply != null;
@@ -150,7 +123,6 @@ class DiscordEventListener implements EventListener {
                             final String repMsg = MessageUtils.formatEmoteMessage(reply.getMentions().getCustomEmojis(), reply.getContentDisplay());
                             final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), DiscordIntegration.mcSerializerOptions);
                             out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
-
                         }
                         out = ComponentUtils.append(out, attachmentComponent);
                         dc.getServerInterface().sendIngameMessage(out);
@@ -159,6 +131,39 @@ class DiscordEventListener implements EventListener {
                 }
         }
 
+    }
+
+    @NotNull
+    private static Component getAttachmentComp(MessageReceivedEvent ev, List<MessageEmbed> embeds) {
+        Component attachmentComponent = Component.empty();
+        if (!ev.getMessage().getAttachments().isEmpty()) {
+            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
+            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().attachment + ":").decorate(TextDecoration.UNDERLINED));
+        }
+        for (Message.Attachment a : ev.getMessage().getAttachments()) {
+            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.newline());
+            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(a.getFileName()).decorate(TextDecoration.UNDERLINED).color(TextColor.color(0x06, 0x45, 0xAD)).clickEvent(ClickEvent.openUrl(a.getUrl())));
+        }
+        for (MessageEmbed e : embeds) {
+            if (e.isEmpty()) continue;
+            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----[" + Localization.instance().embed + "]-----\n"));
+            if (e.getAuthor() != null && e.getAuthor().getName() != null && !e.getAuthor().getName().trim().isEmpty()) {
+                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getAuthor().getName() + "\n").decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC));
+            }
+            if (e.getTitle() != null && !e.getTitle().trim().isEmpty()) {
+                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(e.getTitle() + "\n").decorate(TextDecoration.BOLD));
+            }
+            if (e.getDescription() != null && !e.getDescription().trim().isEmpty()) {
+                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().embedMessage + ":\n" + e.getDescription() + "\n"));
+            }
+            if (e.getImage() != null && e.getImage().getUrl() != null && !e.getImage().getUrl().isEmpty()) {
+                attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text(Localization.instance().embedImage + ": " + e.getImage().getUrl() + "\n"));
+            }
+            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n-----------------"));
+        }
+        for (Sticker s : ev.getMessage().getStickers())
+            attachmentComponent = ComponentUtils.append(attachmentComponent, Component.text("\n" + Localization.instance().sticker + ": " + s.getName()));
+        return attachmentComponent;
     }
 
 

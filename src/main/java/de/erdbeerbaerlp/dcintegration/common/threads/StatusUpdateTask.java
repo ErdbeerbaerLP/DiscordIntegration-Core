@@ -6,41 +6,27 @@ import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Activity;
 import org.apache.commons.collections4.KeyValue;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TimerTask;
 import java.util.UUID;
 
-public class StatusUpdateThread extends Thread {
+public class StatusUpdateTask extends TimerTask {
     private final DiscordIntegration dc;
 
-    public StatusUpdateThread(final DiscordIntegration dc) {
+    public StatusUpdateTask(final DiscordIntegration dc) {
         this.dc = dc;
-        setName("Discord Integration - Status updater and link cleanup");
-        setDaemon(true);
     }
 
     @Override
     public void run() {
         final JDA jda = dc.getJDA();
-        while (true) {
             if (jda != null) {
-                String game;
-                if (dc.getServerInterface().getOnlinePlayers() == 1 && !Configuration.instance().general.botStatusNameSingular.isBlank()) {
-                    game = Configuration.instance().general.botStatusNameSingular
-                            .replace("%online%", String.valueOf(dc.getServerInterface().getOnlinePlayers()))
-                            .replace("%max%", String.valueOf(dc.getServerInterface().getMaxPlayers()));
-                } else if (dc.getServerInterface().getOnlinePlayers() == 0 && !Configuration.instance().general.botStatusNameEmpty.isBlank()) {
-                    game = Configuration.instance().general.botStatusNameEmpty
-                            .replace("%online%", String.valueOf(dc.getServerInterface().getOnlinePlayers()))
-                            .replace("%max%", String.valueOf(dc.getServerInterface().getMaxPlayers()));
-                } else {
-                    game = Configuration.instance().general.botStatusName
-                            .replace("%online%", String.valueOf(dc.getServerInterface().getOnlinePlayers()))
-                            .replace("%max%", String.valueOf(dc.getServerInterface().getMaxPlayers()));
-                }
+                final String game = getString();
                 switch (Configuration.instance().general.botStatusType) {
                     case DISABLED:
                         break;
@@ -69,13 +55,25 @@ public class StatusUpdateThread extends Thread {
             clearLinks(remove, LinkManager.pendingLinks);
             clearLinks(remove, LinkManager.pendingBedrockLinks);
             remove.clear();
-            try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                return;
-            }
+    }
 
+    @NotNull
+    private String getString() {
+        final String game;
+        if (dc.getServerInterface().getOnlinePlayers() == 1 && !Configuration.instance().general.botStatusNameSingular.isBlank()) {
+            game = Configuration.instance().general.botStatusNameSingular
+                    .replace("%online%", String.valueOf(dc.getServerInterface().getOnlinePlayers()))
+                    .replace("%max%", String.valueOf(dc.getServerInterface().getMaxPlayers()));
+        } else if (dc.getServerInterface().getOnlinePlayers() == 0 && !Configuration.instance().general.botStatusNameEmpty.isBlank()) {
+            game = Configuration.instance().general.botStatusNameEmpty
+                    .replace("%online%", String.valueOf(dc.getServerInterface().getOnlinePlayers()))
+                    .replace("%max%", String.valueOf(dc.getServerInterface().getMaxPlayers()));
+        } else {
+            game = Configuration.instance().general.botStatusName
+                    .replace("%online%", String.valueOf(dc.getServerInterface().getOnlinePlayers()))
+                    .replace("%max%", String.valueOf(dc.getServerInterface().getMaxPlayers()));
         }
+        return game;
     }
 
     private void clearLinks(ArrayList<Integer> remove, HashMap<Integer, KeyValue<Instant, UUID>> pendingLinks) {

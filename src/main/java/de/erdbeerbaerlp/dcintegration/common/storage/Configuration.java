@@ -139,16 +139,16 @@ public class Configuration {
         @TomlComment("The channel ID where the bot will be working in")
         public String botChannel = "000000000";
 
-        @TomlComment({"The bot's status message", "", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
+        @TomlComment({"The bots status message", "", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
         public String botStatusName = "%online% players online";
-        @TomlComment({"The bot's status message for 1 online player, set to empty to use botStatusName", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
+        @TomlComment({"The bots status message for 1 online player, set to empty to use botStatusName", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
         public String botStatusNameSingular = "%online% player online";
-        @TomlComment({"The bot's status message for no online players, set to empty to use botStatusName", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
+        @TomlComment({"The bots status message for no online players, set to empty to use botStatusName", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
         public String botStatusNameEmpty = "No-one is online";
-        @TomlComment({"Type of the bot's status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING,COMPETING,CUSTOM"})
+        @TomlComment({"Type of the bots status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING,COMPETING,CUSTOM"})
         public GameType botStatusType = GameType.CUSTOM;
 
-        @TomlComment({"URL of the bot's stream when using the status type 'STREAMING'", "Has to start with https://twitch.tv/ or https://www.youtube.com/watch?v="})
+        @TomlComment({"URL of the bots stream when using the status type 'STREAMING'", "Has to start with https://twitch.tv/ or https://www.youtube.com/watch?v="})
         public String streamingURL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
         @TomlComment({"Enable checking for updates?", "Notification will be shown after every server start in log when update is available"})
@@ -159,14 +159,14 @@ public class Configuration {
 
         @TomlComment({"Set to false to disable config migration from other mods/plugins to this one", "This does not prevent updating of this config after mod updates"})
         public boolean allowConfigMigration = true;
-        @TomlComment("Set to true to supress warning of unsafe mod download location")
+        @TomlComment("Set to true to suppress warning of unsafe mod download location")
         public boolean ignoreFileSource = false;
         @TomlComment("Set to true to allow relaying webhook messages")
         public boolean allowWebhookMessages = false;
     }
 
     public static class Compatibility {
-        @TomlComment({"Disables modifying sent chat messages ingame to show who was pinged. (Will not convert <@1234567890> to @User)","This may fix mods also modifying sent messages"})
+        @TomlComment({"Disables modifying sent chat messages in-game to show who was pinged. (Will not convert <@1234567890> to @User)","This may fix mods also modifying sent messages"})
         public boolean disableParsingMentionsIngame = false;
     }
 
@@ -186,9 +186,9 @@ public class Configuration {
         @TomlComment({"When an /say command's message starts with this prefix, it will not be sent to discord", "Useful for hiding system messages by prepending it with this"})
         public String sayCommandIgnoredPrefix = "§4§6§k§r";
 
-        @TomlComment("Should Discord users have their role color ingame?")
+        @TomlComment("Should Discord users have their role color in-game?")
         public boolean discordRoleColorIngame = true;
-        @TomlComment("Should you be able to hover and click on the discord username ingame?")
+        @TomlComment("Should you be able to hover and click on the discord username in-game?")
         public boolean enableHoverMessage = true;
     }
 
@@ -280,7 +280,7 @@ public class Configuration {
         @TomlComment({"Custom channel ID for death messages", "Leave 'default' to use default channel"})
         public String deathsChannelID = "default";
 
-        @TomlComment({"Custom channel for for ingame messages", "Leave 'default' to use default channel"})
+        @TomlComment({"Custom channel for for in-game messages", "Leave 'default' to use default channel"})
         public String chatOutputChannelID = "default";
 
         @TomlComment({"Custom channel where messages get sent to minecraft", "Leave 'default' to use default channel"})
@@ -296,7 +296,7 @@ public class Configuration {
         @TomlComment({"A list of blacklisted modids", "Adding one will prevent the mod to send messages to discord using forges IMC system"})
         public String[] IMC_modIdBlacklist = new String[]{"examplemod"};
 
-        @TomlComment("Show item information, which is visible on hover ingame, as embed in discord?")
+        @TomlComment("Show item information, which is visible on hover in-game, as embed in discord?")
         public boolean sendItemInfo = true;
     }
 
@@ -355,7 +355,7 @@ public class Configuration {
 
         @TomlComment("Adding Role IDs here will require the players to have at least ONE of these roles to link account")
         public String[] requiredRoles = new String[0];
-        @TomlComment({"Adding setting keys to this array will prevent thoose settings to be changed", "They will still show up in the list though"})
+        @TomlComment({"Adding setting keys to this array will prevent those settings to be changed", "They will still show up in the list though"})
         public String[] settingsBlacklist = new String[0];
         @TomlComment("Allows you to configure the default values of some personal settings")
         public PersonalSettingsDefaults personalSettingsDefaults = new PersonalSettingsDefaults();
@@ -408,7 +408,7 @@ public class Configuration {
         @TomlComment("URL of the webhook avatar image")
         public String avatarURL = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/9/91/Map_Zoom_0.png/revision/latest?cb=20200311153330";
 
-        @TomlComment({"The name format of the message forwarded to the dynmap webchat", "", "PLACEHOLDERS:", "%name% - The discord name of the sender (including nickname)", "%name#tag% - The discord name with tag of the sender (without nickname)"})
+        @TomlComment({"The name format of the message forwarded to the dynmap web-chat", "", "PLACEHOLDERS:", "%name% - The discord name of the sender (including nickname)", "%name#tag% - The discord name with tag of the sender (without nickname)"})
         public String webName = "%name% (discord)";
         @TomlComment("Name shown in discord when no name was specified on the website")
         public String unnamed = "Unnamed";
