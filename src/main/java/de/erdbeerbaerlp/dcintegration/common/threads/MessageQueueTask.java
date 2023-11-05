@@ -25,6 +25,5 @@ public class MessageQueueTask extends TimerTask {
             });
             messages.clear();
         }
-
     }
 }
