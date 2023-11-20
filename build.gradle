@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "3.0.4"
+version = "3.0.4.1-SNAPSHOT"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -109,6 +109,9 @@ dependencies {
 
     //Logger
     compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+
+    //Luckperms
+    compileOnly 'net.luckperms:api:5.4'
 
 }
 tasks.build.dependsOn(tasks.shadowJar)

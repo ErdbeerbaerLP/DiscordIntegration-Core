@@ -254,9 +254,6 @@ public class Configuration {
         @TomlComment({"Add your custom commands here", "You can also generate some on https://erdbeerbaerlp.de/dcintegration-commands/"})
         public ConfigCommand[] customCommands = defaultCommands;
 
-        @TomlComment("You must op this UUID in the ops.txt or some custom commands won't work!")
-        public String senderUUID = "8d8982a5-8cf9-4604-8feb-3dd5ee1f83a3";
-
         @TomlComment({"Enable the list command in discord"})
         public boolean listCmdEnabled = true;
 
