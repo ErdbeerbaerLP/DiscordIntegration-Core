@@ -38,7 +38,7 @@ public class LinkManager {
     public static void load() {
         if (Configuration.instance().linking.enableLinking) {
             linkCache = new ArrayList<>(Arrays.asList(DiscordIntegration.INSTANCE.getDatabaseInterface().getAllLinks()));
-            DiscordIntegration.LOGGER.info("LinkManager load | cache: "+linkCache);
+            DiscordIntegration.LOGGER.info("LinkManager load | cache: " + linkCache);
         }
     }
 
@@ -56,8 +56,8 @@ public class LinkManager {
     public static boolean checkGlobalAPI(final UUID uuid) {
         if (!DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode()) return false;
         if (!Configuration.instance().linking.enableLinking) return false;
-        if (Configuration.instance().linking.globalLinking)
-            if (nonexistentPlayerUUIDs.contains(uuid.toString())) return false;
+        if (!Configuration.instance().linking.globalLinking) return false;
+        if (nonexistentPlayerUUIDs.contains(uuid.toString())) return false;
         if (isJavaPlayerLinked(uuid)) return true;
         try {
             final HttpsURLConnection connection = (HttpsURLConnection) new URL(API_URL + "?uuid=" + uuid.toString().replace("-", "")).openConnection();

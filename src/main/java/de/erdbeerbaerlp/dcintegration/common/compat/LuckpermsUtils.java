@@ -1,5 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.compat;
 
+import de.erdbeerbaerlp.dcintegration.common.util.MinecraftPermission;
+import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 
@@ -13,5 +15,11 @@ public class LuckpermsUtils {
     }
     public static boolean userHasPermission(String permission, User user) {
         return user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+    }
+
+    public void registerPermissions(){
+        final LuckPerms luckPerms = LuckPermsProvider.get();
+        luckPerms.getNodeBuilderRegistry().forKey(MinecraftPermission.ADMIN.getAsString()).value(false).build();
+
     }
 }
