@@ -108,7 +108,7 @@ dependencies {
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
 
     //Logger
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.0'
 
     //Luckperms
     compileOnly 'net.luckperms:api:5.4'
