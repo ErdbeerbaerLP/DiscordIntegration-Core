@@ -34,10 +34,6 @@ configurations {
     embed
     implementation.extendsFrom(embed)
 }
-ext {
-    version = project.version
-}
-
 shadowJar {
     //noinspection GroovyAccessibility
     archiveClassifier = ""
