@@ -75,7 +75,7 @@ public class UpdateChecker {
     /**
      * Checks for updates and prints the update message to console
      */
-    public static void runUpdateCheckBlocking(String url) {
+    public static void runUpdateCheck(String url) {
         if (!Configuration.instance().general.enableUpdateChecker) return;
         WorkThread.executeJob(() -> {
             runUpdateCheckBlocking(url, DiscordIntegration.VERSION);
