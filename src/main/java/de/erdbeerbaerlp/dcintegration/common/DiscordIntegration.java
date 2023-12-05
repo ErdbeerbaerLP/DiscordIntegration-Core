@@ -73,7 +73,6 @@ public class DiscordIntegration {
      * Mod/Plugin version
      */
     public static final String VERSION = DiscordIntegration.class.getPackage().getImplementationVersion();
-    ;
 
     /**
      * Discord Integration data directory

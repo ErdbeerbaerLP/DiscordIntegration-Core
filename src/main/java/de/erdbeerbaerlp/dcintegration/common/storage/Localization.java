@@ -42,7 +42,7 @@ public class Localization {
     public String playerDeath = "%player% %msg%";
     @TomlComment({"Message sent instead of playerLeave, when the player times out", "", "PLACEHOLDERS:", "%player% - The player's name"})
     public String playerTimeout = "%player% timed out!";
-    @TomlComment({"Gets sent when an player finishes an advancement", "Supports MultiLined messages using \\n", "", "PLACEHOLDERS:", "%player% - The player's name", "%advName% - The advancement name", "%advDesc% - The advancement description"})
+    @TomlComment({"Gets sent when an player finishes an advancement", "Supports MultiLined messages using \\n", "", "PLACEHOLDERS:", "%player% - The player's name", "%advName% - The advancement name", "%advDesc% - The advancement description", "%advNameURL% - The advancement name in an URL-Encoded form", "%advDescURL% - The advancement description in an URL-Encoded form"})
     public String advancementMessage = "%player% just made the advancement **%advName%**\n_%advDesc%_";
     @TomlComment({"The chat message in discord, sent from an player in-game", "", "PLACEHOLDERS:", "%player% - The player's name", "%msg% - The chat message"})
     public String discordChatMessage = "%player%: %msg%";

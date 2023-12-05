@@ -9,6 +9,7 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.module.ModuleDescriptor;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,30 +22,31 @@ public class UpdateChecker {
     /**
      * Checks for updates and prints the update message to console
      */
-    public static void runUpdateCheck(String url) {
-        if (!Configuration.instance().general.enableUpdateChecker) return;
-        WorkThread.executeJob(() -> {
-            final StringBuilder changelog = new StringBuilder();
-            if (DiscordIntegration.VERSION.endsWith("-SNAPSHOT")) {
-                DiscordIntegration.LOGGER.info("You are using a development version of the mod. Will not check for updates!");
-            } else
-                try {
-                    final HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-                    conn.setRequestMethod("GET");
-                    final InputStreamReader r = new InputStreamReader(conn.getInputStream());
-                    final JsonArray parse = JsonParser.parseReader(r).getAsJsonArray();
-                    if (parse == null) {
-                        DiscordIntegration.LOGGER.error("Could not check for updates");
-                        return;
-                    }
-                    final AtomicBoolean shouldNotify = new AtomicBoolean(false);
-                    final AtomicInteger versionsBehind = new AtomicInteger();
-                    parse.forEach((elm) -> {
-                        if (elm != null && elm.isJsonObject()) {
-                            final JsonObject versionDetails = elm.getAsJsonObject();
-                            final String version = versionDetails.get("version").getAsString();
-                            try {
-                                if (Integer.parseInt(version.replace(".", "")) > Integer.parseInt(DiscordIntegration.VERSION.replace(".", ""))) {
+    public static boolean runUpdateCheckBlocking(String url, String versionString) {
+        if (!Configuration.instance().general.enableUpdateChecker) return false;
+        final StringBuilder changelog = new StringBuilder();
+        if (versionString.endsWith("-SNAPSHOT")) {
+            DiscordIntegration.LOGGER.info("You are using a development version of the mod. Will not check for updates!");
+        } else
+            try {
+                final ModuleDescriptor.Version curVer = ModuleDescriptor.Version.parse(versionString);
+                final HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+                conn.setRequestMethod("GET");
+                final InputStreamReader r = new InputStreamReader(conn.getInputStream());
+                final JsonArray parse = JsonParser.parseReader(r).getAsJsonArray();
+                if (parse == null) {
+                    DiscordIntegration.LOGGER.error("Could not check for updates");
+                    return false;
+                }
+                final AtomicBoolean shouldNotify = new AtomicBoolean(false);
+                final AtomicInteger versionsBehind = new AtomicInteger();
+                parse.forEach((elm) -> {
+                    if (elm != null && elm.isJsonObject()) {
+                        final JsonObject versionDetails = elm.getAsJsonObject();
+                        final ModuleDescriptor.Version version = ModuleDescriptor.Version.parse(versionDetails.get("version").getAsString());
+                        try {
+                            final int n = curVer.compareTo(version);
+                            if (n < 0) {
                                     versionsBehind.getAndIncrement();
                                     changelog.append("\n").append(version).append(":\n").append(versionDetails.get("changelog").getAsString()).append("\n");
                                     if (!shouldNotify.get()) {
@@ -52,21 +54,32 @@ public class UpdateChecker {
                                             shouldNotify.set(true);
                                     }
                                 }
-                            } catch (NumberFormatException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    final String changelogString = changelog.toString();
-                    if (shouldNotify.get()) {
-                        DiscordIntegration.LOGGER.info("Updates available! You are " + versionsBehind.get() + " version" + (versionsBehind.get() == 1 ? "" : "s") + " behind\nChangelog since last update:\n" + changelogString);
-                    }
-                } catch (IOException e) {
-                    DiscordIntegration.LOGGER.info("Could not check for updates");
-                    e.printStackTrace();
-                }
-        });
 
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                final String changelogString = changelog.toString();
+                if (shouldNotify.get()) {
+                    DiscordIntegration.LOGGER.info("Updates available! You are " + versionsBehind.get() + " version" + (versionsBehind.get() == 1 ? "" : "s") + " behind\nChangelog since last update:\n" + changelogString);
+                    return true;
+                }
+            } catch (IOException e) {
+                DiscordIntegration.LOGGER.info("Could not check for updates");
+                e.printStackTrace();
+            }
+            return false;
+    }
+
+    /**
+     * Checks for updates and prints the update message to console
+     */
+    public static void runUpdateCheckBlocking(String url) {
+        if (!Configuration.instance().general.enableUpdateChecker) return;
+        WorkThread.executeJob(() -> {
+            runUpdateCheckBlocking(url, DiscordIntegration.VERSION);
+        });
     }
 
     /**
