@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "3.0.4.1-j8"
+version = "3.0.5-j8"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -32,7 +32,7 @@ repositories {
 //ShadowJar
 configurations {
     embed
-    compileOnly.extendsFrom(embed)
+    implementation.extendsFrom(embed)
 }
 shadowJar {
     //noinspection GroovyAccessibility
@@ -106,6 +106,14 @@ dependencies {
 
     //Luckperms
     compileOnly 'net.luckperms:api:5.4'
+
+
+    //Testing
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testImplementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 
 }
 tasks.build.dependsOn(tasks.shadowJar)

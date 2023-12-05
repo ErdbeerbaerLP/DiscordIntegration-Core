@@ -42,7 +42,6 @@ import net.dv8tion.jda.api.requests.RestConfig;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 import okhttp3.OkHttpClient;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -54,6 +53,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +61,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.time.Duration;
 
 public class DiscordIntegration {
 
@@ -73,7 +72,7 @@ public class DiscordIntegration {
     /**
      * Mod/Plugin version
      */
-    public static final String VERSION = DiscordIntegration.class.getPackage().getImplementationVersion();;
+    public static final String VERSION = DiscordIntegration.class.getPackage().getImplementationVersion();
 
     /**
      * Discord Integration data directory
@@ -177,7 +176,6 @@ public class DiscordIntegration {
     private static Timer timer = new Timer();
 
 
-
     public DiscordIntegration(final McServerInterface serverInterface) {
         this.serverInterface = serverInterface;
         try {
@@ -278,8 +276,8 @@ public class DiscordIntegration {
             Configuration.instance().saveConfig();
         }
 
-        if (Localization.instance().advancementMessage.contains("%msg%") || Localization.instance().advancementMessage.contains("%name%") ) {
-            Localization.instance().advancementMessage = Localization.instance().advancementMessage.replace("%msg%","%advMsg%").replace("%name%", "%advName%");
+        if (Localization.instance().advancementMessage.contains("%msg%") || Localization.instance().advancementMessage.contains("%name%")) {
+            Localization.instance().advancementMessage = Localization.instance().advancementMessage.replace("%msg%", "%advMsg%").replace("%name%", "%advName%");
             LOGGER.info("Migrated advancement message string");
             Localization.instance().saveConfig();
         }
@@ -303,8 +301,8 @@ public class DiscordIntegration {
         }
         if (statusUpdater == null) statusUpdater = new StatusUpdateTask(this);
         if (messageSender == null) messageSender = new MessageQueueTask(this);
-        timer.scheduleAtFixedRate(statusUpdater,0, TimeUnit.SECONDS.toMillis(10));
-        timer.scheduleAtFixedRate(messageSender,0, TimeUnit.SECONDS.toMillis(1));
+        timer.scheduleAtFixedRate(statusUpdater, 0, TimeUnit.SECONDS.toMillis(10));
+        timer.scheduleAtFixedRate(messageSender, 0, TimeUnit.SECONDS.toMillis(1));
 
         if (JSONInterface.jsonFile.exists() && !Configuration.instance().linking.databaseClass.equals(JSONInterface.class.getCanonicalName())) {
             LOGGER.info("PlayerLinks.json found, but using custom database implementation");
@@ -339,22 +337,30 @@ public class DiscordIntegration {
             unregisterAllEventHandlers();
             webhookClis.forEach((i, w) -> w.close());
             OkHttpClient client = jda.getHttpClient();
-            
+
             try {
                 if (instant) {
+                    LOGGER.info("Killing JDA...");
                     jda.shutdownNow();
-                    client.dispatcher().cancelAll();
-                    client.connectionPool().evictAll();
-                    client.dispatcher().executorService().shutdown();
+                    jda.awaitShutdown();
+                    LOGGER.info("JDA was killed");
                 } else {
-                    if (!this.jda.awaitShutdown(Duration.ofSeconds(5))) {
-                        client.dispatcher().cancelAll();
-                        client.connectionPool().evictAll();
-                        client.dispatcher().executorService().shutdown();
-                    }
+                    LOGGER.info("Waiting for JDA to shut-down...");
+                    jda.shutdown();
+                    if (!this.jda.awaitShutdown(Duration.ofSeconds(10))) {
+                        LOGGER.info("Killing JDA due to timeout...");
+                        jda.shutdownNow();
+                        jda.awaitShutdown();
+                        LOGGER.info("JDA was killed");
+                    }else LOGGER.info("JDA shut-down gracefully");
                 }
+                client.dispatcher().cancelAll();
+                client.connectionPool().evictAll();
+                client.dispatcher().executorService().shutdown();
             } catch (LinkageError ignored) { // Fix exception logged when reloading
+                ignored.printStackTrace();
             } catch (InterruptedException ignored) { // Interruption is fine when shutting down
+                ignored.printStackTrace();
             }
             jda = null;
             INSTANCE = null;
