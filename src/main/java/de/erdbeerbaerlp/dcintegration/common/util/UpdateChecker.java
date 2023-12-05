@@ -9,7 +9,6 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.module.ModuleDescriptor;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,7 +28,7 @@ public class UpdateChecker {
             DiscordIntegration.LOGGER.info("You are using a development version of the mod. Will not check for updates!");
         } else
             try {
-                final ModuleDescriptor.Version curVer = ModuleDescriptor.Version.parse(versionString);
+                final Version curVer = Version.parse(versionString);
                 final HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
                 conn.setRequestMethod("GET");
                 final InputStreamReader r = new InputStreamReader(conn.getInputStream());
@@ -43,7 +42,7 @@ public class UpdateChecker {
                 parse.forEach((elm) -> {
                     if (elm != null && elm.isJsonObject()) {
                         final JsonObject versionDetails = elm.getAsJsonObject();
-                        final ModuleDescriptor.Version version = ModuleDescriptor.Version.parse(versionDetails.get("version").getAsString());
+                        final Version version = Version.parse(versionDetails.get("version").getAsString());
                         try {
                             final int n = curVer.compareTo(version);
                             if (n < 0) {
