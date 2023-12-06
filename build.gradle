@@ -32,7 +32,8 @@ repositories {
 //ShadowJar
 configurations {
     embed
-    implementation.extendsFrom(embed)
+    compileOnly.extendsFrom(embed)
+    testImplementation.extendsFrom(embed)
 }
 ext {
     version = project.version
