@@ -283,10 +283,11 @@ public class Configuration {
         @TomlComment({"Custom channel where messages get sent to minecraft", "Leave 'default' to use default channel"})
         public String chatInputChannelID = "default";
 
+        @TomlComment({"Custom channel where advancement messages get sent to minecraft", "Leave 'default' to use default channel"})
+        public String advancementChannelID = "default";
+
         @TomlComment({"Allows you to change the target URL for the API to make it usable with custom discord instances like Spacebar", "DO NOT CHANGE if you don't know what you are doing!!"})
         public String baseAPIUrl = "https://discord.com";
-
-
     }
 
     public static class ForgeSpecific {
