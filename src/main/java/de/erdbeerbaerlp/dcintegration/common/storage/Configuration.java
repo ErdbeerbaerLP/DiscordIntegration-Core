@@ -277,6 +277,9 @@ public class Configuration {
         @TomlComment({"Custom channel ID for death messages", "Leave 'default' to use default channel"})
         public String deathsChannelID = "default";
 
+        @TomlComment({"Custom channel ID for advancement messages", "Leave 'default' to use default channel"})
+        public String advancementChannelID = "default";
+
         @TomlComment({"Custom channel for for in-game messages", "Leave 'default' to use default channel"})
         public String chatOutputChannelID = "default";
 
@@ -285,8 +288,6 @@ public class Configuration {
 
         @TomlComment({"Allows you to change the target URL for the API to make it usable with custom discord instances like Spacebar", "DO NOT CHANGE if you don't know what you are doing!!"})
         public String baseAPIUrl = "https://discord.com";
-
-
     }
 
     public static class ForgeSpecific {
