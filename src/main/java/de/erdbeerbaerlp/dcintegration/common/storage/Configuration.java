@@ -248,6 +248,7 @@ public class Configuration {
     public static class Commands {
         @TomlComment({"Toggle the entire command feature", "Disabling this will disable registering any commands to discord"})
         public boolean enabled = true;
+
         @TomlComment({"The Role IDs of your Admin Roles", "Now supports multiple roles which can access admin commands"})
         public String[] adminRoleIDs = new String[0];
 
@@ -268,6 +269,9 @@ public class Configuration {
 
         @TomlComment({"Enables using local commands for faster registration", "Local Commands will register all slash commands directly to the server instead of to the bot", "Setting this to true requires the bot to be invited with the scope 'application.commands' to work"})
         public boolean useLocalCommands = false;
+
+        @TomlComment({"Enable the linkcheck command for Non-Admins"})
+        public boolean linkcheckCmdForUsers = false;
     }
 
     public static class Advanced {
