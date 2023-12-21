@@ -38,7 +38,6 @@ public class LinkManager {
     public static void load() {
         if (Configuration.instance().linking.enableLinking) {
             linkCache = new ArrayList<>(Arrays.asList(DiscordIntegration.INSTANCE.getDatabaseInterface().getAllLinks()));
-            DiscordIntegration.LOGGER.info("LinkManager load | cache: " + linkCache);
         }
     }
 
