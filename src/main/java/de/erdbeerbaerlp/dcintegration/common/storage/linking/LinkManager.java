@@ -38,6 +38,7 @@ public class LinkManager {
     public static void load() {
         if (Configuration.instance().linking.enableLinking) {
             linkCache = new ArrayList<>(Arrays.asList(DiscordIntegration.INSTANCE.getDatabaseInterface().getAllLinks()));
+            DiscordIntegration.LOGGER.debug("LinkManager load | cache: " + linkCache);
         }
     }
 
@@ -251,7 +252,7 @@ public class LinkManager {
                 tmp = link;
         }
         if (tmp != null) linkCache.remove(tmp);
-        DiscordIntegration.LOGGER.info("LinkManager addLink | tmp:" + tmp + ", l:" + l + ", linkCache:" + linkCache);
+        DiscordIntegration.LOGGER.debug("LinkManager addLink | tmp:" + tmp + ", l:" + l + ", linkCache:" + linkCache);
         linkCache.add(l);
         return true;
     }
