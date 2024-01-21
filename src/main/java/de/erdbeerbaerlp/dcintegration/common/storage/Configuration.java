@@ -281,6 +281,9 @@ public class Configuration {
         @TomlComment({"Custom channel ID for death messages", "Leave 'default' to use default channel"})
         public String deathsChannelID = "default";
 
+        @TomlComment({"Custom channel ID for advancement messages", "Leave 'default' to use default channel"})
+        public String advancementChannelID = "default";
+
         @TomlComment({"Custom channel for for in-game messages", "Leave 'default' to use default channel"})
         public String chatOutputChannelID = "default";
 
