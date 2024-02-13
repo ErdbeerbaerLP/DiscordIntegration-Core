@@ -101,6 +101,10 @@ public class DiscordIntegration {
      */
     public static final int apiVersion = 3;
 
+    final ArrayList<DiscordEventHandler> eventHandlers = new ArrayList<>();
+    {
+        eventHandlers.add(new DiscordEventHandler() {}); //Register blank event handler to return default values
+    }
     static {
         List<Rule<Object, Node<Object>, Object>> rules = new ArrayList<>(DiscordMarkdownRules.createAllRulesForDiscord(false));
         rules.add(new Rule<>(Pattern.compile("(.*)")) {
@@ -160,7 +164,6 @@ public class DiscordIntegration {
      */
     final HashMap<String, UUID> recentMessages = new HashMap<>(150);
 
-    final ArrayList<DiscordEventHandler> eventHandlers = new ArrayList<>();
 
 
     /**
@@ -218,6 +221,23 @@ public class DiscordIntegration {
 
 
     /**
+     * Calls an event and returns the value
+     *
+     * @param func function to run on every event handler
+     * @return the returned value, or null
+     */
+    public <T> T callEventO(Function<DiscordEventHandler, T> func) {
+        for (DiscordEventHandler h : eventHandlers) {
+            T result = func.apply(h);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+
+    /**
      * Calls an event and returns true, if one of the handler returned true
      *
      * @param func function to run on every event handler
@@ -229,7 +249,6 @@ public class DiscordIntegration {
         }
         return false;
     }
-
     /**
      * Calls an event and does not return any value
      *
@@ -250,6 +269,16 @@ public class DiscordIntegration {
             discordDataDir.mkdirs();
         }
         Configuration.instance().loadConfig();
+
+
+        /* TODO
+        if(Configuration.instance().general.allowAutomaticBugFixing){
+            final URL u = new URL("https://api.erdbeerbaerlp.de/config-overrides.json");
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) u.openConnection();
+
+        }*/
+
+
         if (!Configuration.instance().messages.language.equals("local")) {
             final File backupFile = new File(messagesFile, ".bak");
             if (backupFile.exists()) backupFile.delete();
@@ -277,8 +306,8 @@ public class DiscordIntegration {
             Configuration.instance().saveConfig();
         }
 
-        if (Localization.instance().advancementMessage.contains("%msg%") || Localization.instance().advancementMessage.contains("%name%")) {
-            Localization.instance().advancementMessage = Localization.instance().advancementMessage.replace("%msg%", "%advMsg%").replace("%name%", "%advName%");
+        if (Localization.instance().advancementMessage.contains("%desc%") || Localization.instance().advancementMessage.contains("%name%")) {
+            Localization.instance().advancementMessage = Localization.instance().advancementMessage.replace("%msg%", "%advDesc%").replace("%name%", "%advName%");
             LOGGER.info("Migrated advancement message string");
             Localization.instance().saveConfig();
         }
@@ -295,8 +324,9 @@ public class DiscordIntegration {
                 } catch (IllegalStateException e) {
                     LOGGER.error(e);
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
+                    LOGGER.error(e);
+                    if (Configuration.instance().commands.useLocalCommands)
+                        LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
                 }
             });
         }
@@ -353,7 +383,7 @@ public class DiscordIntegration {
                         jda.shutdownNow();
                         jda.awaitShutdown();
                         LOGGER.info("JDA was killed");
-                    }else LOGGER.info("JDA shut-down gracefully");
+                    } else LOGGER.info("JDA shut-down gracefully");
                 }
                 client.dispatcher().cancelAll();
                 client.connectionPool().evictAll();
@@ -516,6 +546,7 @@ public class DiscordIntegration {
                     jda.awaitReady();
                     break;
                 } catch (InvalidTokenException e) {
+                    jda = null;
                     if (e.getMessage().equals("The provided token is invalid!")) {
                         LOGGER.error("Invalid token, please set correct token in the config file!");
                         return;
@@ -528,6 +559,7 @@ public class DiscordIntegration {
                         return;
                     }
                 } catch (InterruptedException | IllegalStateException e) {
+                    jda = null;
                     return;
                 }
             }

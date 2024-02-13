@@ -60,7 +60,7 @@ public class CommandSettings extends DiscordCommand {
                             final PlayerLink link = LinkManager.getLink(ev.getUser().getId(), null);
                             reply.thenAccept((c) -> {
                                 try {
-                                    c.sendMessage(Localization.instance().personalSettings.personalSettingGet.replace("%bool%", link.settings.getClass().getField(key.getAsString()).getBoolean(link) ? "true" : "false")).queue();
+                                    c.sendMessage(Localization.instance().personalSettings.personalSettingGet.replace("%bool%", link.settings.getClass().getField(key.getAsString()).getBoolean(link.settings) ? "true" : "false")).queue();
                                 } catch (IllegalAccessException | NoSuchFieldException e) {
                                     e.printStackTrace();
                                 }
@@ -74,7 +74,7 @@ public class CommandSettings extends DiscordCommand {
                         CommandSettings.getSettings().forEach((name, desc) -> {
                             if (!(!Configuration.instance().webhook.enable && name.equals("useDiscordNameInChannel"))) {
                                 try {
-                                    b.addField(name + " == " + (((boolean) link.settings.getClass().getDeclaredField(name).get(link)) ? "true" : "false"), desc, false);
+                                    b.addField(name + " == " + (((boolean) link.settings.getClass().getDeclaredField(name).get(link.settings)) ? "true" : "false"), desc, false);
                                 } catch (IllegalAccessException | NoSuchFieldException e) {
                                     b.addField(name + " == Unknown", desc, false);
                                 }
@@ -103,7 +103,7 @@ public class CommandSettings extends DiscordCommand {
                             }
                             final boolean newValue = newval;
                             try {
-                                link.settings.getClass().getDeclaredField(keyStr).set(link, newValue);
+                                link.settings.getClass().getDeclaredField(keyStr).set(link.settings, newValue);
                                 LinkManager.addLink(link);
                             } catch (IllegalAccessException | NoSuchFieldException e) {
                                 e.printStackTrace();

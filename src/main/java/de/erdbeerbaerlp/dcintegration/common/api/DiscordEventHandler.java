@@ -81,4 +81,14 @@ public abstract class DiscordEventHandler {
      */
     public void onPlayerLeave(final UUID player){
     }
+
+    /**
+     * Gets called when a player sends a chat message in minecraft
+     * @param msg Message about to be sent
+     * @param player UUID of the player
+     * @return true to cancel sending of the message
+     */
+    public boolean onMinecraftMessage(final Component msg, final UUID player){
+        return false;
+    }
 }

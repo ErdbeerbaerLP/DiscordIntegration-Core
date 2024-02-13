@@ -106,7 +106,7 @@ class DiscordEventListener implements EventListener {
                         if (Configuration.instance().messages.enableHoverMessage)
                             user = user.style(memberStyle
                                     .clickEvent(ClickEvent.suggestCommand("<@" + ev.getAuthor().getId() + ">"))
-                                    .hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%username%",ev.getMember().getEffectiveName()).replace("%user#tag%", !ev.getAuthor().getDiscriminator().equals("0000") ? ev.getAuthor().getAsTag() : ev.getAuthor().getName()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getEffectiveName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
+                                    .hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%username%", (ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getEffectiveName())).replace("%user#tag%", !ev.getAuthor().getDiscriminator().equals("0000") ? ev.getAuthor().getAsTag() : ev.getAuthor().getName()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getEffectiveName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
                         if (ev.getAuthor().isBot()) {
                             user = ComponentUtils.append(user, Component.text("[BOT]").style(Style.style(TextColors.DISCORD_BLURPLE).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().bot)))));
                         }
