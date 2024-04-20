@@ -192,6 +192,9 @@ public class Configuration {
         public boolean discordRoleColorIngame = true;
         @TomlComment("Should you be able to hover and click on the discord username in-game?")
         public boolean enableHoverMessage = true;
+
+        @TomlComment("List of characters that should be removed from usernames and chat messages before sending TO discord")
+        public char[] charBlacklist = new char[]{'࿕', '࿖'};
     }
 
     public static class EmbedMode {
@@ -328,8 +331,8 @@ public class Configuration {
         public boolean useServerNameForRcon = true;
         @TomlComment("Use the server name and avatar for Console")
         public boolean useServerNameForConsole = true;
-        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache"})
-        public String playerAvatarURL = "https://minotar.net/avatar/%uuid%?randomuuid=%randomUUID%";
+        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache","https://www.tydiumcraft.net/docs/skinapi supports both bedrock(floodgate) and java players", "Default - https://api.tydiumcraft.net/v1/players/skin?uuid=%uuid%&type=avatar&randomuuid=%randomUUID%"})
+        public String playerAvatarURL = "https://api.tydiumcraft.net/v1/players/skin?uuid=%uuid%&type=avatar&randomuuid=%randomUUID%";
 
         public String webhookName = "MC_DC_INTEGRATION";
     }
@@ -379,6 +382,9 @@ public class Configuration {
 
         @TomlComment("A list of commands that should NOT be logged")
         public String[] ignoredCommands = new String[]{"list", "help", "?"};
+
+        @TomlComment("Invert the meaning of the ignoredCommands configuration (make it ONLY log those commands)")
+        public boolean commandWhitelist = false;
     }
 
     public static class Votifier {

@@ -1,6 +1,7 @@
 package de.erdbeerbaerlp.dcintegration.common.minecraftCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
+import de.erdbeerbaerlp.dcintegration.common.compat.FloodgateUtils;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
@@ -25,7 +26,7 @@ public class LinkCommand implements MCSubCommand {
             if (LinkManager.isPlayerLinked(playerUUID)) {
                 return Component.text(Localization.instance().linking.alreadyLinked.replace("%player%", DiscordIntegration.INSTANCE.getJDA().getUserById(LinkManager.getLink(null, playerUUID).discordID).getAsTag())).style(Style.style(TextColors.of(Color.RED)));
             }
-            final int r = LinkManager.genLinkNumber(playerUUID);
+            final int r = FloodgateUtils.isBedrockPlayer(playerUUID) ? LinkManager.genBedrockLinkNumber(playerUUID) : LinkManager.genLinkNumber(playerUUID);
             return Component.text(Localization.instance().linking.linkMsgIngame.replace("%num%", r + "").replace("%prefix%", "/")).style(Style.style(TextColors.of(Color.ORANGE)).clickEvent(ClickEvent.copyToClipboard("" + r)).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().linking.hoverMsg_copyClipboard))));
         } else {
             return Component.text(Localization.instance().commands.subcommandDisabled).style(Style.style(TextColors.of(Color.RED)));

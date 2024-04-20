@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "3.0.6"
+version = "3.0.7"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -78,7 +78,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-beta.20'
+    embed 'net.dv8tion:JDA:5.0.0-beta.21'
     embed 'club.minnced:discord-webhooks:0.8.4'
 
     //Emoji-Java
@@ -112,8 +112,6 @@ dependencies {
     //Logger
     compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
 
-    //Luckperms
-    compileOnly 'net.luckperms:api:5.4'
 
 
     //Testing

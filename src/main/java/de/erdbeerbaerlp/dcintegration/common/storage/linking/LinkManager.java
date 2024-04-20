@@ -308,17 +308,17 @@ public class LinkManager {
         return genLinkNumber(uniqueID, pendingBedrockLinks);
     }
 
-    private static int genLinkNumber(UUID uniqueID, HashMap<Integer, KeyValue<Instant, UUID>> pendingBedrockLinks) {
+    private static int genLinkNumber(UUID uniqueID, HashMap<Integer, KeyValue<Instant, UUID>> targetMap) {
         final AtomicInteger r = new AtomicInteger(-1);
-        pendingBedrockLinks.forEach((k, v) -> {
+        targetMap.forEach((k, v) -> {
             if (v.getValue().equals(uniqueID))
                 r.set(k);
         });
         if (r.get() != -1) return r.get();
         do {
             r.set(new Random().nextInt(99999));
-        } while (pendingBedrockLinks.containsKey(r.get()));
-        pendingBedrockLinks.put(r.get(), new DefaultKeyValue<>(Instant.now(), uniqueID));
+        } while (targetMap.containsKey(r.get()));
+        targetMap.put(r.get(), new DefaultKeyValue<>(Instant.now(), uniqueID));
         return r.get();
     }
 }

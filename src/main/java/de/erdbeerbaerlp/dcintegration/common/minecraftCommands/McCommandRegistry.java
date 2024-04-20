@@ -37,6 +37,7 @@ public class McCommandRegistry {
         registerCommand(new IgnoreCommand());
         registerCommand(new ReloadCommand());
         registerCommand(new MigrateCommand());
+        registerCommand(new RawMsgCommand());
     }
 
 }
