@@ -424,8 +424,8 @@ public class DiscordIntegration {
                         else
                             LOGGER.error("Target Channel ID is not a valid message channel!");
                     } else {
-                        if (gChannel instanceof StandardGuildMessageChannel)
-                            for (final ThreadChannel c : ((StandardGuildMessageChannel) gChannel).getThreadChannels()) {
+                        if (gChannel instanceof IThreadContainer)
+                            for (final ThreadChannel c : ((IThreadContainer) gChannel).getThreadChannels()) {
                                 if (c.getId().equals(id2)) {
                                     return c;
                                 }
