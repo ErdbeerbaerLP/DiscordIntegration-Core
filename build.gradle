@@ -110,7 +110,7 @@ dependencies {
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
 
     //Logger
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
 
 
 
@@ -118,7 +118,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testImplementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
-    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 
 }
