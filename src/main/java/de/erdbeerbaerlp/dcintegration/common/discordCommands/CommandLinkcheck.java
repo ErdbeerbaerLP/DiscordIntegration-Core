@@ -1,7 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
 import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
-import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerLink;
@@ -96,8 +95,6 @@ public class CommandLinkcheck extends DiscordCommand {
 
     @Override
     public boolean adminOnly() {
-        if(Configuration.instance().commands.linkcheckCmdForUsers == true)
-            return false;
         return true;
     }
 
