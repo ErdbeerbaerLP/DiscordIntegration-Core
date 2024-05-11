@@ -105,4 +105,16 @@ public interface McServerInterface {
         }
         return playerHasPermissions(player, permissionStrings);
     }
+
+
+    /**
+     * Runs a command on the server
+     *
+     * @param cmdString    Command to execute
+     * @return Command response
+     */
+    String runMCCommand(final String cmdString);
+
+
+
 }

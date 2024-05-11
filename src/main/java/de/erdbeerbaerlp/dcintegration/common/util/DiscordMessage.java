@@ -4,6 +4,8 @@ import club.minnced.discord.webhook.send.AllowedMentions;
 import club.minnced.discord.webhook.send.WebhookEmbed;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
+import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -25,9 +27,32 @@ public final class DiscordMessage {
      * @param message  Message to send
      * @param isNotRaw set to true to enable markdown escaping and mc color conversion (default: false)
      */
-    public DiscordMessage(final MessageEmbed embed, final String message, boolean isNotRaw) {
+    public DiscordMessage(MessageEmbed embed, final String message, boolean isNotRaw) {
+        if (embed != null)
+            for (char c : Configuration.instance().messages.charBlacklist) {
+                final EmbedBuilder b = EmbedBuilder.fromData(embed.toData());
+                if (embed.getDescription() != null)
+                    b.setDescription(embed.getDescription().replace(c, '\u0000'));
+                if (embed.getTitle() != null)
+                    b.setTitle(embed.getTitle().replace(c, '\u0000'), embed.getUrl());
+                if (embed.getAuthor() != null && embed.getAuthor().getName() != null)
+                    b.setAuthor(embed.getAuthor().getName().replace(c, '\u0000'), embed.getAuthor().getUrl(), embed.getAuthor().getIconUrl());
+                if (embed.getFooter() != null && embed.getFooter().getText() != null)
+                    b.setFooter(embed.getFooter().getText().replace(c, '\u0000'), embed.getFooter().getIconUrl());
+
+                b.clearFields();
+                for (MessageEmbed.Field field : embed.getFields()) {
+
+                    b.addField(field.getName() == null ? null : field.getName().replace(c, '\u0000'), field.getValue() == null ? null : field.getValue().replace(c, '\u0000'), field.isInline());
+                }
+                embed = b.build();
+            }
         this.embed = embed;
+
         this.message = message;
+        for (char c : Configuration.instance().messages.charBlacklist) {
+            this.message = this.message.replace(c, '\u0000');
+        }
         this.isNotRaw = isNotRaw;
     }
 
@@ -69,6 +94,9 @@ public final class DiscordMessage {
      */
     public void setMessage(final String message) {
         this.message = message;
+        for (char c : Configuration.instance().messages.charBlacklist) {
+            this.message = this.message.replace(c, '\u0000');
+        }
     }
 
     public void setIsChatMessage() {
@@ -87,7 +115,23 @@ public final class DiscordMessage {
      *
      * @param embed Embed to set
      */
-    public void setEmbed(final MessageEmbed embed) {
+    public void setEmbed(MessageEmbed embed) {
+        for (char c : Configuration.instance().messages.charBlacklist) {
+            final EmbedBuilder b = EmbedBuilder.fromData(embed.toData());
+            if (embed.getDescription() != null)
+                b.setDescription(embed.getDescription().replace(c, '\u0000'));
+            if (embed.getTitle() != null)
+                b.setTitle(embed.getTitle().replace(c, '\u0000'), embed.getUrl());
+            if (embed.getAuthor() != null && embed.getAuthor().getName() != null)
+                b.setAuthor(embed.getAuthor().getName().replace(c, '\u0000'), embed.getAuthor().getUrl(), embed.getAuthor().getIconUrl());
+            if (embed.getFooter() != null && embed.getFooter().getText() != null)
+                b.setFooter(embed.getFooter().getText().replace(c, '\u0000'), embed.getFooter().getIconUrl());
+            b.clearFields();
+            for (MessageEmbed.Field field : embed.getFields()) {
+                b.addField(field.getName().replace(c, '\u0000'), field.getValue().replace(c, '\u0000'), field.isInline());
+            }
+            embed = b.build();
+        }
         this.embed = embed;
     }
 

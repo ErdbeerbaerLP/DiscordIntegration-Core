@@ -77,7 +77,7 @@ public class Configuration {
     @TomlComment("Advanced options")
     public Advanced advanced = new Advanced();
 
-    @TomlComment("Config options which only have an effect when using forge")
+    @TomlComment({"Config options which usually only have an effect when using forge", "sendItemInfo was ported to fabric but kept here for config compatibility"})
     public ForgeSpecific forgeSpecific = new ForgeSpecific();
 
     @TomlComment("Configuration for linking")
@@ -163,6 +163,8 @@ public class Configuration {
         public boolean ignoreFileSource = false;
         @TomlComment("Set to true to allow relaying webhook messages")
         public boolean allowWebhookMessages = false;
+        @TomlComment({"Set to false to disable automatic config tweaking to fix known issues", "Your config file will not be sent anywhere during this", "This feature is not implemented yet"})
+        public boolean allowAutomaticBugFixing = true;
     }
 
     public static class Compatibility {
@@ -190,6 +192,9 @@ public class Configuration {
         public boolean discordRoleColorIngame = true;
         @TomlComment("Should you be able to hover and click on the discord username in-game?")
         public boolean enableHoverMessage = true;
+
+        @TomlComment("List of characters that should be removed from usernames and chat messages before sending TO discord")
+        public char[] charBlacklist = new char[]{'࿕', '࿖'};
     }
 
     public static class EmbedMode {
@@ -301,7 +306,7 @@ public class Configuration {
         @TomlComment({"A list of blacklisted modids", "Adding one will prevent the mod to send messages to discord using forges IMC system"})
         public String[] IMC_modIdBlacklist = new String[]{"examplemod"};
 
-        @TomlComment("Show item information, which is visible on hover in-game, as embed in discord?")
+        @TomlComment({"Show item information, which is visible on hover in-game, as embed in discord?","Ported to fabric but kept here for config compatibility"})
         public boolean sendItemInfo = true;
     }
 
@@ -330,8 +335,12 @@ public class Configuration {
         @TomlComment("The name to be used for server messages")
         public String serverName = "Minecraft Server";
 
-        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache"})
-        public String playerAvatarURL = "https://minotar.net/avatar/%uuid%?randomuuid=%randomUUID%";
+        @TomlComment("Use the server name and avatar for RCON")
+        public boolean useServerNameForRcon = true;
+        @TomlComment("Use the server name and avatar for Console")
+        public boolean useServerNameForConsole = true;
+        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache","https://www.tydiumcraft.net/docs/skinapi supports both bedrock(floodgate) and java players", "Default - https://api.tydiumcraft.net/v1/players/skin?uuid=%uuid%&type=avatar&randomuuid=%randomUUID%"})
+        public String playerAvatarURL = "https://api.tydiumcraft.net/v1/players/skin?uuid=%uuid%&type=avatar&randomuuid=%randomUUID%";
 
         public String webhookName = "MC_DC_INTEGRATION";
     }
@@ -355,7 +364,7 @@ public class Configuration {
         @TomlComment({"Role ID of an role an player should get when he links his discord account", "Leave as 0 to disable"})
         public String linkedRoleID = "0";
 
-        @TomlComment({"Enable discord based whitelist?", "This will override the link config!", "To whitelist use the whitelist command in the bot DMs"})
+        @TomlComment({"Enable discord based whitelist?", "This will override the link config!", "To whitelist use the whitelist command in the bot DMs", "It does NOT override the vanilla whitelist"})
         public boolean whitelistMode = false;
 
         @TomlComment("Adding Role IDs here will require the players to have at least ONE of these roles to link account")
@@ -381,6 +390,9 @@ public class Configuration {
 
         @TomlComment("A list of commands that should NOT be logged")
         public String[] ignoredCommands = new String[]{"list", "help", "?"};
+
+        @TomlComment("Invert the meaning of the ignoredCommands configuration (make it ONLY log those commands)")
+        public boolean commandWhitelist = false;
     }
 
     public static class Votifier {

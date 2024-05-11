@@ -10,7 +10,7 @@ plugins {
 }
 
 //Build variables
-version = "3.0.5-j8"
+version = "3.1.0-j8-SNAPSHOT"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -75,20 +75,20 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-beta.18'
+    embed 'net.dv8tion:JDA:5.0.0-beta.23'
     embed 'club.minnced:discord-webhooks:0.8.4'
 
     //Emoji-Java
     embed('com.vdurmont:emoji-java:5.1.1')
 
     //Minecraft <==> Discord conversion
-    embed 'net.kyori:adventure-api:4.14.0'
-    embed('net.kyori:adventure-text-serializer-gson:4.14.0'){
+    embed 'net.kyori:adventure-api:4.16.0'
+    embed('net.kyori:adventure-text-serializer-gson:4.15.0'){
         exclude group: 'com.google.code.gson', module: 'gson'
     }
     embed "dev.vankka:mcdiscordreserializer:4.3.0"
     embed 'dev.vankka:SimpleAST:2.2.8'
-    embed 'net.kyori:adventure-text-serializer-legacy:4.14.0'
+    embed 'net.kyori:adventure-text-serializer-legacy:4.16.0'
 
 
     embed group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
@@ -97,24 +97,22 @@ dependencies {
     embed("de.erdbeerbaerlp:toml4j:2073e86")
 
     //Apache commons lang3
-    embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.13.0'
+    embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
 
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
 
     //Logger
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
 
-    //Luckperms
-    compileOnly 'net.luckperms:api:5.4'
 
 
     //Testing
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testImplementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
-    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 
 }
 tasks.build.dependsOn(tasks.shadowJar)
