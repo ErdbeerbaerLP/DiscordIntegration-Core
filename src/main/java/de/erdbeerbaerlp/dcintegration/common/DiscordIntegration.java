@@ -560,6 +560,7 @@ public class DiscordIntegration {
                     }
                 } catch (InterruptedException | IllegalStateException e) {
                     jda = null;
+                    e.printStackTrace();
                     return;
                 }
             }
