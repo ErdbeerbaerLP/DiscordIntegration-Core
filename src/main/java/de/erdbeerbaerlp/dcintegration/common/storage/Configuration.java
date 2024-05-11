@@ -221,7 +221,7 @@ public class Configuration {
             public boolean asEmbed;
             @TomlComment("Color of embed bar")
             public String colorHexCode;
-            @TomlComment("Custom embed JSON, will overwrite color setting. For more info, check the documentation at https://github.com/ErdbeerbaerLP/DiscordIntegration-Core/wiki/embed-mode or ask on discord.")
+            @TomlComment("Custom embed JSON, will overwrite color setting. For more info, check the documentation at https://wiki.erdbeerbaerlp.de/dcintegration:custom-embeds or ask on discord.")
             public String customJSON = "";
 
             EmbedEntry(boolean defaultEnabled, String defaultColor) {
@@ -256,6 +256,8 @@ public class Configuration {
         @TomlComment({"The Role IDs of your Admin Roles", "Now supports multiple roles which can access admin commands"})
         public String[] adminRoleIDs = new String[0];
 
+        @TomlComment({"Set to false to disable registration of custom commands completely, mainly if you don't want any of them", "This affects the config commands below"})
+        public boolean useCustomCommands = true;
         @TomlComment({"Add your custom commands here", "You can also generate some on https://erdbeerbaerlp.de/dcintegration-commands/"})
         public ConfigCommand[] customCommands = defaultCommands;
 

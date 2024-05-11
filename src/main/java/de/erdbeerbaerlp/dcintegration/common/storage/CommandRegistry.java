@@ -79,8 +79,8 @@ public class CommandRegistry {
                         break;
                     }
                 }
-            }else regenLocal = true;
-        }else{
+            } else regenLocal = true;
+        } else {
             if (commands.size() == globalCmds.size()) {
                 for (final DiscordCommand cmd : commands) {
                     Command cm = null;
@@ -99,7 +99,7 @@ public class CommandRegistry {
                         break;
                     }
                 }
-            }else regenGlobal = true;
+            } else regenGlobal = true;
         }
 
 
@@ -151,16 +151,18 @@ public class CommandRegistry {
      */
     private static void registerConfigCommands() {
 
-        for (ConfigCommand cmd : Configuration.instance().commands.customCommands) {
-            try {
-                final DiscordCommand regCmd = new CommandFromConfig(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden, cmd.textToSend);
-                if (!registerCommand(regCmd))
-                    DiscordIntegration.LOGGER.error("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
-            } catch (IllegalArgumentException e) {
-                DiscordIntegration.LOGGER.error("Failed Registering command \"" + cmd.name + "\":");
-                e.printStackTrace();
+        DiscordIntegration.LOGGER.info("Starting to register custom commands from config...");
+        if (Configuration.instance().commands.useCustomCommands)
+            for (final ConfigCommand cmd : Configuration.instance().commands.customCommands) {
+                try {
+                    final DiscordCommand regCmd = new CommandFromConfig(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden, cmd.textToSend);
+                    if (!registerCommand(regCmd))
+                        DiscordIntegration.LOGGER.error("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
+                } catch (IllegalArgumentException e) {
+                    DiscordIntegration.LOGGER.error("Failed Registering command \"" + cmd.name + "\":");
+                    e.printStackTrace();
+                }
             }
-        }
         DiscordIntegration.LOGGER.info("Finished registering! Registered " + commands.size() + " commands");
     }
 
