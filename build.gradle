@@ -78,20 +78,20 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-beta.21'
+    embed 'net.dv8tion:JDA:5.0.0-beta.23'
     embed 'club.minnced:discord-webhooks:0.8.4'
 
     //Emoji-Java
     embed('com.vdurmont:emoji-java:5.1.1')
 
     //Minecraft <==> Discord conversion
-    embed 'net.kyori:adventure-api:4.15.0'
+    embed 'net.kyori:adventure-api:4.16.0'
     embed('net.kyori:adventure-text-serializer-gson:4.15.0'){
         exclude group: 'com.google.code.gson', module: 'gson'
     }
     embed "dev.vankka:mcdiscordreserializer:4.3.0"
     embed 'dev.vankka:SimpleAST:2.2.8'
-    embed 'net.kyori:adventure-text-serializer-legacy:4.15.0'
+    embed 'net.kyori:adventure-text-serializer-legacy:4.16.0'
 
 
 
@@ -110,7 +110,7 @@ dependencies {
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
 
     //Logger
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
 
 
 
@@ -118,7 +118,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testImplementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
-    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 
 }
