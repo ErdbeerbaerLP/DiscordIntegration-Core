@@ -1,5 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
+import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.util.MessageUtils;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -13,6 +14,6 @@ public class CommandUptime extends DiscordCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent ev, ReplyCallbackAction reply) {
-        reply.setContent(Localization.instance().commands.cmdUptime_message.replace("%uptime%", MessageUtils.getFullUptime())).queue();
+        reply.setContent(Localization.instance().commands.cmdUptime_message.replace("%uptime%", MessageUtils.getFullUptime())).setEphemeral(Configuration.instance().commands.hideUptimeCmd).queue();
     }
 }

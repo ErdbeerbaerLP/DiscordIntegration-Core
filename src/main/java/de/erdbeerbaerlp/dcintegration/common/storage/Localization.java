@@ -7,7 +7,7 @@ import com.moandjiezana.toml.TomlWriter;
 
 import java.io.IOException;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.messagesFile;
+import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.messagesFile;
 
 @SuppressWarnings("unused")
 public class Localization {
@@ -16,17 +16,16 @@ public class Localization {
     private static Localization INSTANCE;
 
     static {
-
         //First instance of the Config
         INSTANCE = new Localization();
     }
 
-    @TomlComment({"This is what will be displayed ingame when someone types into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The message"})
-    public String ingame_discordMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r <%user%> %msg%";
-    @TomlComment({"This is what will be displayed ingame when someone sends an reply into the bot's channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The reply message", "%ruser% - The username of the message that got the reply", "%rmsg% - The replied message"})
-    public String ingame_discordReplyMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r \u00a7a%user%\u00a7r in reply to \u00a73%ruser%\u00a7r: %msg%";
-    @TomlComment({"Message shown when hovering over the username of an discord message", "PLACEHOLDERS:", "%user% - The username/nickname (Someone123)", "%user#tag% - The username with tag (someone#0001)", "%id% - The user ID", "", "NOTE: using an @ here can cause ping sounds ingame"})
-    public String discordUserHover = "\u00a73Discord User %user#tag%\n\u00a7aClick to mention";
+    @TomlComment({"This is what will be displayed in-game when someone types into the bots channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The message"})
+    public String ingame_discordMessage = "§6[§#5865F2DISCORD§6]§r <%user%> %msg%";
+    @TomlComment({"This is what will be displayed in-game when someone sends an reply into the bots channel", "PLACEHOLDERS:", "%user% - The username", "%id% - The user ID", "%msg% - The reply message", "%ruser% - The username of the message that got the reply", "%rmsg% - The replied message"})
+    public String ingame_discordReplyMessage = "§6[§#5865F2DISCORD§6]§r §a%user%§r in reply to §3%ruser%§r: %msg%";
+    @TomlComment({"Message shown when hovering over the username of an discord message", "PLACEHOLDERS:", "%user% - The users display name (Someone123)", "%user#tag% - The users username (@username) or user tag (User#0001)", "%id% - The user ID", "", "NOTE: using an @ here can cause ping sounds in-game"})
+    public String discordUserHover = "§3Discord User %user%\n§aClick to mention";
     @TomlComment("This message will edited in / sent when the server finished starting")
     public String serverStarted = "Server Started!";
     @TomlComment({"Message to show while the server is starting", "This will be edited to SERVER_STARTED_MSG when webhook is false"})
@@ -43,12 +42,12 @@ public class Localization {
     public String playerDeath = "%player% %msg%";
     @TomlComment({"Message sent instead of playerLeave, when the player times out", "", "PLACEHOLDERS:", "%player% - The player's name"})
     public String playerTimeout = "%player% timed out!";
-    @TomlComment({"Gets sent when an player finishes an advancement", "Supports MulitLined messages using \\n", "", "PLACEHOLDERS:", "%player% - The player's name", "%name% - The advancement name", "%desc% - The advancement description"})
-    public String advancementMessage = "%player% just made the advancement **%name%**\n_%desc%_";
+    @TomlComment({"Gets sent when an player finishes an advancement", "Supports MultiLined messages using \\n", "", "PLACEHOLDERS:", "%player% - The player's name", "%advName% - The advancement name", "%advDesc% - The advancement description", "%advNameURL% - The advancement name in an URL-Encoded form", "%advDescURL% - The advancement description in an URL-Encoded form"})
+    public String advancementMessage = "%player% just made the advancement **%advName%**\n_%advDesc%_";
     @TomlComment({"The chat message in discord, sent from an player in-game", "", "PLACEHOLDERS:", "%player% - The player's name", "%msg% - The chat message"})
     public String discordChatMessage = "%player%: %msg%";
     @TomlComment({"Sent to a player when someone reacts to his messages", "PLACEHOLDERS:", "%name% - (Nick-)Name of the user who reacted (format: 'SomeNickName')", "%name2% - Name of the user who reacted with discord discriminator (format: 'SomeName#0123')", "%msg% - Content of the message which got the reaction", "%emote% - The reacted emote"})
-    public String reactionMessage = "\u00a76[\u00a75DISCORD\u00a76]\u00a7r\u00a77 %name% reacted to your message \"\u00a79%msg%\u00a77\" with '%emote%'";
+    public String reactionMessage = "§6[§#5865F2DISCORD§6]§r§7 %name% reacted to your message \"§9%msg%§7\" with '%emote%'";
     @TomlComment("Message shown for attachments")
     public String attachment = "Attachment";
     @TomlComment("Message shown for stickers")
@@ -59,7 +58,7 @@ public class Localization {
     public String embedImage = "Image";
     @TomlComment("Message shown for embed messages")
     public String embedMessage = "Message";
-    @TomlComment("Hover message for the bot tag ingame")
+    @TomlComment("Hover message for the bot tag in-game")
     public String bot = "This user is an bot";
     @TomlComment("Strings about the discord commands")
     public Commands commands = new Commands();
@@ -115,7 +114,7 @@ public class Localization {
         public String linkMethodWhitelistCode = "joining the server and then using `/link <whitelist-code>` here";
 
         @TomlComment({"Message of the link method in normal mode", "Used by %method% placeholder"})
-        public String linkMethodIngame = "`/discord link` ingame";
+        public String linkMethodIngame = "`/discord link` in-game";
 
         @TomlComment({"Sent when attempting to whitelist-link with an non uuid string", "PLACEHOLDERS:", "%arg% - The provided argument"})
         public String link_argumentNotUUID = "Argument \"%arg%\" is not an valid UUID or Name.";
@@ -127,9 +126,9 @@ public class Localization {
         public String linkNumberNAN = "This is not a number!";
 
         @TomlComment({"Message shown to players who are not whitelisted using discord", "No effect if discord whitelist is off"})
-        public String notWhitelistedCode = "\u00a7cYou are not whitelisted.\nJoin the discord server for more information\nhttps://discord.gg/someserver\nYour Whitelist-Code is: \u00a76%code%";
+        public String notWhitelistedCode = "§cYou are not whitelisted.\nJoin the discord server for more information\nhttps://discord.gg/someserver\nYour Whitelist-Code is: §6%code%";
         @TomlComment({"Message shown to players who are whitelisted using discord but don't have the required role anymore", "No effect if discord whitelist is off"})
-        public String notWhitelistedRole = "\u00a7cYou are whitelisted, but you need an role to join.\nSee the discord server for more information";
+        public String notWhitelistedRole = "§cYou are whitelisted, but you need an role to join.\nSee the discord server for more information";
 
         @TomlComment("Sent when trying to link without an required role")
         public String link_requiredRole = "You need to have an role to use this";
@@ -138,7 +137,7 @@ public class Localization {
         public String link_notMember = "You are not member of the Discord-Server this bot is operating in!";
         @TomlComment({"Sent to the user when he linked his discord successfully", "PLACEHOLDERS:", "%name% - The linked discord name", "%name#tag% - The linked discord name with tag"})
         public String linkSuccessfulIngame = "Your account is now linked with discord-user %name#tag%";
-        @TomlComment({"Message shown to players who want to link their discord account ingame", "", "PLACEHOLDERS:", "%num% - The link number"})
+        @TomlComment({"Message shown to players who want to link their discord account in-game", "", "PLACEHOLDERS:", "%num% - The link number"})
         public String linkMsgIngame = "Send this command to the server channel to link your account: /link %num%\nThis number will expire after 10 minutes";
 
         @TomlComment("Shown when hovering over the link message")
@@ -147,7 +146,7 @@ public class Localization {
 
     public static class Commands {
         @TomlComment("Shown in console when trying to use a in-game only command")
-        public String ingameOnly = "This command can only be executed ingame!";
+        public String ingameOnly = "This command can only be executed in-game!";
 
         @TomlComment("Shown in-game when trying to use a console only command")
         public String consoleOnly = "This command can only be executed from console!";
@@ -188,7 +187,7 @@ public class Localization {
         @TomlComment("Message sent when ignoring Discord messages")
         public String commandIgnore_ignore = "You are now ignoring Discord messages!";
 
-        @TomlComment("Message sent when unignoring Discord messages")
+        @TomlComment("Message sent when un-ignoring Discord messages")
         public String commandIgnore_unignore = "You are no longer ignoring Discord messages!";
 
         @TomlComment({"Message sent when using the uptime command", "", "PLACEHOLDERS:", "%uptime% - Uptime in uptime format, see uptimeFormat"})
@@ -213,6 +212,7 @@ public class Localization {
         public String cmdLinkcheck_discordAcc = "Discord-Account: ";
 
         public String cmdLinkcheck_minecraftAcc = "Minecraft Account: ";
+        public String cmdLinkcheck_minecraftAccFloodgate = "Minecraft (Bedrock) UUID: ";
 
         public String cmdLinkcheck_cannotGetPlayer = "Error getting player information! Maybe you used an invalid name / UUID";
 
@@ -231,7 +231,7 @@ public class Localization {
             public String list = "Lists all players currently online";
             public String link = "Links your Discord account with your Minecraft account";
             public String whitelist = "Whitelists you on the server by linking with Discord";
-            public String linkcheck = "Shows info about an linked discord user or an ingame player";
+            public String linkcheck = "Shows info about an linked discord user or an in-game player";
         }
     }
 
@@ -241,7 +241,7 @@ public class Localization {
         @TomlComment("Message for getting an setting's value")
         public String personalSettingGet = "This settings value is `%bool%`";
 
-        @TomlComment("Sent when user sucessfully updates an prersonal setting")
+        @TomlComment("Sent when user successfully updates an personal setting")
         public String settingUpdateSuccessful = "Successfully updated setting!";
 
         @TomlComment("Header of the personal settings list")
@@ -263,10 +263,10 @@ public class Localization {
         public Descriptions descriptons = new Descriptions();
 
         public static class Descriptions {
-            public String ignoreDiscordChatIngame = "Configure if you want to ignore discord chat ingame";
+            public String ignoreDiscordChatIngame = "Configure if you want to ignore discord chat in-game";
             public String useDiscordNameInChannel = "Should the bot send messages using your discord name and avatar instead of your in-game name and skin?";
-            public String ignoreReactions = "Configure if you want to ignore discord reactions ingame";
-            public String pingSound = "Toggle the ingame ping sound";
+            public String ignoreReactions = "Configure if you want to ignore discord reactions in-game";
+            public String pingSound = "Toggle the in-game ping sound";
             public String hideFromDiscord = "Setting this to true will hide all of your minecraft messages from discord";
         }
     }

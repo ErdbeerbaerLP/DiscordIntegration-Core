@@ -1,8 +1,9 @@
 package de.erdbeerbaerlp.dcintegration.common.addon;
 
 import com.moandjiezana.toml.Toml;
-import de.erdbeerbaerlp.dcintegration.common.Discord;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -17,8 +18,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class AddonLoader {
-
-    private static final File addonDir = new File(Variables.discordDataDir, "addons");
+    private static final Logger LOGGER = LogManager.getLogger("Discord Integration Addon-Loader");
+    private static final File addonDir = new File(DiscordIntegration.discordDataDir, "addons");
     private static final FilenameFilter jarFilter = (dir, name) -> !new File(dir, name).isDirectory() && name.toLowerCase().endsWith(".jar");
     private static final HashMap<DiscordAddonMeta, DiscordIntegrationAddon> addons = new HashMap<>();
 
@@ -28,7 +29,7 @@ public class AddonLoader {
         return classLoader;
     }
 
-    public static void loadAddon(final Discord dc, final File jar) {
+    public static void loadAddon(final DiscordIntegration dc, final File jar) {
         try {
             final JarFile jf = new JarFile(jar);
             final JarEntry entry = jf.getJarEntry("DiscordIntegrationAddon.toml");
@@ -37,7 +38,12 @@ public class AddonLoader {
                 final DiscordAddonMeta addonMeta = new Toml().read(is).to(DiscordAddonMeta.class);
                 is.close();
                 if (addonMeta.getClassPath() == null || addonMeta.getName() == null || addonMeta.getVersion() == null) {
-                    Variables.LOGGER.error("Failed to load Addon '" + jar.getName() + "'! Toml is missing parameters! (Required are name, version, classPath)");
+                    LOGGER.error("Failed to load Addon '" + jar.getName() + "'! Toml is missing parameters! (Required are name, version, classPath)");
+                    return;
+                }
+                if(addonMeta.getAPIVersion() < DiscordIntegration.apiVersion){
+                    LOGGER.error("Failed to load Addon '" + jar.getName()+"' as it was meant for an older API version (addon: "+addonMeta.getAPIVersion()+", current: "+DiscordIntegration.apiVersion+")!");
+                    return;
                 }
                 try {
                     classLoader.add(jar.toURI().toURL());
@@ -47,25 +53,25 @@ public class AddonLoader {
                     try {
                         addon.load(dc);
                     } catch (Exception e) {
-                        Variables.LOGGER.error("An exception occurred while loading addon " + addonMeta.getName());
+                        LOGGER.error("An exception occurred while loading addon " + addonMeta.getName());
                         e.printStackTrace();
                     }
                 } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-                    Variables.LOGGER.error("Failed to load Addon '" + addonMeta.getName() + "' version '" + addonMeta.getVersion() + "'!");
+                    LOGGER.error("Failed to load Addon '" + addonMeta.getName() + "' version '" + addonMeta.getVersion() + "'!");
                     e.printStackTrace();
                 } catch (InvocationTargetException | NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }
             } else {
-                Variables.LOGGER.error("Found non-addon jar file " + jar.getName());
+                LOGGER.error("Found non-addon jar file " + jar.getName());
             }
         } catch (IOException e) {
-            Variables.LOGGER.error("Failed to load addon " + jar.getName());
+            LOGGER.error("Failed to load addon " + jar.getName());
             e.printStackTrace();
         }
     }
 
-    public static void loadAddons(final Discord dc) {
+    public static void loadAddons(final DiscordIntegration dc) {
         if (!addonDir.exists()) {
             //noinspection ResultOfMethodCallIgnored
             addonDir.mkdirs();
@@ -78,12 +84,12 @@ public class AddonLoader {
         }
     }
 
-    public static void unloadAddons(Discord discord) {
+    public static void unloadAddons(final DiscordIntegration discord) {
         for (final DiscordIntegrationAddon addon : addons.values()) {
             try {
                 addon.unload(discord);
             } catch (Exception e) {
-                Variables.LOGGER.error("An exception occurred while unloading addon class " + addon.getClass().getName());
+                LOGGER.error("An exception occurred while unloading addon class " + addon.getClass().getName());
                 e.printStackTrace();
             }
         }

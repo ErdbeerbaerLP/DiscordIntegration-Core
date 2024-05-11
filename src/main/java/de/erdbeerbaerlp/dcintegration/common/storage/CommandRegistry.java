@@ -1,11 +1,11 @@
 package de.erdbeerbaerlp.dcintegration.common.storage;
 
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.discordCommands.*;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -16,8 +16,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-@SuppressWarnings("unused")
 public class CommandRegistry {
     /**
      * Commands registered to Discord
@@ -29,43 +29,109 @@ public class CommandRegistry {
     private static List<DiscordCommand> commands = new ArrayList<>();
 
     /**
+     * Registers all default commands and custom commands from config
+     */
+    public static void registerDefaultCommands() {
+        if (Configuration.instance().commands.listCmdEnabled)
+            registerCommand(new CommandList());
+        if (Configuration.instance().commands.uptimeCmdEnabled)
+            registerCommand(new CommandUptime());
+
+        if (Configuration.instance().linking.enableLinking) {
+            registerCommand(new CommandSettings());
+            registerCommand(new CommandLinkcheck());
+            registerCommand(new CommandLink());
+        }
+        registerConfigCommands();
+    }
+
+    /**
      * Registers all commands to discord if changed
      */
     public static void updateSlashCommands() throws IllegalStateException {
-        final StandardGuildMessageChannel channel = Variables.discord_instance.getChannel();
+        final GuildMessageChannel channel = DiscordIntegration.INSTANCE.getChannel();
         if (channel == null)
-            throw new IllegalStateException("Channel does not exist, check channel ID and bot permissions on both channel and category. Also make sure to enable all intents for the bot on https://discord.com/developers/applications/"+Variables.discord_instance.getJDA().getSelfUser().getApplicationId()+"/bot");
-        final List<Command> cmds = channel.getGuild().retrieveCommands().complete();
-        boolean regenCommands = false;
-        if (commands.size() == cmds.size())
-            for (DiscordCommand cmd : commands) {
-                Command cm = null;
-                for (Command c : cmds) {
-                    if (((CommandData) cmd).getName().equals(c.getName())) {
-                        cm = c;
+            throw new IllegalStateException("Channel does not exist, check channel ID and bot permissions on both channel and category. Also make sure to enable all intents for the bot on https://discord.com/developers/applications/" + DiscordIntegration.INSTANCE.getJDA().getSelfUser().getApplicationId() + "/bot");
+        final List<Command> localCmds = channel.getGuild().retrieveCommands().complete();
+        final List<Command> globalCmds = DiscordIntegration.INSTANCE.getJDA().retrieveCommands().complete();
+
+        final boolean localCommandsStale = !localCmds.isEmpty() && !Configuration.instance().commands.useLocalCommands;
+        final boolean globalCommandsStale = !globalCmds.isEmpty() && Configuration.instance().commands.useLocalCommands;
+
+        boolean regenLocal = false;
+        boolean regenGlobal = false;
+        if (Configuration.instance().commands.useLocalCommands) {
+            if (commands.size() == localCmds.size()) {
+                for (final DiscordCommand cmd : commands) {
+                    Command cm = null;
+                    for (final Command c : localCmds) {
+                        if (((CommandData) cmd).getName().equals(c.getName())) {
+                            cm = c;
+                            break;
+                        }
+                    }
+                    if (cm == null) {
+                        regenLocal = true;
+                        break;
+                    }
+                    if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
+                        regenLocal = true;
                         break;
                     }
                 }
-                if (cm == null) {
-                    regenCommands = true;
-                    break;
+            }else regenLocal = true;
+        }else{
+            if (commands.size() == globalCmds.size()) {
+                for (final DiscordCommand cmd : commands) {
+                    Command cm = null;
+                    for (final Command c : globalCmds) {
+                        if (((CommandData) cmd).getName().equals(c.getName())) {
+                            cm = c;
+                            break;
+                        }
+                    }
+                    if (cm == null) {
+                        regenGlobal = true;
+                        break;
+                    }
+                    if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
+                        regenGlobal = true;
+                        break;
+                    }
                 }
-                if (!optionsEqual(cmd.getOptions(), cm.getOptions())) {
-                    regenCommands = true;
-                    break;
-                }
-            }
-        else regenCommands = true;
-        if (regenCommands) {
-            Variables.LOGGER.info("Regenerating commands...");
+            }else regenGlobal = true;
+        }
+
+
+        if (regenLocal || localCommandsStale) {
+            DiscordIntegration.LOGGER.info("Regenerating local commands...");
             CommandListUpdateAction commandListUpdateAction = channel.getGuild().updateCommands();
-            for (DiscordCommand cmd : commands) {
-                commandListUpdateAction = commandListUpdateAction.addCommands(cmd);
-            }
-            commandListUpdateAction.submit().thenAccept(CommandRegistry::addCmds);
+
+            if (Configuration.instance().commands.useLocalCommands)
+                for (final DiscordCommand cmd : commands) {
+                    commandListUpdateAction = commandListUpdateAction.addCommands(cmd);
+                }
+            final CompletableFuture<List<Command>> submit = commandListUpdateAction.submit();
+
+            if (Configuration.instance().commands.useLocalCommands)
+                submit.thenAccept(CommandRegistry::addCmds);
         } else {
-            Variables.LOGGER.info("No need to regenerate commands");
-            addCmds(cmds);
+            DiscordIntegration.LOGGER.info("No need to regenerate local commands");
+            addCmds(localCmds);
+        }
+        if (regenGlobal || globalCommandsStale) {
+            DiscordIntegration.LOGGER.info("Regenerating global commands...");
+            CommandListUpdateAction commandListUpdateAction = DiscordIntegration.INSTANCE.getJDA().updateCommands();
+            if (!Configuration.instance().commands.useLocalCommands)
+                for (DiscordCommand cmd : commands) {
+                    commandListUpdateAction = commandListUpdateAction.addCommands(cmd);
+                }
+            final CompletableFuture<List<Command>> submit = commandListUpdateAction.submit();
+            if (!Configuration.instance().commands.useLocalCommands)
+                submit.thenAccept(CommandRegistry::addCmds);
+        } else {
+            DiscordIntegration.LOGGER.info("No need to regenerate global commands");
+            addCmds(globalCmds);
         }
     }
 
@@ -81,40 +147,21 @@ public class CommandRegistry {
     }
 
     /**
-     * Registers all default commands and custom commands from config
-     */
-    public static void registerDefaultCommandsFromConfig() {
-        if (Configuration.instance().commands.helpCmdEnabled)
-            registerCommand(new CommandHelp());
-        if (Configuration.instance().commands.listCmdEnabled)
-            registerCommand(new CommandList());
-        if (Configuration.instance().commands.uptimeCmdEnabled)
-            registerCommand(new CommandUptime());
-
-        if (Configuration.instance().linking.enableLinking) {
-            registerCommand(new CommandSettings());
-            registerCommand(new CommandLinkcheck());
-            registerCommand(new CommandLink());
-        }
-        registerConfigCommands();
-    }
-
-    /**
      * Registers all custom commands from config
      */
-    public static void registerConfigCommands() {
+    private static void registerConfigCommands() {
 
         for (ConfigCommand cmd : Configuration.instance().commands.customCommands) {
             try {
-                final DiscordCommand regCmd = new CommandFromCFG(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden, cmd.textToSend);
+                final DiscordCommand regCmd = new CommandFromConfig(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden, cmd.textToSend);
                 if (!registerCommand(regCmd))
-                    Variables.LOGGER.error("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
+                    DiscordIntegration.LOGGER.error("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
             } catch (IllegalArgumentException e) {
-                Variables.LOGGER.error("Failed Registering command \"" + cmd.name + "\":");
+                DiscordIntegration.LOGGER.error("Failed Registering command \"" + cmd.name + "\":");
                 e.printStackTrace();
             }
         }
-        Variables.LOGGER.info("Finished registering! Registered " + commands.size() + " commands");
+        DiscordIntegration.LOGGER.info("Finished registering! Registered " + commands.size() + " commands");
     }
 
     /**
@@ -125,8 +172,8 @@ public class CommandRegistry {
      * @return true if the registration was successful
      */
     public static boolean registerCommand(DiscordCommand cmd) {
-        if (Variables.started != -1) {
-            Variables.LOGGER.info("Attempted to register command " + cmd.getName() + "after server finished loading");
+        if (DiscordIntegration.started != -1) {
+            DiscordIntegration.LOGGER.info("Attempted to register command " + cmd.getName() + "after server finished loading");
             return false;
         }
 
@@ -135,10 +182,10 @@ public class CommandRegistry {
             if (!cmd.isConfigCommand() && cmd.equals(c)) return false;
             else if (cmd.isConfigCommand() && cmd.equals(c)) toRemove.add(c);
         }
-        for (DiscordCommand cm : toRemove)
+        for (final DiscordCommand cm : toRemove)
             commands.remove(cm);
         commands.add(cmd);
-        if (cmd instanceof CommandFromCFG) {
+        if (cmd instanceof CommandFromConfig) {
             if (cmd.isUsingArgs()) cmd.addOption(OptionType.STRING, "args", cmd.getArgText());
         }
         return true;
@@ -150,7 +197,7 @@ public class CommandRegistry {
             for (final DiscordCommand cfcmd : commands) {
                 if (cmd.getName().equals(((CommandData) cfcmd).getName())) {
                     registeredCMDs.put(cmd.getId(), cfcmd);
-                    Variables.LOGGER.info("Added command " + cmd.getName() + " with ID " + cmd.getIdLong());
+                    DiscordIntegration.LOGGER.info("Added command " + cmd.getName() + " with ID " + cmd.getIdLong());
                 }
             }
         }
@@ -174,7 +221,7 @@ public class CommandRegistry {
      */
     public static void reRegisterAllCommands() {
         final List<DiscordCommand> cmds = commands;
-        Variables.LOGGER.info("Reloading " + cmds.size() + " commands");
+        DiscordIntegration.LOGGER.info("Reloading " + cmds.size() + " commands");
         commands = new ArrayList<>();
 
         for (final DiscordCommand cmd : cmds) {
@@ -182,7 +229,7 @@ public class CommandRegistry {
             commands.add(cmd);
         }
 
-        Variables.LOGGER.info("Registered " + commands.size() + " commands");
+        DiscordIntegration.LOGGER.info("Registered " + commands.size() + " commands");
     }
 
     /**
@@ -192,5 +239,4 @@ public class CommandRegistry {
     public static List<DiscordCommand> getCommandList() {
         return commands;
     }
-
 }

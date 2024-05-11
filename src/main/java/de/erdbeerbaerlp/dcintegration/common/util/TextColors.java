@@ -3,6 +3,7 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 import net.kyori.adventure.text.format.TextColor;
 
 import java.awt.*;
+import java.util.UUID;
 
 @SuppressWarnings("unused")
 public class TextColors {
@@ -50,6 +51,22 @@ public class TextColors {
 
     public static TextColor of(Color c) {
         return TextColor.color(c.getRed(), c.getGreen(), c.getBlue());
+    }
+
+    public static Color generateFromUUID(final UUID uuid){
+        int hashCode = uuid.hashCode();
+
+        // Ensure the hash code is positive
+        if (hashCode < 0) {
+            hashCode = -hashCode;
+        }
+
+        // Generate RGB values from the hash code
+        int red = (hashCode & 0xFF0000) >> 16;
+        int green = (hashCode & 0x00FF00) >> 8;
+        int blue = hashCode & 0x0000FF;
+
+        return new Color(red,green,blue);
     }
 
 }

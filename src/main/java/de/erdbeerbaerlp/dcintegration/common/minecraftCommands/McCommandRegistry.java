@@ -1,6 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.minecraftCommands;
 
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +20,8 @@ public class McCommandRegistry {
      * @return true if the registration was successful
      */
     public static boolean registerCommand(MCSubCommand cmd) {
-        if (Variables.started != -1) {
-            Variables.LOGGER.info("Attempted to register mc command " + cmd.getName() + "after server finished loading");
+        if (DiscordIntegration.started != -1) {
+            DiscordIntegration.LOGGER.info("Attempted to register mc command " + cmd.getName() + "after server finished loading");
             return false;
         }
         commands.add(cmd);
@@ -37,6 +37,7 @@ public class McCommandRegistry {
         registerCommand(new IgnoreCommand());
         registerCommand(new ReloadCommand());
         registerCommand(new MigrateCommand());
+        registerCommand(new RawMsgCommand());
     }
 
 }

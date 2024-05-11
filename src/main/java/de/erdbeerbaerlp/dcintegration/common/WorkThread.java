@@ -7,7 +7,8 @@ import java.util.function.Supplier;
 
 /// Simple Off-ServerThread task executor
 public final class WorkThread {
-    private WorkThread() {} // static class
+    private WorkThread() {
+    } // static class
 
     private static final LinkedList<Job> jobQueue = new LinkedList<>();
     private static final Thread runner = do_start(new Thread(WorkThread::thread, "DiscordIntegration-Core WorkerThread"));

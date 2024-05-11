@@ -6,11 +6,11 @@ buildscript {
 plugins {
     id 'maven-publish'
     id 'java'
-    id 'com.github.johnrengelman.shadow' version "8.1.0"
+    id 'com.github.johnrengelman.shadow' version "8+"
 }
 
 //Build variables
-version = "2.6.4"
+version = "3.1.0-j8-SNAPSHOT"
 group = "de.erdbeerbaerlp.dcintegration.common"
 archivesBaseName = "dcintegration-core"
 
@@ -33,6 +33,7 @@ repositories {
 configurations {
     embed
     compileOnly.extendsFrom(embed)
+    testImplementation.extendsFrom(embed)
 }
 shadowJar {
     //noinspection GroovyAccessibility
@@ -65,52 +66,69 @@ shadowJar {
     relocate "org.objenesis", "dcshadow.org.objenesis"
     relocate "kotlin", "dcshadow.kotlin"
     relocate "com.vdurmont", "dcshadow.com.vdurmont"
+    relocate "com.google.gson", "dcshadow.com.google.gson"
 }
+
 //Dependencies
 dependencies {
 
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-beta.6'
-    embed 'club.minnced:discord-webhooks:0.8.2'
+    embed 'net.dv8tion:JDA:5.0.0-beta.23'
+    embed 'club.minnced:discord-webhooks:0.8.4'
 
     //Emoji-Java
     embed('com.vdurmont:emoji-java:5.1.1')
 
     //Minecraft <==> Discord conversion
-    embed 'net.kyori:adventure-api:4.13.0'
-    embed('net.kyori:adventure-text-serializer-gson:4.12.0'){
+    embed 'net.kyori:adventure-api:4.16.0'
+    embed('net.kyori:adventure-text-serializer-gson:4.15.0'){
         exclude group: 'com.google.code.gson', module: 'gson'
     }
     embed "dev.vankka:mcdiscordreserializer:4.3.0"
     embed 'dev.vankka:SimpleAST:2.2.8'
-    embed 'net.kyori:adventure-text-serializer-legacy:4.12.0'
+    embed 'net.kyori:adventure-text-serializer-legacy:4.16.0'
 
 
-    compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+    embed group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
 
     //Toml4j
-    embed("de.erdbeerbaerlp:toml4j:cf5b4655"){
-        exclude group: 'com.google.code.gson', module: 'gson'
-    }
-    //embed("Toml4J:toml4j-0.7.5-SNAPSHOT")
+    embed("de.erdbeerbaerlp:toml4j:2073e86")
 
     //Apache commons lang3
-    embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-
-    //SQLite
-    embed 'org.xerial:sqlite-jdbc:3.41.0.0'
+    embed group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
 
     //Dynmap-API
     compileOnly('com.github.webbukkit:DynmapCoreAPI:2.5')
 
     //Logger
-    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.20.0'
+    compileOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
+
+
+
+    //Testing
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testImplementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 
 }
 tasks.build.dependsOn(tasks.shadowJar)
 
+test {
+    // Enable JUnit 5 (Gradle 4.6+).
+    useJUnitPlatform()
+
+    // Always run tests, even when nothing changed.
+    dependsOn 'cleanTest'
+
+    // Show test results.
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
 java {
     withJavadocJar()
     withSourcesJar()

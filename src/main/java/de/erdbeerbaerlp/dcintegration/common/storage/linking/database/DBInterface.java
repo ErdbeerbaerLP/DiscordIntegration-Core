@@ -1,8 +1,8 @@
-package de.erdbeerbaerlp.dcintegration.common.storage.database;
+package de.erdbeerbaerlp.dcintegration.common.storage.linking.database;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLink;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerLink;
 
 import java.util.concurrent.TimeUnit;
 

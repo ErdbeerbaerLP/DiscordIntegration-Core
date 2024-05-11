@@ -2,10 +2,11 @@ package de.erdbeerbaerlp.dcintegration.common.util;
 
 import com.google.gson.JsonArray;
 import com.vdurmont.emoji.EmojiParser;
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerSettings;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerLink;
 import dev.vankka.mcdiscordreserializer.discord.DiscordSerializer;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -28,8 +29,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 @SuppressWarnings("unused")
 public class MessageUtils {
@@ -79,11 +78,11 @@ public class MessageUtils {
     @SuppressWarnings("ConstantConditions")
 
     public static String getDiscordName(final UUID p) {
-        if (Variables.discord_instance == null) return null;
-        if (Configuration.instance().linking.enableLinking && PlayerLinkController.isPlayerLinked(p)) {
-            final PlayerSettings settings = PlayerLinkController.getSettings(null, p);
-            if (settings.useDiscordNameInChannel) {
-                return Variables.discord_instance.getChannel().getGuild().getMemberById(PlayerLinkController.getDiscordFromPlayer(p)).getEffectiveName();
+        if (DiscordIntegration.INSTANCE == null) return null;
+        if (Configuration.instance().linking.enableLinking && LinkManager.isPlayerLinked(p)) {
+            final PlayerLink link = LinkManager.getLink(null, p);
+            if (link.settings.useDiscordNameInChannel) {
+                return DiscordIntegration.INSTANCE.getChannel().getGuild().getMemberById(LinkManager.getLink(null,p).discordID).getEffectiveName();
             }
         }
         return null;
@@ -118,10 +117,10 @@ public class MessageUtils {
      */
 
     public static String getFullUptime() {
-        if (Variables.started == 0) {
+        if (DiscordIntegration.started == 0) {
             return "?????";
         }
-        final Duration duration = Duration.between(Instant.ofEpochMilli(Variables.started), Instant.now());
+        final Duration duration = Duration.between(Instant.ofEpochMilli(DiscordIntegration.started), Instant.now());
         return DurationFormatUtils.formatDuration(duration.toMillis(), Localization.instance().commands.uptimeFormat);
     }
 
@@ -133,10 +132,6 @@ public class MessageUtils {
      */
 
     public static String convertMCToMarkdown(String in) {
-        if (!Configuration.instance().messages.convertCodes) {
-            if (Configuration.instance().messages.formattingCodesToDiscord) return in;
-            else return removeFormatting(in);
-        }
         in = escapeMarkdownCodeBlocks(in);
         try {
             return DiscordSerializer.INSTANCE.serialize(LegacyComponentSerializer.legacySection().deserialize(in));
@@ -182,7 +177,7 @@ public class MessageUtils {
      */
 
     public static String mentionsToNames(String in, final Guild targetGuild) {
-        final JDA jda = Variables.discord_instance.getJDA();
+        final JDA jda = DiscordIntegration.INSTANCE.getJDA();
         if (jda == null) return in;  //Skip this if JDA wasn't initialized
         final Matcher userMatcher = USER_PING_REGEX.matcher(in);
         final Matcher roleMatcher = ROLE_PING_REGEX.matcher(in);
@@ -193,7 +188,7 @@ public class MessageUtils {
             String name;
             final User u = jda.getUserById(id);
             if (u != null) {
-                final Member m = discord_instance.getMemberById(u.getIdLong());
+                final Member m = DiscordIntegration.INSTANCE.getMemberById(u.getIdLong());
                 if (m != null)
                     name = m.getEffectiveName();
                 else
@@ -242,7 +237,7 @@ public class MessageUtils {
      * @return The player's name, or null if the player was not found
      */
     public static @NotNull String getNameFromUUID(UUID uuid) {
-        final String name = discord_instance.srv.getNameFromUUID(uuid);
+        final String name = DiscordIntegration.INSTANCE.getServerInterface().getNameFromUUID(uuid);
         return name == null || name.isEmpty() ? uuid.toString() : name;
     }
 }

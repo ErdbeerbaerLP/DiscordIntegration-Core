@@ -6,12 +6,16 @@ import com.moandjiezana.toml.TomlIgnore;
 import com.moandjiezana.toml.TomlWriter;
 import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.GameType;
+import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.utils.data.DataObject;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.configFile;
+import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.configFile;
 
 @SuppressWarnings("unused")
 public class Configuration {
@@ -58,6 +62,8 @@ public class Configuration {
 
     @TomlComment("General options for the bot")
     public General general = new General();
+    @TomlComment("Some settings that can be tweaked to increase compatibility with other mods, if required")
+    public Compatibility compatibility = new Compatibility();
 
     @TomlComment("Configuration options for commands")
     public Commands commands = new Commands();
@@ -65,10 +71,13 @@ public class Configuration {
     @TomlComment("Toggle some message related features")
     public Messages messages = new Messages();
 
+    @TomlComment("Settings for embed mode")
+    public EmbedMode embedMode = new EmbedMode();
+
     @TomlComment("Advanced options")
     public Advanced advanced = new Advanced();
 
-    @TomlComment("Config options which only have an effect when using forge")
+    @TomlComment({"Config options which usually only have an effect when using forge", "sendItemInfo was ported to fabric but kept here for config compatibility"})
     public ForgeSpecific forgeSpecific = new ForgeSpecific();
 
     @TomlComment("Configuration for linking")
@@ -130,13 +139,16 @@ public class Configuration {
         @TomlComment("The channel ID where the bot will be working in")
         public String botChannel = "000000000";
 
-        @TomlComment({"The bot's status message", "", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
-        public String botStatusName = "%online% players Online";
+        @TomlComment({"The bots status message", "", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
+        public String botStatusName = "%online% players online";
+        @TomlComment({"The bots status message for 1 online player, set to empty to use botStatusName", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
+        public String botStatusNameSingular = "%online% player online";
+        @TomlComment({"The bots status message for no online players, set to empty to use botStatusName", "PLACEHOLDERS:", "%online% - Online Players", "%max% - Maximum Player Amount"})
+        public String botStatusNameEmpty = "No-one is online";
+        @TomlComment({"Type of the bots status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING,COMPETING,CUSTOM"})
+        public GameType botStatusType = GameType.CUSTOM;
 
-        @TomlComment({"Type of the bot's status", "Allowed Values: DISABLED,PLAYING,WATCHING,LISTENING,STREAMING,COMPETING"})
-        public GameType botStatusType = GameType.PLAYING;
-
-        @TomlComment({"URL of the bot's stream when using the status type 'STREAMING'", "Has to start with https://twitch.tv/ or https://www.youtube.com/watch?v="})
+        @TomlComment({"URL of the bots stream when using the status type 'STREAMING'", "Has to start with https://twitch.tv/ or https://www.youtube.com/watch?v="})
         public String streamingURL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
         @TomlComment({"Enable checking for updates?", "Notification will be shown after every server start in log when update is available"})
@@ -147,24 +159,22 @@ public class Configuration {
 
         @TomlComment({"Set to false to disable config migration from other mods/plugins to this one", "This does not prevent updating of this config after mod updates"})
         public boolean allowConfigMigration = true;
-
-        @TomlComment("Attempt to parse id-based mentions to names in in-game chat")
-        public boolean parseMentionsIngame = true;
-        @TomlComment("Set to true to supress warning of unsafe mod download location")
+        @TomlComment("Set to true to suppress warning of unsafe mod download location")
         public boolean ignoreFileSource = false;
-
         @TomlComment("Set to true to allow relaying webhook messages")
         public boolean allowWebhookMessages = false;
+        @TomlComment({"Set to false to disable automatic config tweaking to fix known issues", "Your config file will not be sent anywhere during this", "This feature is not implemented yet"})
+        public boolean allowAutomaticBugFixing = true;
+    }
+
+    public static class Compatibility {
+        @TomlComment({"Disables modifying sent chat messages in-game to show who was pinged. (Will not convert <@1234567890> to @User)","This may fix mods also modifying sent messages"})
+        public boolean disableParsingMentionsIngame = false;
     }
 
     public static class Messages {
         @TomlComment({"Changing this to an language key (like en-US, de-DE) will always attempt to download the latest language file from https://github.com/ErdbeerbaerLP/Discord-Integration-Translations", "Setting to 'local' disables downloading"})
         public String language = "local";
-        @TomlComment("Enable formatting conversion (Markdown <==> Minecraft)")
-        public boolean convertCodes = true;
-
-        @TomlComment({"Send formatting codes from mc chat to discord", "Has no effect when markdown <==> Minecraft is enabled"})
-        public boolean formattingCodesToDiscord = false;
 
         @TomlComment("Should /say output be sent to discord?")
         public boolean sendOnSayCommand = true;
@@ -172,16 +182,72 @@ public class Configuration {
         @TomlComment("Should /me output be sent to discord?")
         public boolean sendOnMeCommand = true;
 
-        @TomlComment("When an /say command's message starts with this prefix, it will not be sent to discord")
-        public String sayCommandIgnoredPrefix = "\u00a74\u00a76\u00a7k\u00a7r";
+        @TomlComment({"Adding an selector (ex. @a ) here will relay all /tellraw messages sent with that exact same selector to discord.", "Leave blank to disable"})
+        public String tellrawSelector = "";
 
-        @TomlComment("Should tamed entity death be visible in discord?")
-        public boolean sendDeathMessagesForTamedAnimals = false;
+        @TomlComment({"When an /say command's message starts with this prefix, it will not be sent to discord", "Useful for hiding system messages by prepending it with this"})
+        public String sayCommandIgnoredPrefix = "§4§6§k§r";
 
-        @TomlComment("Should Discord users have their role color ingame?")
+        @TomlComment("Should Discord users have their role color in-game?")
         public boolean discordRoleColorIngame = true;
+        @TomlComment("Should you be able to hover and click on the discord username in-game?")
+        public boolean enableHoverMessage = true;
 
+        @TomlComment("List of characters that should be removed from usernames and chat messages before sending TO discord")
+        public char[] charBlacklist = new char[]{'࿕', '࿖'};
+    }
 
+    public static class EmbedMode {
+        @TomlComment({"Enabling this will send configured messages as embed messages", "See below configuration options of this category to see what messages can be moved to embeds"})
+        public boolean enabled = false;
+
+        @TomlComment("Starting & Started Messages")
+        public EmbedEntry startMessages = new EmbedEntry(true, TextColors.DISCORD_GREEN.asHexString());
+        @TomlComment("Stop & Crash Messages")
+        public EmbedEntry stopMessages = new EmbedEntry(true, TextColors.DISCORD_RED.asHexString());
+        @TomlComment("Player join message")
+        public EmbedEntry playerJoinMessage = new EmbedEntry(true, TextColors.DISCORD_GREEN.asHexString());
+        @TomlComment({"Player leave messages", "Also containing timeouts"})
+        public EmbedEntry playerLeaveMessages = new EmbedEntry(true, TextColors.DISCORD_RED.asHexString());
+        @TomlComment("Player Death message")
+        public EmbedEntry deathMessage = new EmbedEntry(true, TextColors.BLACK.asHexString());
+        @TomlComment("Advancement messages")
+        public EmbedEntry advancementMessage = new EmbedEntry(true, TextColors.DISCORD_YELLOW.asHexString());
+        @TomlComment("Player chat messages")
+        public ChatEmbedEntry chatMessages = new ChatEmbedEntry(true, TextColors.of(Color.GRAY).asHexString());
+
+        public static class EmbedEntry {
+            @TomlComment("Send as embed?")
+            public boolean asEmbed;
+            @TomlComment("Color of embed bar")
+            public String colorHexCode;
+            @TomlComment("Custom embed JSON, will overwrite color setting. For more info, check the documentation at https://github.com/ErdbeerbaerLP/DiscordIntegration-Core/wiki/embed-mode or ask on discord.")
+            public String customJSON = "";
+
+            EmbedEntry(boolean defaultEnabled, String defaultColor) {
+                this.asEmbed = defaultEnabled;
+                this.colorHexCode = defaultColor;
+            }
+
+            public EmbedBuilder toEmbed() {
+                    return new EmbedBuilder()
+                            .setColor(Color.decode(this.colorHexCode));
+            }
+
+            public EmbedBuilder toEmbedJson(String jsonString){
+                final DataObject json = DataObject.fromJson(jsonString);
+                return EmbedBuilder.fromData(json);
+            }
+        }
+
+        public static class ChatEmbedEntry extends EmbedEntry {
+            @TomlComment("Generate unique chat colors from player uuid?")
+            public boolean generateUniqueColors = true;
+
+            ChatEmbedEntry(boolean defaultEnabled, String defaultColor) {
+                super(defaultEnabled, defaultColor);
+            }
+        }
     }
 
     public static class Commands {
@@ -193,23 +259,20 @@ public class Configuration {
         @TomlComment({"Add your custom commands here", "You can also generate some on https://erdbeerbaerlp.de/dcintegration-commands/"})
         public ConfigCommand[] customCommands = defaultCommands;
 
-        @TomlComment("You must op this UUID in the ops.txt or some custom commands won't work!")
-        public String senderUUID = "8d8982a5-8cf9-4604-8feb-3dd5ee1f83a3";
-
-        @TomlComment({"Enable help command?", "Disabling also removes response when you entered an invalid command", "Requires server restart"})
-        public boolean helpCmdEnabled = true;
-
-        @TomlComment({"Enable the list command in discord", "Requires server restart"})
+        @TomlComment({"Enable the list command in discord"})
         public boolean listCmdEnabled = true;
 
-        @TomlComment({"Enable the uptime command in discord", "Requires server restart"})
+        @TomlComment({"Show list command only for the user who runs it"})
+        public boolean hideListCmd = true;
+
+        @TomlComment({"Enable the uptime command in discord"})
         public boolean uptimeCmdEnabled = true;
 
-        @TomlComment("Set to false to completely disable the \"Unknown Command\" message")
-        public boolean showUnknownCommandMessage = true;
+        @TomlComment({"Show uptime command only for the user who runs it"})
+        public boolean hideUptimeCmd = false;
 
-        @TomlComment("Set to true to enable the \"Unknown Command\" message in all channels")
-        public boolean showUnknownCommandEverywhere = false;
+        @TomlComment({"Enables using local commands for faster registration", "Local Commands will register all slash commands directly to the server instead of to the bot", "Setting this to true requires the bot to be invited with the scope 'application.commands' to work"})
+        public boolean useLocalCommands = false;
     }
 
     public static class Advanced {
@@ -219,23 +282,24 @@ public class Configuration {
         @TomlComment({"Custom channel ID for death messages", "Leave 'default' to use default channel"})
         public String deathsChannelID = "default";
 
-        @TomlComment({"Custom channel for for ingame messages", "Leave 'default' to use default channel"})
+        @TomlComment({"Custom channel ID for advancement messages", "Leave 'default' to use default channel"})
+        public String advancementChannelID = "default";
+
+        @TomlComment({"Custom channel for for in-game messages", "Leave 'default' to use default channel"})
         public String chatOutputChannelID = "default";
 
         @TomlComment({"Custom channel where messages get sent to minecraft", "Leave 'default' to use default channel"})
         public String chatInputChannelID = "default";
 
-        @TomlComment({"Allows you to change the target URL for the API to make it usable with custom discord instances like fosscord", "DO NOT CHANGE if you don't know what you are doing!!"})
+        @TomlComment({"Allows you to change the target URL for the API to make it usable with custom discord instances like Spacebar", "DO NOT CHANGE if you don't know what you are doing!!"})
         public String baseAPIUrl = "https://discord.com";
-
-
     }
 
     public static class ForgeSpecific {
         @TomlComment({"A list of blacklisted modids", "Adding one will prevent the mod to send messages to discord using forges IMC system"})
         public String[] IMC_modIdBlacklist = new String[]{"examplemod"};
 
-        @TomlComment("Show item information, which is visible on hover ingame, as embed in discord?")
+        @TomlComment({"Show item information, which is visible on hover in-game, as embed in discord?","Ported to fabric but kept here for config compatibility"})
         public boolean sendItemInfo = true;
     }
 
@@ -255,7 +319,7 @@ public class Configuration {
 
 
     public static class Webhook {
-        @TomlComment("Whether or not the bot should use a webhook (it will create one)")
+        @TomlComment({"Whether or not the bot should use a webhook (it will create one)", "This will only work in standard channels"})
         public boolean enable = false;
 
         @TomlComment("The avatar to be used for server messages")
@@ -264,8 +328,12 @@ public class Configuration {
         @TomlComment("The name to be used for server messages")
         public String serverName = "Minecraft Server";
 
-        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache"})
-        public String playerAvatarURL = "https://minotar.net/avatar/%uuid%?randomuuid=%randomUUID%";
+        @TomlComment("Use the server name and avatar for RCON")
+        public boolean useServerNameForRcon = true;
+        @TomlComment("Use the server name and avatar for Console")
+        public boolean useServerNameForConsole = true;
+        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache","https://www.tydiumcraft.net/docs/skinapi supports both bedrock(floodgate) and java players", "Default - https://api.tydiumcraft.net/v1/players/skin?uuid=%uuid%&type=avatar&randomuuid=%randomUUID%"})
+        public String playerAvatarURL = "https://api.tydiumcraft.net/v1/players/skin?uuid=%uuid%&type=avatar&randomuuid=%randomUUID%";
 
         public String webhookName = "MC_DC_INTEGRATION";
     }
@@ -283,21 +351,21 @@ public class Configuration {
         @TomlComment({"Enable global linking?", "Does not work in offline mode"})
         public boolean globalLinking = true;
 
-        @TomlComment({"Database interface class", "This allows you to change your database implementation", "Do not change without knowing what you are doing"})
-        public String databaseClass = "de.erdbeerbaerlp.dcintegration.common.storage.database.SQLiteInterface";
+        @TomlComment({"Database interface class", "This allows you to change your database implementation", "Add database implementations using the addon system", "Do not change without knowing what you are doing"})
+        public String databaseClass = "de.erdbeerbaerlp.dcintegration.common.storage.linking.database.JSONInterface";
 
         @TomlComment({"Role ID of an role an player should get when he links his discord account", "Leave as 0 to disable"})
         public String linkedRoleID = "0";
 
-        @TomlComment({"Enable discord based whitelist?", "This will override the link config!", "To whitelist use the whitelist command in the bot DMs"})
+        @TomlComment({"Enable discord based whitelist?", "This will override the link config!", "To whitelist use the whitelist command in the bot DMs", "It does NOT override the vanilla whitelist"})
         public boolean whitelistMode = false;
 
         @TomlComment("Adding Role IDs here will require the players to have at least ONE of these roles to link account")
         public String[] requiredRoles = new String[0];
-        @TomlComment({"Adding setting keys to this array will prevent thoose settings to be changed", "They will still show up in the list though"})
+        @TomlComment({"Adding setting keys to this array will prevent those settings to be changed", "They will still show up in the list though"})
         public String[] settingsBlacklist = new String[0];
         @TomlComment("Allows you to configure the default values of some personal settings")
-        PersonalSettingsDefaults personalSettingsDefaults = new PersonalSettingsDefaults();
+        public PersonalSettingsDefaults personalSettingsDefaults = new PersonalSettingsDefaults();
 
         public static class PersonalSettingsDefaults {
             public boolean default_useDiscordNameInChannel = true;
@@ -315,6 +383,9 @@ public class Configuration {
 
         @TomlComment("A list of commands that should NOT be logged")
         public String[] ignoredCommands = new String[]{"list", "help", "?"};
+
+        @TomlComment("Invert the meaning of the ignoredCommands configuration (make it ONLY log those commands)")
+        public boolean commandWhitelist = false;
     }
 
     public static class Votifier {
@@ -324,7 +395,7 @@ public class Configuration {
         @TomlComment({"Custom channel ID for Votifier messages", "Leave 'default' to use default channel"})
         public String votifierChannelID = "default";
 
-        @TomlComment({"The message format of the votifier message", "", "PLACEHOLDERS:", "%player% - The player\u00B4s name", "%site% - The name of the vote site", "%addr% - (IP) Address of the site"})
+        @TomlComment({"The message format of the votifier message", "", "PLACEHOLDERS:", "%player% - The player´s name", "%site% - The name of the vote site", "%addr% - (IP) Address of the site"})
         public String message = ":ballot_box: %player% just voted on %site%";
 
         @TomlComment("Name of the webhook title")
@@ -335,7 +406,7 @@ public class Configuration {
     }
 
     public static class Dynmap {
-        @TomlComment({"The message format of the message forwarded to discord", "", "PLACEHOLDERS:", "%sender% - The sender\u00B4s name", "%msg% - The Message"})
+        @TomlComment({"The message format of the message forwarded to discord", "", "PLACEHOLDERS:", "%sender% - The sender´s name", "%msg% - The Message"})
         public String dcMessage = "<%sender%> %msg%";
 
         @TomlComment({"Custom channel ID for dynmap chat", "Leave 'default' to use default channel"})
@@ -347,7 +418,7 @@ public class Configuration {
         @TomlComment("URL of the webhook avatar image")
         public String avatarURL = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/9/91/Map_Zoom_0.png/revision/latest?cb=20200311153330";
 
-        @TomlComment({"The name format of the message forwarded to the dynmap webchat", "", "PLACEHOLDERS:", "%name% - The discord name of the sender (including nickname)", "%name#tag% - The discord name with tag of the sender (without nickname)"})
+        @TomlComment({"The name format of the message forwarded to the dynmap web-chat", "", "PLACEHOLDERS:", "%name% - The discord name of the sender (including nickname)", "%name#tag% - The discord name with tag of the sender (without nickname)"})
         public String webName = "%name% (discord)";
         @TomlComment("Name shown in discord when no name was specified on the website")
         public String unnamed = "Unnamed";

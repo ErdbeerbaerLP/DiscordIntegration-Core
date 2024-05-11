@@ -1,7 +1,8 @@
 package de.erdbeerbaerlp.dcintegration.common.util;
 
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.kyori.adventure.text.Component;
@@ -161,9 +162,8 @@ public class ComponentUtils {
             hasPing.set(true);
             return PatternReplacementResult.REPLACE;
         }).build());
-        if (!hasPing.get() && PlayerLinkController.isPlayerLinked(uuid)) {
-            @SuppressWarnings("ConstantConditions")
-            String dcname = Variables.discord_instance.getChannel().getGuild().retrieveMemberById(PlayerLinkController.getDiscordFromPlayer(uuid)).complete().getEffectiveName();
+        if (!hasPing.get() && LinkManager.isPlayerLinked(uuid)) {
+            String dcname = DiscordIntegration.INSTANCE.getChannel().getGuild().retrieveMemberById(LinkManager.getLink(null,uuid).discordID).complete().getEffectiveName();
             msg = msg.replaceText(TextReplacementConfig.builder().matchLiteral("@" + dcname).replacement(Component.text("@" + dcname).style(Style.style(TextColors.PING).decorate(TextDecoration.BOLD))).condition((a, b) -> {
                 hasPing.set(true);
                 return PatternReplacementResult.REPLACE;

@@ -5,12 +5,14 @@ import club.minnced.discord.webhook.send.WebhookEmbed;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Queue;
 
 @SuppressWarnings("unused")
@@ -25,9 +27,32 @@ public final class DiscordMessage {
      * @param message  Message to send
      * @param isNotRaw set to true to enable markdown escaping and mc color conversion (default: false)
      */
-    public DiscordMessage(final MessageEmbed embed, final String message, boolean isNotRaw) {
+    public DiscordMessage(MessageEmbed embed, final String message, boolean isNotRaw) {
+        if (embed != null)
+            for (char c : Configuration.instance().messages.charBlacklist) {
+                final EmbedBuilder b = EmbedBuilder.fromData(embed.toData());
+                if (embed.getDescription() != null)
+                    b.setDescription(embed.getDescription().replace(c, '\u0000'));
+                if (embed.getTitle() != null)
+                    b.setTitle(embed.getTitle().replace(c, '\u0000'), embed.getUrl());
+                if (embed.getAuthor() != null && embed.getAuthor().getName() != null)
+                    b.setAuthor(embed.getAuthor().getName().replace(c, '\u0000'), embed.getAuthor().getUrl(), embed.getAuthor().getIconUrl());
+                if (embed.getFooter() != null && embed.getFooter().getText() != null)
+                    b.setFooter(embed.getFooter().getText().replace(c, '\u0000'), embed.getFooter().getIconUrl());
+
+                b.clearFields();
+                for (MessageEmbed.Field field : embed.getFields()) {
+
+                    b.addField(field.getName() == null ? null : field.getName().replace(c, '\u0000'), field.getValue() == null ? null : field.getValue().replace(c, '\u0000'), field.isInline());
+                }
+                embed = b.build();
+            }
         this.embed = embed;
+
         this.message = message;
+        for (char c : Configuration.instance().messages.charBlacklist) {
+            this.message = this.message.replace(c, '\u0000');
+        }
         this.isNotRaw = isNotRaw;
     }
 
@@ -69,6 +94,9 @@ public final class DiscordMessage {
      */
     public void setMessage(final String message) {
         this.message = message;
+        for (char c : Configuration.instance().messages.charBlacklist) {
+            this.message = this.message.replace(c, '\u0000');
+        }
     }
 
     public void setIsChatMessage() {
@@ -87,7 +115,23 @@ public final class DiscordMessage {
      *
      * @param embed Embed to set
      */
-    public void setEmbed(final MessageEmbed embed) {
+    public void setEmbed(MessageEmbed embed) {
+        for (char c : Configuration.instance().messages.charBlacklist) {
+            final EmbedBuilder b = EmbedBuilder.fromData(embed.toData());
+            if (embed.getDescription() != null)
+                b.setDescription(embed.getDescription().replace(c, '\u0000'));
+            if (embed.getTitle() != null)
+                b.setTitle(embed.getTitle().replace(c, '\u0000'), embed.getUrl());
+            if (embed.getAuthor() != null && embed.getAuthor().getName() != null)
+                b.setAuthor(embed.getAuthor().getName().replace(c, '\u0000'), embed.getAuthor().getUrl(), embed.getAuthor().getIconUrl());
+            if (embed.getFooter() != null && embed.getFooter().getText() != null)
+                b.setFooter(embed.getFooter().getText().replace(c, '\u0000'), embed.getFooter().getIconUrl());
+            b.clearFields();
+            for (MessageEmbed.Field field : embed.getFields()) {
+                b.addField(field.getName().replace(c, '\u0000'), field.getValue().replace(c, '\u0000'), field.isInline());
+            }
+            embed = b.build();
+        }
         this.embed = embed;
     }
 
@@ -100,25 +144,25 @@ public final class DiscordMessage {
 
     public MessageCreateData buildMessages() {
         final MessageCreateBuilder out = new MessageCreateBuilder();
-        if (isSystemMessage) {
+        if (!isSystemMessage) {
             final ArrayList<Message.MentionType> mentions = new ArrayList<>();
             mentions.add(Message.MentionType.USER);
             mentions.add(Message.MentionType.CHANNEL);
             mentions.add(Message.MentionType.EMOJI);
             out.setAllowedMentions(mentions);
-        }
+        } else
+            out.setAllowedMentions(Arrays.asList(Message.MentionType.values()));
         if (!message.isEmpty()) {
             if (isNotRaw) {
-                if (Configuration.instance().messages.formattingCodesToDiscord)
-                    out.setContent(MessageUtils.convertMCToMarkdown(message));
-                else
-                    out.setContent(MessageUtils.removeFormatting(MessageUtils.convertMCToMarkdown(message)));
+                out.setContent(MessageUtils.convertMCToMarkdown(message));
             } else {
                 out.setContent(message);
             }
         }
-        if (embed != null)
+        if (embed != null) {
             out.setEmbeds(embed);
+
+        }
         return out.build();
     }
 
@@ -159,10 +203,7 @@ public final class DiscordMessage {
         String content;
         if (!message.isEmpty()) {
             if (isNotRaw) {
-                if (Configuration.instance().messages.formattingCodesToDiscord)
-                    content = MessageUtils.convertMCToMarkdown(message);
-                else
-                    content = MessageUtils.removeFormatting(MessageUtils.convertMCToMarkdown(message));
+                content = MessageUtils.convertMCToMarkdown(message);
             } else {
                 content = message;
             }
@@ -188,7 +229,11 @@ public final class DiscordMessage {
             eb.setTimestamp(embed.getTimestamp());
             if (embed.getTitle() != null)
                 eb.setTitle(new WebhookEmbed.EmbedTitle(embed.getTitle(), embed.getUrl()));
-            out.set(out.size() - 1, out.get(out.size() - 1).addEmbeds(eb.build()));
+            if (out.isEmpty())
+                out.add(new WebhookMessageBuilder().setAllowedMentions(isSystemMessage ? AllowedMentions.all() : AllowedMentions.none().withParseUsers(true)).addEmbeds(eb.build()));
+            else
+                out.set(out.size() - 1, out.get(out.size() - 1).setAllowedMentions(isSystemMessage ? AllowedMentions.all() : AllowedMentions.none().withParseUsers(true)).addEmbeds(eb.build()));
+
         }
         return out;
     }

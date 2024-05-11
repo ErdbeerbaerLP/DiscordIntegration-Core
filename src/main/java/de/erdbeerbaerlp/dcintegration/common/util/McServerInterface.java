@@ -12,8 +12,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public interface ServerInterface {
-
+public interface McServerInterface {
     /**
      * @return Maximum player amount on this server
      */
@@ -25,11 +24,19 @@ public interface ServerInterface {
     int getOnlinePlayers();
 
     /**
-     * Sends an {@link Component} as ingame message to all players who are not ignoring messages
+     * Sends a {@link Component} as ingame message to all players who are not ignoring messages
      *
      * @param msg Message to send
      */
-    void sendMCMessage(Component msg);
+    void sendIngameMessage(Component msg);
+
+    /**
+     * Sends a message to that specific player
+     *
+     * @param msg    Message
+     * @param player Target player's {@link UUID}
+     */
+    void sendIngameMessage(String msg, UUID player);
 
     /**
      * Sends a message for reactions from discord
@@ -39,7 +46,7 @@ public interface ServerInterface {
      * @param targetUUID      Original sender's {@link UUID}
      * @param reactionEmote   Emote that was added to the message
      */
-    void sendMCReaction(Member member, RestAction<Message> retrieveMessage, UUID targetUUID, EmojiUnion reactionEmote);
+    void sendIngameReaction(Member member, RestAction<Message> retrieveMessage, UUID targetUUID, EmojiUnion reactionEmote);
 
     /**
      * Runs a command on the server
@@ -55,20 +62,12 @@ public interface ServerInterface {
 
     HashMap<UUID, String> getPlayers();
 
-    /**
-     * Sends a message to that specific player
-     *
-     * @param msg    Message
-     * @param player Target player's {@link UUID}
-     */
-    void sendMCMessage(String msg, UUID player);
 
     /**
      * Checks if the server is running in online mode
      *
      * @return online mode status
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean isOnlineMode();
 
     /**
@@ -84,4 +83,38 @@ public interface ServerInterface {
      * @return The mod/plugin loader name<br>Currently unused, but may be used by addons
      */
     String getLoaderName();
+
+    /**
+     * Checks if a player has a server permission
+     * @param player Player to check
+     * @param permissions Permissions to check
+     * @return true if the player has *at least one* of the permissions provided, false otherwise
+     */
+    boolean playerHasPermissions(final UUID player, final String... permissions);
+
+    /**
+     * Checks if a player has a server permission
+     * @param player Player to check
+     * @param permissions Permissions to check
+     * @return true if the player has *at least one* of the permissions provided, false otherwise
+     */
+    default boolean playerHasPermissions(final UUID player, final MinecraftPermission... permissions){
+        final String[] permissionStrings = new String[permissions.length];
+        for (int i = 0; i < permissions.length; i++) {
+            permissionStrings[i] = permissions[i].getAsString();
+        }
+        return playerHasPermissions(player, permissionStrings);
+    }
+
+
+    /**
+     * Runs a command on the server
+     *
+     * @param cmdString    Command to execute
+     * @return Command response
+     */
+    String runMCCommand(final String cmdString);
+
+
+
 }

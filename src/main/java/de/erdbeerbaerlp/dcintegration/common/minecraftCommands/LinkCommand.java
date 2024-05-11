@@ -1,10 +1,11 @@
 package de.erdbeerbaerlp.dcintegration.common.minecraftCommands;
 
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
+import de.erdbeerbaerlp.dcintegration.common.compat.FloodgateUtils;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
-import de.erdbeerbaerlp.dcintegration.common.storage.PlayerLinkController;
+import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
-import de.erdbeerbaerlp.dcintegration.common.util.Variables;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -13,7 +14,7 @@ import net.kyori.adventure.text.format.Style;
 import java.awt.*;
 import java.util.UUID;
 
-public class LinkCommand implements MCSubCommand{
+public class LinkCommand implements MCSubCommand {
     @Override
     public String getName() {
         return "link";
@@ -21,12 +22,11 @@ public class LinkCommand implements MCSubCommand{
 
     @Override
     public Component execute(String[] params, UUID playerUUID) {
-        if (Configuration.instance().linking.enableLinking && Variables.discord_instance.srv.isOnlineMode() && !Configuration.instance().linking.whitelistMode) {
-            if (PlayerLinkController.isPlayerLinked(playerUUID)) {
-                return Component.text(Localization.instance().linking.alreadyLinked.replace("%player%", Variables.discord_instance.getJDA().getUserById(PlayerLinkController.getDiscordFromPlayer(playerUUID)).getAsTag())).style(Style.style(TextColors.of(Color.RED)));
-
+        if (Configuration.instance().linking.enableLinking && DiscordIntegration.INSTANCE.getServerInterface().isOnlineMode() && !Configuration.instance().linking.whitelistMode) {
+            if (LinkManager.isPlayerLinked(playerUUID)) {
+                return Component.text(Localization.instance().linking.alreadyLinked.replace("%player%", DiscordIntegration.INSTANCE.getJDA().getUserById(LinkManager.getLink(null, playerUUID).discordID).getAsTag())).style(Style.style(TextColors.of(Color.RED)));
             }
-            final int r = Variables.discord_instance.genLinkNumber(playerUUID);
+            final int r = FloodgateUtils.isBedrockPlayer(playerUUID) ? LinkManager.genBedrockLinkNumber(playerUUID) : LinkManager.genLinkNumber(playerUUID);
             return Component.text(Localization.instance().linking.linkMsgIngame.replace("%num%", r + "").replace("%prefix%", "/")).style(Style.style(TextColors.of(Color.ORANGE)).clickEvent(ClickEvent.copyToClipboard("" + r)).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().linking.hoverMsg_copyClipboard))));
         } else {
             return Component.text(Localization.instance().commands.subcommandDisabled).style(Style.style(TextColors.of(Color.RED)));

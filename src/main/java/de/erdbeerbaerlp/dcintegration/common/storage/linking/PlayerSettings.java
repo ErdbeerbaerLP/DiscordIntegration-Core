@@ -1,4 +1,7 @@
-package de.erdbeerbaerlp.dcintegration.common.storage;
+package de.erdbeerbaerlp.dcintegration.common.storage.linking;
+
+import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
+import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 
 @SuppressWarnings("unused")
 public class PlayerSettings {

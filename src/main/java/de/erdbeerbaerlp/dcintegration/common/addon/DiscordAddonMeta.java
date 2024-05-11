@@ -17,6 +17,12 @@ public class DiscordAddonMeta {
      * Version of the addon
      */
     private String version;
+
+    /**
+     * API version
+     * Defaulting to 2 for backwards compatibility
+     */
+    private int APIVersion = 2;
     /**
      * Author of the Addon (optional)
      */
@@ -44,5 +50,9 @@ public class DiscordAddonMeta {
 
     public String getDescription() {
         return description;
+    }
+
+    public int getAPIVersion() {
+        return APIVersion;
     }
 }

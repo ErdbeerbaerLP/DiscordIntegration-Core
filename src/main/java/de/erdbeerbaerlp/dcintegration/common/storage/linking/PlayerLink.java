@@ -1,14 +1,11 @@
-package de.erdbeerbaerlp.dcintegration.common.storage;
+package de.erdbeerbaerlp.dcintegration.common.storage.linking;
 
 public class PlayerLink {
     public String discordID = "";
     public String mcPlayerUUID = "";
     public String floodgateUUID = "";
     public PlayerSettings settings = new PlayerSettings();
-    public PlayerLink(){
-
-    }
-    public PlayerLink(String id, String mcPlayerUUID, String floodgateUUID, PlayerSettings settings) {
+    public PlayerLink(final String id, final String mcPlayerUUID, final String floodgateUUID, final PlayerSettings settings) {
         this.mcPlayerUUID = mcPlayerUUID;
         this.floodgateUUID = floodgateUUID;
         this.discordID = id;
@@ -24,6 +21,16 @@ public class PlayerLink {
 
         if (!discordID.equals(that.discordID)) return false;
         return mcPlayerUUID.equals(that.mcPlayerUUID);
+    }
+
+    @Override
+    public String toString() {
+        return "PlayerLink{" +
+                "discordID='" + discordID + '\'' +
+                ", mcPlayerUUID='" + mcPlayerUUID + '\'' +
+                ", floodgateUUID='" + floodgateUUID + '\'' +
+                ", settings=" + settings +
+                '}';
     }
 
     @Override

@@ -1,5 +1,6 @@
 package de.erdbeerbaerlp.dcintegration.common.discordCommands;
 
+import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -8,7 +9,6 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.internal.interactions.CommandDataImpl;
 import org.jetbrains.annotations.NotNull;
 
-import static de.erdbeerbaerlp.dcintegration.common.util.Variables.discord_instance;
 
 
 /**
@@ -90,17 +90,9 @@ public abstract class DiscordCommand extends CommandDataImpl {
      * @return wether or not the user can execute this command
      */
     public boolean canUserExecuteCommand(User user) {
-        Member m = discord_instance.getMemberById(user.getIdLong());
+        final Member m = DiscordIntegration.INSTANCE.getMemberById(user.getIdLong());
         if (m == null) return false;
-        return !this.adminOnly() || discord_instance.hasAdminRole(m.getRoles());
-    }
-
-
-    /**
-     * Override to customize the command usage, which is being displayed in help (ex. to add arguments)
-     */
-    public String getCommandUsage() {
-        return "/" + getName();
+        return !this.adminOnly() || DiscordIntegration.INSTANCE.hasAdminRole(m.getRoles());
     }
 
     public final boolean equals(DiscordCommand cmd) {
