@@ -88,7 +88,7 @@ dependencies {
     }
     embed "dev.vankka:mcdiscordreserializer:4.3.0"
     embed 'dev.vankka:SimpleAST:2.2.8'
-    embed 'net.kyori:adventure-text-serializer-legacy:4.16.0'
+    embed 'net.kyori:adventure-text-serializer-legacy:4.17.0'
 
 
     embed group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
