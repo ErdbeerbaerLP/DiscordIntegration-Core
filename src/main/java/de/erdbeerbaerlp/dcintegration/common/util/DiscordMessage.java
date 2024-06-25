@@ -12,8 +12,6 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Queue;
 
 @SuppressWarnings("unused")
 public final class DiscordMessage {
@@ -138,20 +136,17 @@ public final class DiscordMessage {
     /**
      * Builds messages to send
      *
-     * @return {@link Queue} of messages
+     * @return Creating messages
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
 
     public MessageCreateData buildMessages() {
         final MessageCreateBuilder out = new MessageCreateBuilder();
-        if (!isSystemMessage) {
             final ArrayList<Message.MentionType> mentions = new ArrayList<>();
             mentions.add(Message.MentionType.USER);
             mentions.add(Message.MentionType.CHANNEL);
             mentions.add(Message.MentionType.EMOJI);
             out.setAllowedMentions(mentions);
-        } else
-            out.setAllowedMentions(Arrays.asList(Message.MentionType.values()));
         if (!message.isEmpty()) {
             if (isNotRaw) {
                 out.setContent(MessageUtils.convertMCToMarkdown(message));
@@ -208,7 +203,7 @@ public final class DiscordMessage {
                 content = message;
             }
             for (String msg : splitMessages(content)) {
-                out.add(new WebhookMessageBuilder().setContent(msg).setAllowedMentions(isSystemMessage ? AllowedMentions.all() : AllowedMentions.none().withParseUsers(true)));
+                out.add(new WebhookMessageBuilder().setContent(msg).setAllowedMentions(AllowedMentions.none().withParseUsers(true)));
             }
         }
         if (embed != null) {
@@ -230,9 +225,9 @@ public final class DiscordMessage {
             if (embed.getTitle() != null)
                 eb.setTitle(new WebhookEmbed.EmbedTitle(embed.getTitle(), embed.getUrl()));
             if (out.isEmpty())
-                out.add(new WebhookMessageBuilder().setAllowedMentions(isSystemMessage ? AllowedMentions.all() : AllowedMentions.none().withParseUsers(true)).addEmbeds(eb.build()));
+                out.add(new WebhookMessageBuilder().setAllowedMentions(AllowedMentions.none().withParseUsers(true)).addEmbeds(eb.build()));
             else
-                out.set(out.size() - 1, out.get(out.size() - 1).setAllowedMentions(isSystemMessage ? AllowedMentions.all() : AllowedMentions.none().withParseUsers(true)).addEmbeds(eb.build()));
+                out.set(out.size() - 1, out.get(out.size() - 1).setAllowedMentions(AllowedMentions.none().withParseUsers(true)).addEmbeds(eb.build()));
 
         }
         return out;
