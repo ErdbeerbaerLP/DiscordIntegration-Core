@@ -163,8 +163,6 @@ public class Configuration {
         public boolean ignoreFileSource = false;
         @TomlComment("Set to true to allow relaying webhook messages")
         public boolean allowWebhookMessages = false;
-        @TomlComment({"Set to false to disable automatic config tweaking to fix known issues", "Your config file will not be sent anywhere during this", "This feature is not implemented yet"})
-        public boolean allowAutomaticBugFixing = true;
     }
 
     public static class Compatibility {
