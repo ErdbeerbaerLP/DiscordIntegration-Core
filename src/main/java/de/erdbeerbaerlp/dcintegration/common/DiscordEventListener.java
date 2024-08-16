@@ -72,8 +72,10 @@ class DiscordEventListener implements EventListener {
             final UUID sender = dc.getSenderUUIDFromMessageID(ev.getMessageId());
             if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatOutputChannelID.equals("default") ? Configuration.instance().general.botChannel : Configuration.instance().advanced.chatOutputChannelID))
                 if (sender != DiscordIntegration.dummyUUID) {
-                    if (!LinkManager.getLink(ev.getUserId(), null).settings.ignoreReactions)
-                        dc.getServerInterface().sendIngameReaction(ev.retrieveMember().complete(), ev.retrieveMessage(), sender, ev.getEmoji());
+                    if (LinkManager.isDiscordUserLinked(ev.getUserId())) {
+                        if (LinkManager.getLink(ev.getUserId(), null).settings.ignoreReactions) return;
+                    }
+                    dc.getServerInterface().sendIngameReaction(ev.retrieveMember().complete(), ev.retrieveMessage(), sender, ev.getEmoji());
                 }
         }
 
