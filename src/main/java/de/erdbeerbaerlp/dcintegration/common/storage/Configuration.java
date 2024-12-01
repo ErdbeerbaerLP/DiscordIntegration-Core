@@ -289,6 +289,8 @@ public class Configuration {
 
         @TomlComment({"Allows you to change the target URL for the API to make it usable with custom discord instances like Spacebar", "DO NOT CHANGE if you don't know what you are doing!!"})
         public String baseAPIUrl = "https://discord.com";
+        @TomlComment({"Delay of sending webhook messages ingame in milliseconds", "If you get duplicate messages in webhook mode, increase this value a bit"})
+        public long webhookMessageDelay = 200;
     }
 
     public static class ForgeSpecific {

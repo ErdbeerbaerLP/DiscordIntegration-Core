@@ -598,7 +598,7 @@ public class DiscordIntegration {
                 kill(true);
                 return;
             }
-            if (!PermissionUtil.checkPermission(getChannel().getPermissionContainer(), getMemberById(jda.getSelfUser().getIdLong()), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_MANAGE)) {
+            if (!PermissionUtil.checkPermission(getChannel().getPermissionContainer(), getMemberById(jda.getSelfUser().getIdLong()), Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS)) {
                 LOGGER.error("ERROR! Bot does not have all permissions to work!");
                 kill(true);
                 throw new PermissionException("Bot requires message read, message write, embed links and manage messages");
@@ -1064,9 +1064,9 @@ public class DiscordIntegration {
      * @param msgID Message ID
      * @param uuid  Sender UUID
      */
-    public void rememberRecentMessage(Long msgID, UUID uuid) {
+    public void rememberRecentMessage(long msgID, UUID uuid) {
         if (recentMessages.size() + 1 >= 150) {
-            final Long oldest = recentMessages.entrySet().stream().sorted(Map.Entry.comparingByKey()).iterator().next().getKey();
+            final long oldest = recentMessages.entrySet().stream().sorted(Map.Entry.comparingByKey()).iterator().next().getKey();
             recentMessages.remove(oldest);
         }
         recentMessages.put(msgID, uuid);

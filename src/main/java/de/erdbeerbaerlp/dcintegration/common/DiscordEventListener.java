@@ -92,16 +92,16 @@ class DiscordEventListener implements EventListener {
 
             if (Localization.instance().ingame_discordMessage.isEmpty()) return;
             final MessageReceivedEvent ev = (MessageReceivedEvent) event;
-            if (dc.recentMessages.containsKey(ev.getMessageIdLong())) return;
             if (!Configuration.instance().general.allowWebhookMessages && ev.isWebhookMessage()) return;
             if(ev.isWebhookMessage()){
                 // Hacky way to lower risk of duplicate webhook messages
                 try {
-                    Thread.sleep(300);
+                    Thread.sleep(Configuration.instance().advanced.webhookMessageDelay);
                 } catch (InterruptedException e) {
                     return;
                 }
             }
+            if (dc.recentMessages.containsKey(ev.getMessageIdLong())) return;
 
             if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
                 if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;
