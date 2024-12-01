@@ -6,7 +6,7 @@ buildscript {
 plugins {
     id 'maven-publish'
     id 'java'
-    id 'com.github.johnrengelman.shadow' version "8+"
+    id 'com.gradleup.shadow' version "8+"
 }
 
 //Build variables
@@ -75,7 +75,7 @@ dependencies {
     // =========  Common  =====================
 
     //Discord libraries
-    embed 'net.dv8tion:JDA:5.0.0-beta.23'
+    embed 'net.dv8tion:JDA:5.2.1'
     embed 'club.minnced:discord-webhooks:0.8.4'
 
     //Emoji-Java
