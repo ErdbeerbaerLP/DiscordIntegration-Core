@@ -42,7 +42,7 @@ import java.util.UUID;
 class DiscordEventListener implements EventListener {
 
     @Override
-    public void onEvent(final GenericEvent event) {
+    public void onEvent(final @NotNull GenericEvent event) {
         final DiscordIntegration dc = DiscordIntegration.INSTANCE;
         final JDA jda = dc.getJDA();
         if (jda == null) return;
@@ -89,53 +89,64 @@ class DiscordEventListener implements EventListener {
 
 
         if (event instanceof MessageReceivedEvent) {
-            final MessageReceivedEvent ev = (MessageReceivedEvent) event;
+
             if (Localization.instance().ingame_discordMessage.isEmpty()) return;
-            if ((Configuration.instance().general.allowWebhookMessages && !dc.recentMessages.containsKey(ev.getMessageId())) || !ev.isWebhookMessage())
-                if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
-                    if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;
-                    if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatInputChannelID.equals("default") ? dc.getChannel().getId() : Configuration.instance().advanced.chatInputChannelID)) {
-                        final List<MessageEmbed> embeds = ev.getMessage().getEmbeds();
-                        String msg = ev.getMessage().getContentDisplay();
-                        msg = MessageUtils.formatEmoteMessage(ev.getMessage().getMentions().getCustomEmojis(), msg);
-                        final Component attachmentComponent = getAttachmentComp(ev, embeds);
-                        @SuppressWarnings("unchecked") final Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), DiscordIntegration.mcSerializerOptions);
-                        final Message reply = ev.getMessage().getReferencedMessage();
-                        final boolean hasReply = reply != null;
-                        Component out = LegacyComponentSerializer.legacySection().deserialize(hasReply ? Localization.instance().ingame_discordReplyMessage : Localization.instance().ingame_discordMessage);
-                        final int memberColor = (ev.getMember() != null ? ev.getMember().getColorRaw() : 0);
-                        final TextReplacementConfig msgReplacer = ComponentUtils.replaceLiteral("%msg%", ComponentUtils.makeURLsClickable(outMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline()))));
-                        final TextReplacementConfig idReplacer = ComponentUtils.replaceLiteral("%id%", ev.getAuthor().getId());
-                        Style.Builder memberStyle = Style.style();
-                        if (Configuration.instance().messages.discordRoleColorIngame)
-                            memberStyle.color(TextColor.color(memberColor));
-                        Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName()));
-                        if (Configuration.instance().messages.enableHoverMessage)
-                            user = user.style(memberStyle
-                                    .clickEvent(ClickEvent.suggestCommand("<@" + ev.getAuthor().getId() + ">"))
-                                    .hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%username%", (ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getEffectiveName())).replace("%user#tag%", !ev.getAuthor().getDiscriminator().equals("0000") ? ev.getAuthor().getAsTag() : ev.getAuthor().getName()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getEffectiveName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
-                        if (ev.getAuthor().isBot()) {
-                            user = ComponentUtils.append(user, Component.text("[BOT]").style(Style.style(TextColors.DISCORD_BLURPLE).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().bot)))));
-                        }
-                        final TextReplacementConfig userReplacer = ComponentUtils.replaceLiteral("%user%", user);
-                        out = out.replaceText(userReplacer).replaceText(idReplacer).replaceText(msgReplacer);
-                        if (hasReply) {
-                            Member replyMember = reply.isWebhookMessage() ? null : dc.getMemberById(reply.getAuthor().getIdLong());
-                            memberStyle = Style.style();
-                            if (Configuration.instance().messages.discordRoleColorIngame)
-                                memberStyle.color(TextColor.color((replyMember != null ? replyMember.getColorRaw() : 0)));
-                            final Component repUser = Component.text((replyMember != null ? replyMember.getEffectiveName() : reply.getAuthor().getName()))
-                                    .style(ComponentUtils.addUserHoverClick(memberStyle.build(), reply.getAuthor(), replyMember));
-                            out = out.replaceText(ComponentUtils.replaceLiteral("%ruser%", repUser));
-                            final String repMsg = MessageUtils.formatEmoteMessage(reply.getMentions().getCustomEmojis(), reply.getContentDisplay());
-                            final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), DiscordIntegration.mcSerializerOptions);
-                            out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
-                        }
-                        out = ComponentUtils.append(out, attachmentComponent);
-                        dc.getServerInterface().sendIngameMessage(out);
-                    }
-                    dc.callEventC((e) -> e.onDiscordMessagePost(ev));
+            final MessageReceivedEvent ev = (MessageReceivedEvent) event;
+            if (dc.recentMessages.containsKey(ev.getMessageIdLong())) return;
+            if (!Configuration.instance().general.allowWebhookMessages && ev.isWebhookMessage()) return;
+            if(ev.isWebhookMessage()){
+                // Hacky way to lower risk of duplicate webhook messages
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    return;
                 }
+            }
+
+            if (!ev.getAuthor().getId().equals(jda.getSelfUser().getId())) {
+                if (dc.callEvent((e) -> e.onDiscordMessagePre(ev))) return;
+                if (ev.getChannel().getId().equals(Configuration.instance().advanced.chatInputChannelID.equals("default") ? dc.getChannel().getId() : Configuration.instance().advanced.chatInputChannelID)) {
+                    final List<MessageEmbed> embeds = ev.getMessage().getEmbeds();
+                    String msg = ev.getMessage().getContentDisplay();
+                    msg = MessageUtils.formatEmoteMessage(ev.getMessage().getMentions().getCustomEmojis(), msg);
+                    final Component attachmentComponent = getAttachmentComp(ev, embeds);
+                    @SuppressWarnings("unchecked") final Component outMsg = MinecraftSerializer.INSTANCE.serialize(msg.replace("\n", "\\n"), DiscordIntegration.mcSerializerOptions);
+                    final Message reply = ev.getMessage().getReferencedMessage();
+                    final boolean hasReply = reply != null;
+                    Component out = LegacyComponentSerializer.legacySection().deserialize(hasReply ? Localization.instance().ingame_discordReplyMessage : Localization.instance().ingame_discordMessage);
+                    final int memberColor = (ev.getMember() != null ? ev.getMember().getColorRaw() : 0);
+                    final TextReplacementConfig msgReplacer = ComponentUtils.replaceLiteral("%msg%", ComponentUtils.makeURLsClickable(outMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline()))));
+                    final TextReplacementConfig idReplacer = ComponentUtils.replaceLiteral("%id%", ev.getAuthor().getId());
+                    Style.Builder memberStyle = Style.style();
+                    if (Configuration.instance().messages.discordRoleColorIngame)
+                        memberStyle.color(TextColor.color(memberColor));
+                    Component user = Component.text((ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getName()));
+                    if (Configuration.instance().messages.enableHoverMessage)
+                        user = user.style(memberStyle
+                                .clickEvent(ClickEvent.suggestCommand("@" + (ev.getAuthor().getDiscriminator().equals("0000") ? ev.getAuthor().getName() : ev.getAuthor().getAsTag())))
+                                .hoverEvent(HoverEvent.showText(Component.text(Localization.instance().discordUserHover.replace("%username%", (ev.getMember() != null ? ev.getMember().getEffectiveName() : ev.getAuthor().getEffectiveName())).replace("%user#tag%", !ev.getAuthor().getDiscriminator().equals("0000") ? ev.getAuthor().getAsTag() : ev.getAuthor().getName()).replace("%user%", ev.getMember() == null ? ev.getAuthor().getEffectiveName() : ev.getMember().getEffectiveName()).replace("%id%", ev.getAuthor().getId())))));
+                    if (ev.getAuthor().isBot()) {
+                        user = ComponentUtils.append(user, Component.text("[APP]").style(Style.style(TextColors.DISCORD_BLURPLE).hoverEvent(HoverEvent.showText(Component.text(Localization.instance().bot)))));
+                    }
+                    final TextReplacementConfig userReplacer = ComponentUtils.replaceLiteral("%user%", user);
+                    out = out.replaceText(userReplacer).replaceText(idReplacer).replaceText(msgReplacer);
+                    if (hasReply) {
+                        Member replyMember = reply.isWebhookMessage() ? null : dc.getMemberById(reply.getAuthor().getIdLong());
+                        memberStyle = Style.style();
+                        if (Configuration.instance().messages.discordRoleColorIngame)
+                            memberStyle.color(TextColor.color((replyMember != null ? replyMember.getColorRaw() : 0)));
+                        final Component repUser = Component.text((replyMember != null ? replyMember.getEffectiveName() : reply.getAuthor().getName()))
+                                .style(ComponentUtils.addUserHoverClick(memberStyle.build(), reply.getAuthor(), replyMember));
+                        out = out.replaceText(ComponentUtils.replaceLiteral("%ruser%", repUser));
+                        final String repMsg = MessageUtils.formatEmoteMessage(reply.getMentions().getCustomEmojis(), reply.getContentDisplay());
+                        final Component replyMsg = MinecraftSerializer.INSTANCE.serialize(repMsg.replace("\n", "\\n"), DiscordIntegration.mcSerializerOptions);
+                        out = out.replaceText(ComponentUtils.replaceLiteral("%rmsg%", ComponentUtils.makeURLsClickable(replyMsg.replaceText(ComponentUtils.replaceLiteral("\\n", Component.newline())))));
+                    }
+                    out = ComponentUtils.append(out, attachmentComponent);
+                    dc.getServerInterface().sendIngameMessage(out);
+                }
+                dc.callEventC((e) -> e.onDiscordMessagePost(ev));
+            }
         }
 
     }
@@ -174,7 +185,8 @@ class DiscordEventListener implements EventListener {
     }
 
 
-    private void processDiscordCommand(final SlashCommandInteractionEvent ev, final String[] command, final MessageChannelUnion channel, User sender, final DiscordIntegration dc) {
+    private void processDiscordCommand(final SlashCommandInteractionEvent ev, final String[] command,
+                                       final MessageChannelUnion channel, User sender, final DiscordIntegration dc) {
         boolean hasPermission = true;
         boolean executed = false;
         ReplyCallbackAction replyCallbackAction = ev.deferReply();

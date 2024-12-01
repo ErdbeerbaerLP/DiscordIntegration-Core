@@ -4,7 +4,6 @@ import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlComment;
 import com.moandjiezana.toml.TomlIgnore;
 import com.moandjiezana.toml.TomlWriter;
-import de.erdbeerbaerlp.dcintegration.common.storage.configCmd.ConfigCommand;
 import de.erdbeerbaerlp.dcintegration.common.util.GameType;
 import de.erdbeerbaerlp.dcintegration.common.util.TextColors;
 import de.erdbeerbaerlp.dcintegration.common.util.UpdateChecker;
@@ -13,7 +12,6 @@ import net.dv8tion.jda.api.utils.data.DataObject;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.configFile;
 
@@ -21,51 +19,54 @@ import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.configFil
 public class Configuration {
 
     @TomlIgnore
-    private static final ConfigCommand[] defaultCommands;
-    @TomlIgnore
     private static Configuration INSTANCE;
 
     static {
-        final ArrayList<ConfigCommand> defaultCmds = new ArrayList<>();
-        final ConfigCommand kick = new ConfigCommand();
-        kick.name = "kick";
-        kick.description = "Kicks an player from the Server";
-        kick.mcCommand = "kick %player% %reason%";
-        kick.args = new ConfigCommand.CommandArgument[]{
-                new ConfigCommand.CommandArgument("player", "The player to be kicked"),
-                new ConfigCommand.CommandArgument("reason", "Reason for the kick", true)
-        };
-        kick.adminOnly = true;
-        defaultCmds.add(kick);
-
-        final ConfigCommand stop = new ConfigCommand();
-        stop.name = "stop";
-        stop.description = "Stops the server";
-        stop.mcCommand = "stop";
-        stop.adminOnly = true;
-        defaultCmds.add(stop);
-        final ConfigCommand kill = new ConfigCommand();
-        kill.name = "kill";
-        kill.description = "Kills an Player or Entity";
-        kill.mcCommand = "kill %target%";
-        kill.adminOnly = true;
-        kill.args = new ConfigCommand.CommandArgument[]{
-                new ConfigCommand.CommandArgument("target", "The target(s) for the kill command.")
-        };
-        defaultCmds.add(kill);
-
-        defaultCommands = defaultCmds.toArray(new ConfigCommand[0]);
 
         //First instance of the Config
         INSTANCE = new Configuration();
     }
 
-    @TomlComment("General options for the bot")
+    @TomlComment({"Main configuration file for Discord Integration",
+            "",
+            "If you have no idea what to do here, check out https://erdbeerbaerlp.de/projects/discord-integration/quick-setup",
+            "",
+            "",
+            "## Other configuration files ##",
+            "File paths are based on the server root directory, the same folder the server jar file resides in, NOT the config folder.",
+            "",
+            "Localizations   ==> /DiscordIntegration-Data/Messages.toml",
+            "Custom Commands ==> /DiscordIntegration-Data/Commands.toml",
+            "Addon Configs   ==> /DiscordIntegration-Data/addons/*.toml",
+            "Player link DB  ==> /DiscordIntegration-Data/LinkedPlayers.json",
+            "",
+            "",
+            "         # #                   # #        ",
+            "       # #     # # # # # # #     # #      ",
+            "     # # # # # # # # # # # # # # # # #    ",
+            "     # # # # # # # # # # # # # # # # #    ",
+            "     # # # # # # # # # # # # # # # # #    ",
+            "   # # # # # # # # # # # # # # # # # # #  ",
+            "   # # # # # # # # # # # # # # # # # # #  ",
+            "   # # # # #     # # # # #     # # # # #  ",
+            "   # # # #         # # #         # # # #  ",
+            " # # # # #         # # #         # # # # #",
+            " # # # # # #     # # # # #     # # # # # #",
+            " # # # # # # # # # # # # # # # # # # # # #",
+            " # # # # # # # # # # # # # # # # # # # # #",
+            " # # # # #     # # # # # # #     # # # # #",
+            "     # # # #                   # # # #    ",
+            "       # # # #               # # # #",
+            "",
+            "",
+            "",
+            "",
+            "General options for the bot"})
     public General general = new General();
     @TomlComment("Some settings that can be tweaked to increase compatibility with other mods, if required")
     public Compatibility compatibility = new Compatibility();
 
-    @TomlComment("Configuration options for commands")
+    @TomlComment({"Configuration options for commands", "NOTE: Custom commands have been moved to /DiscordIntegration-Data/Commands.toml"})
     public Commands commands = new Commands();
 
     @TomlComment("Toggle some message related features")
@@ -166,7 +167,7 @@ public class Configuration {
     }
 
     public static class Compatibility {
-        @TomlComment({"Disables modifying sent chat messages in-game to show who was pinged. (Will not convert <@1234567890> to @User)","This may fix mods also modifying sent messages"})
+        @TomlComment({"Disables modifying sent chat messages in-game to show who was pinged. (Will not convert <@1234567890> to @User)", "This may fix mods also modifying sent messages"})
         public boolean disableParsingMentionsIngame = false;
     }
 
@@ -228,11 +229,11 @@ public class Configuration {
             }
 
             public EmbedBuilder toEmbed() {
-                    return new EmbedBuilder()
-                            .setColor(Color.decode(this.colorHexCode));
+                return new EmbedBuilder()
+                        .setColor(Color.decode(this.colorHexCode));
             }
 
-            public EmbedBuilder toEmbedJson(String jsonString){
+            public EmbedBuilder toEmbedJson(String jsonString) {
                 final DataObject json = DataObject.fromJson(jsonString);
                 return EmbedBuilder.fromData(json);
             }
@@ -253,11 +254,6 @@ public class Configuration {
         public boolean enabled = true;
         @TomlComment({"The Role IDs of your Admin Roles", "Now supports multiple roles which can access admin commands"})
         public String[] adminRoleIDs = new String[0];
-
-        @TomlComment({"Set to false to disable registration of custom commands completely, mainly if you don't want any of them", "This affects the config commands below"})
-        public boolean useCustomCommands = true;
-        @TomlComment({"Add your custom commands here", "You can also generate some on https://erdbeerbaerlp.de/dcintegration-commands/"})
-        public ConfigCommand[] customCommands = defaultCommands;
 
         @TomlComment({"Enable the list command in discord"})
         public boolean listCmdEnabled = true;
@@ -299,7 +295,7 @@ public class Configuration {
         @TomlComment({"A list of blacklisted modids", "Adding one will prevent the mod to send messages to discord using forges IMC system"})
         public String[] IMC_modIdBlacklist = new String[]{"examplemod"};
 
-        @TomlComment({"Show item information, which is visible on hover in-game, as embed in discord?","Ported to fabric but kept here for config compatibility"})
+        @TomlComment({"Show item information, which is visible on hover in-game, as embed in discord?", "Ported to fabric but kept here for config compatibility"})
         public boolean sendItemInfo = true;
     }
 
@@ -332,9 +328,12 @@ public class Configuration {
         public boolean useServerNameForRcon = true;
         @TomlComment("Use the server name and avatar for Console")
         public boolean useServerNameForConsole = true;
-        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache","https://www.tydiumcraft.net/docs/skinapi supports both bedrock(floodgate) and java players", "Default - https://api.tydiumcraft.net/v1/players/skin?uuid=%uuid%&type=avatar&randomuuid=%randomUUID%"})
-        public String playerAvatarURL = "https://api.tydiumcraft.net/v1/players/skin?uuid=%uuid%&type=avatar&randomuuid=%randomUUID%";
-
+        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache", "https://www.tydiumcraft.net/docs/skinapi supports both bedrock(floodgate) and java players", "Default - https://starlightskins.lunareclipse.studio/render/pixel/%name%/face?randomuuid=%randomUUID%"})
+        public String playerAvatarURL = "https://starlightskins.lunareclipse.studio/render/pixel/%name%/face?randomuuid=%randomUUID%";
+        @TomlComment({"Should the avatar url be tested periodically?","If enabled, should the avatar url be down, it will use the fallback one until it comes back"})
+        public boolean testAvatarURL = true;
+        @TomlComment({"Alternative avatar URL used when main URL is not reachable"})
+        public String fallbackAvatarURL = "https://minotar.net/avatar/%uuid%?randomuuid=%randomUUID%";
         public String webhookName = "MC_DC_INTEGRATION";
     }
 

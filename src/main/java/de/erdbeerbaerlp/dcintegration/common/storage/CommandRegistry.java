@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -150,20 +151,25 @@ public class CommandRegistry {
      * Registers all custom commands from config
      */
     private static void registerConfigCommands() {
-
+        try {
+            Commands.instance().loadConfig();
+        } catch (IOException e) {
+            DiscordIntegration.LOGGER.error("Failed registering commands");
+            e.printStackTrace();
+            return;
+        }
         DiscordIntegration.LOGGER.info("Starting to register custom commands from config...");
-        if (Configuration.instance().commands.useCustomCommands)
-            for (final ConfigCommand cmd : Configuration.instance().commands.customCommands) {
-                try {
-                    final DiscordCommand regCmd = new CommandFromConfig(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden, cmd.textToSend);
-                    if (!registerCommand(regCmd))
-                        DiscordIntegration.LOGGER.error("Failed Registering command \"" + cmd.name + "\" because it would override an existing command!");
-                } catch (IllegalArgumentException e) {
-                    DiscordIntegration.LOGGER.error("Failed Registering command \"" + cmd.name + "\":");
-                    e.printStackTrace();
-                }
+        for (final ConfigCommand cmd : Commands.instance().commands.customCommands) {
+            try {
+                final DiscordCommand regCmd = new CommandFromConfig(cmd.name, cmd.description, cmd.mcCommand, cmd.adminOnly, cmd.args, cmd.hidden, cmd.textToSend);
+                if (!registerCommand(regCmd))
+                    DiscordIntegration.LOGGER.error("Failed registering command \"{}\" because it would override an existing command!", cmd.name);
+            } catch (IllegalArgumentException e) {
+                DiscordIntegration.LOGGER.error("Failed registering command \"{}\":", cmd.name);
+                e.printStackTrace();
             }
-        DiscordIntegration.LOGGER.info("Finished registering! Registered " + commands.size() + " commands");
+        }
+        DiscordIntegration.LOGGER.info("Finished registering! Registered {} commands", commands.size());
     }
 
     /**
@@ -175,7 +181,7 @@ public class CommandRegistry {
      */
     public static boolean registerCommand(DiscordCommand cmd) {
         if (DiscordIntegration.started != -1) {
-            DiscordIntegration.LOGGER.info("Attempted to register command " + cmd.getName() + "after server finished loading");
+            DiscordIntegration.LOGGER.info("Attempted to register command {} after server finished loading", cmd.getName());
             return false;
         }
 
@@ -199,7 +205,7 @@ public class CommandRegistry {
             for (final DiscordCommand cfcmd : commands) {
                 if (cmd.getName().equals(((CommandData) cfcmd).getName())) {
                     registeredCMDs.put(cmd.getId(), cfcmd);
-                    DiscordIntegration.LOGGER.info("Added command " + cmd.getName() + " with ID " + cmd.getIdLong());
+                    DiscordIntegration.LOGGER.info("Added command {} with ID {}", cmd.getName(), cmd.getIdLong());
                 }
             }
         }
@@ -223,7 +229,7 @@ public class CommandRegistry {
      */
     public static void reRegisterAllCommands() {
         final List<DiscordCommand> cmds = commands;
-        DiscordIntegration.LOGGER.info("Reloading " + cmds.size() + " commands");
+        DiscordIntegration.LOGGER.info("Reloading {} commands", cmds.size());
         commands = new ArrayList<>();
 
         for (final DiscordCommand cmd : cmds) {
@@ -231,7 +237,7 @@ public class CommandRegistry {
             commands.add(cmd);
         }
 
-        DiscordIntegration.LOGGER.info("Registered " + commands.size() + " commands");
+        DiscordIntegration.LOGGER.info("Registered {} commands", commands.size());
     }
 
     /**

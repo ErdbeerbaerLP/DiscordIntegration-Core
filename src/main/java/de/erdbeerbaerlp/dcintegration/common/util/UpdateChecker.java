@@ -46,13 +46,13 @@ public class UpdateChecker {
                         try {
                             final int n = curVer.compareTo(version);
                             if (n < 0) {
-                                    versionsBehind.getAndIncrement();
-                                    changelog.append("\n").append(version).append(":\n").append(versionDetails.get("changelog").getAsString()).append("\n");
-                                    if (!shouldNotify.get()) {
-                                        if (ReleaseType.getFromName(versionDetails.get("type").getAsString()).value >= Configuration.instance().general.updateCheckerMinimumReleaseType.value)
-                                            shouldNotify.set(true);
-                                    }
+                                versionsBehind.getAndIncrement();
+                                changelog.append("\n").append(version).append(":\n").append(versionDetails.get("changelog").getAsString()).append("\n");
+                                if (!shouldNotify.get()) {
+                                    if (ReleaseType.getFromName(versionDetails.get("type").getAsString()).value >= Configuration.instance().general.updateCheckerMinimumReleaseType.value)
+                                        shouldNotify.set(true);
                                 }
+                            }
 
                         } catch (NumberFormatException e) {
                             e.printStackTrace();
@@ -68,7 +68,7 @@ public class UpdateChecker {
                 DiscordIntegration.LOGGER.info("Could not check for updates");
                 e.printStackTrace();
             }
-            return false;
+        return false;
     }
 
     /**

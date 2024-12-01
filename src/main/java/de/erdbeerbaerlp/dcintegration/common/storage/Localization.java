@@ -59,7 +59,7 @@ public class Localization {
     @TomlComment("Message shown for embed messages")
     public String embedMessage = "Message";
     @TomlComment("Hover message for the bot tag in-game")
-    public String bot = "This user is an bot";
+    public String bot = "This user is an application";
     @TomlComment("Strings about the discord commands")
     public Commands commands = new Commands();
     @TomlComment("Strings about the account linking feature")

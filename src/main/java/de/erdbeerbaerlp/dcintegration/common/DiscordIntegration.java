@@ -4,16 +4,20 @@ import club.minnced.discord.webhook.external.JDAWebhookClient;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.moandjiezana.toml.Toml;
+import com.moandjiezana.toml.TomlWriter;
 import de.erdbeerbaerlp.dcintegration.common.addon.AddonLoader;
 import de.erdbeerbaerlp.dcintegration.common.api.DiscordEventHandler;
 import de.erdbeerbaerlp.dcintegration.common.minecraftCommands.McCommandRegistry;
 import de.erdbeerbaerlp.dcintegration.common.storage.CommandRegistry;
+import de.erdbeerbaerlp.dcintegration.common.storage.Commands;
 import de.erdbeerbaerlp.dcintegration.common.storage.Configuration;
 import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.LinkManager;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerLink;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.database.DBInterface;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.database.JSONInterface;
+import de.erdbeerbaerlp.dcintegration.common.threads.APITestTask;
 import de.erdbeerbaerlp.dcintegration.common.threads.MessageQueueTask;
 import de.erdbeerbaerlp.dcintegration.common.threads.StatusUpdateTask;
 import de.erdbeerbaerlp.dcintegration.common.util.DiscordMessage;
@@ -40,6 +44,7 @@ import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestConfig;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 import okhttp3.OkHttpClient;
@@ -103,9 +108,12 @@ public class DiscordIntegration {
     public static final int apiVersion = 3;
 
     final ArrayList<DiscordEventHandler> eventHandlers = new ArrayList<>();
+
     {
-        eventHandlers.add(new DiscordEventHandler() {}); //Register blank event handler to return default values
+        eventHandlers.add(new DiscordEventHandler() {
+        }); //Register blank event handler to return default values
     }
+
     static {
         List<Rule<Object, Node<Object>, Object>> rules = new ArrayList<>(DiscordMarkdownRules.createAllRulesForDiscord(false));
         rules.add(new Rule<Object, Node<Object>, Object>(Pattern.compile("(.*)")) {
@@ -125,6 +133,10 @@ public class DiscordIntegration {
      * Path to the message configuration
      */
     public static File messagesFile = new File("./DiscordIntegration-Data/Messages.toml");
+    /**
+     * Path to the custom command configuration
+     */
+    public static File commandsFile = new File("./DiscordIntegration-Data/Commands.toml");
 
     /**
      * Message sent when the server is starting (in non-webhook mode!), stored for editing
@@ -162,8 +174,7 @@ public class DiscordIntegration {
     /**
      * Holds messages recently forwarded to discord in format MessageID, Sender UUID
      */
-    final HashMap<String, UUID> recentMessages = new HashMap<>(150);
-
+    final HashMap<Long, UUID> recentMessages = new HashMap<>(150);
 
 
     /**
@@ -177,10 +188,12 @@ public class DiscordIntegration {
 
     private Thread launchThread;
     private TimerTask messageSender, statusUpdater;
+    private APITestTask apiTest;
     private static Timer timer = new Timer();
 
 
     public DiscordIntegration(final McServerInterface serverInterface) {
+        System.setProperty("http.agent", "Discord Integration/"+VERSION+" (https://github.com/ErdbeerbaerLP/DiscordIntegration-Core)");
         this.serverInterface = serverInterface;
         try {
             loadConfigs();
@@ -249,6 +262,7 @@ public class DiscordIntegration {
         }
         return false;
     }
+
     /**
      * Calls an event and does not return any value
      *
@@ -268,15 +282,27 @@ public class DiscordIntegration {
         if (!discordDataDir.exists()) {
             discordDataDir.mkdirs();
         }
+
+        if (configFile.exists()) {
+            if (!commandsFile.exists()) {
+                commandsFile.createNewFile();
+                final Toml toml = new Toml().read(configFile);
+                if (toml != null && toml.contains("commands.customCommands")) {
+                    final Commands cmds = toml.to(Commands.class);
+                    cmds.configGenerated = true;
+                    LOGGER.info("Starting custom-command migration");
+                    final TomlWriter w = new TomlWriter.Builder()
+                            .indentValuesBy(2)
+                            .indentTablesBy(4)
+                            .padArrayDelimitersBy(2)
+                            .build();
+                    w.write(cmds, commandsFile);
+                    LOGGER.info("Custom-command migration completed");
+                }
+            }
+        }
+
         Configuration.instance().loadConfig();
-
-
-        /* TODO
-        if(Configuration.instance().general.allowAutomaticBugFixing){
-            final URL u = new URL("https://api.erdbeerbaerlp.de/config-overrides.json");
-            final HttpsURLConnection urlConnection = (HttpsURLConnection) u.openConnection();
-
-        }*/
 
 
         if (!Configuration.instance().messages.language.equals("local")) {
@@ -326,14 +352,16 @@ public class DiscordIntegration {
                 } catch (Exception e) {
                     LOGGER.error(e);
                     if (Configuration.instance().commands.useLocalCommands)
-                        LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: " + jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
+                        LOGGER.error("Failed to register slash commands! Please re-invite the bot to all servers the bot is on using this link: {}", jda.getInviteUrl(Permission.getPermissions(2953964624L)).replace("scope=", "scope=applications.commands%20"));
                 }
             });
         }
         if (statusUpdater == null) statusUpdater = new StatusUpdateTask(this);
         if (messageSender == null) messageSender = new MessageQueueTask(this);
+        if (apiTest == null) apiTest = new APITestTask(this);
         timer.scheduleAtFixedRate(statusUpdater, 0, TimeUnit.SECONDS.toMillis(10));
         timer.scheduleAtFixedRate(messageSender, 0, TimeUnit.SECONDS.toMillis(1));
+        timer.scheduleAtFixedRate(apiTest, 0, TimeUnit.MINUTES.toMillis(5));
 
         if (JSONInterface.jsonFile.exists() && !Configuration.instance().linking.databaseClass.equals(JSONInterface.class.getCanonicalName())) {
             LOGGER.info("PlayerLinks.json found, but using custom database implementation");
@@ -359,9 +387,9 @@ public class DiscordIntegration {
         AddonLoader.unloadAddons(this);
         LOGGER.info("Unloaded addons");
         if (jda != null) {
-            LOGGER.info("Unloading instance: " + jda);
+            LOGGER.info("Unloading instance: {}", jda);
             if (listener != null) {
-                LOGGER.info("Unloading listener: " + listener);
+                LOGGER.info("Unloading listener: {}", listener);
                 jda.removeEventListener(listener);
             }
             stopThreads();
@@ -455,7 +483,7 @@ public class DiscordIntegration {
         }
         channel = channelCache.computeIfAbsent(id, this::retrieveChannel);
         if (channel == null) {
-            LOGGER.error("Failed to get Channel with ID '" + id + "', falling back to default channel");
+            LOGGER.error("Failed to get Channel with ID '{}', falling back to default channel", id);
             channel = channelCache.computeIfAbsent(Configuration.instance().general.botChannel, this::retrieveChannel);
         }
         return channel;
@@ -506,7 +534,7 @@ public class DiscordIntegration {
      */
 
     public UUID getSenderUUIDFromMessageID(String messageID) {
-        return recentMessages.getOrDefault(messageID, dummyUUID);
+        return recentMessages.getOrDefault(Long.parseLong(messageID), dummyUUID);
     }
 
     public boolean hasAdminRole(List<Role> roles) {
@@ -529,7 +557,7 @@ public class DiscordIntegration {
             if (!Configuration.instance().advanced.baseAPIUrl.equals("https://discord.com"))
                 try {
                     b.setRestConfig(new RestConfig().setBaseUrl(Configuration.instance().advanced.baseAPIUrl));
-                    LOGGER.info("Now using " + Configuration.instance().advanced.baseAPIUrl + " as target Discord!");
+                    LOGGER.info("Now using {} as target Discord!", Configuration.instance().advanced.baseAPIUrl);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -541,6 +569,7 @@ public class DiscordIntegration {
                 b.enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_EMOJIS_AND_STICKERS, GatewayIntent.MESSAGE_CONTENT);
                 b.setAutoReconnect(true);
                 b.setEnableShutdownHook(true);
+                b.setMemberCachePolicy(MemberCachePolicy.ALL);
                 try {
                     jda = b.build();
                     jda.awaitReady();
@@ -716,7 +745,7 @@ public class DiscordIntegration {
     public Webhook getWebhook(final GuildMessageChannel ic) {
         if (!Configuration.instance().webhook.enable || ic == null) return null;
         if (ic instanceof ThreadChannel) {
-            ThreadChannel c = (ThreadChannel)ic;
+            ThreadChannel c = (ThreadChannel) ic;
             return webhookHashMap.computeIfAbsent(c.getId(), cid -> {
                 if (!PermissionUtil.checkPermission(c.getParentChannel(), getMemberById(jda.getSelfUser().getIdLong()), Permission.MANAGE_WEBHOOKS)) {
                     LOGGER.info("ERROR! Bot does not have permission to manage webhooks, disabling webhook");
@@ -775,7 +804,9 @@ public class DiscordIntegration {
         return webhookClis.computeIfAbsent(channelID, (id) -> {
             final GuildMessageChannel channel = getChannel(id);
             final Webhook wh = getWebhook(channel);
+
             if (wh == null) return null;
+
             JDAWebhookClient cli = JDAWebhookClient.from(wh);
             if (channel instanceof ThreadChannel) {
                 ThreadChannel c = (ThreadChannel) channel;
@@ -915,15 +946,16 @@ public class DiscordIntegration {
                         builder.setUsername(name);
                         builder.setAvatarUrl(avatarURL);
                         final JDAWebhookClient webhookCli = getWebhookCli(channel.getId());
-                        if (webhookCli != null)
-                            webhookCli.send(builder.build()).thenAccept((a) -> rememberRecentMessage(String.valueOf(a.getId()), UUID.fromString(uuid)));
+                        if (webhookCli != null) {
+                            webhookCli.send(builder.build()).thenAccept((a)-> rememberRecentMessage(a.getId(),  uuid.equals("0000000")?null:UUID.fromString(uuid)));
+                        }
                     });
                 } else if (isChatMessage) {
                     message.setMessage(Localization.instance().discordChatMessage.replace("%player%", name).replace("%msg%", message.getMessage()));
                     message.setIsChatMessage();
-                    channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> rememberRecentMessage(a.getId(), UUID.fromString(uuid)));
+                    channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> rememberRecentMessage(a.getIdLong(), uuid.equals("0000000")?null:UUID.fromString(uuid)));
                 } else {
-                    channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> rememberRecentMessage(a.getId(), UUID.fromString(uuid)));
+                    channel.sendMessage(message.buildMessages()).submit().thenAccept((a) -> rememberRecentMessage(a.getIdLong(), uuid.equals("0000000")?null:UUID.fromString(uuid)));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1017,7 +1049,7 @@ public class DiscordIntegration {
                         }
                 }
                 if (avatarURL != null && avatarURL.isEmpty())
-                    avatarURL = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", uUUID.toString()).replace("%uuid_dashless%", uUUID.toString().replace("-", "")).replace("%name%", pName).replace("%randomUUID%", UUID.randomUUID().toString());
+                    avatarURL = getSkinURL().replace("%uuid%", uUUID.toString()).replace("%uuid_dashless%", uUUID.toString().replace("-", "")).replace("%name%", pName).replace("%randomUUID%", UUID.randomUUID().toString());
             }
             if (isServerMessage) {
                 avatarURL = Configuration.instance().webhook.serverAvatarURL;
@@ -1032,14 +1064,19 @@ public class DiscordIntegration {
      * @param msgID Message ID
      * @param uuid  Sender UUID
      */
-    public void rememberRecentMessage(String msgID, UUID uuid) {
+    public void rememberRecentMessage(Long msgID, UUID uuid) {
         if (recentMessages.size() + 1 >= 150) {
-            do {
-                recentMessages.remove(recentMessages.keySet().toArray(new String[0])[0]);
-            } while (recentMessages.size() + 1 >= 150);
+            final Long oldest = recentMessages.entrySet().stream().sorted(Map.Entry.comparingByKey()).iterator().next().getKey();
+            recentMessages.remove(oldest);
         }
         recentMessages.put(msgID, uuid);
     }
 
+    /**
+     * Gets the skin url currently in use
+     */
+    public String getSkinURL(){
+        return apiTest.getSkinURL();
+    }
 }
 
