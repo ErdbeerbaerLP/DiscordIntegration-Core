@@ -115,6 +115,10 @@ public interface McServerInterface {
      */
     String runMCCommand(final String cmdString);
 
-
+    /**
+     * Checks if the player is vanished
+     * @return vanish state
+     */
+    boolean isPlayerVanish();
 
 }
