@@ -6,9 +6,12 @@ import de.erdbeerbaerlp.dcintegration.common.storage.Localization;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import static de.erdbeerbaerlp.dcintegration.common.DiscordIntegration.INSTANCE;
 
 
 public class CommandList extends DiscordCommand {
@@ -19,9 +22,16 @@ public class CommandList extends DiscordCommand {
     @Override
     public void execute(final SlashCommandInteractionEvent ev, final ReplyCallbackAction reply) {
         final HashMap<UUID, String> players = DiscordIntegration.INSTANCE.getServerInterface().getPlayers();
+        final ArrayList<UUID> vanishedPlayers = new ArrayList<>();
         if (players.isEmpty()) {
             reply.setContent(Localization.instance().commands.cmdList_empty).setEphemeral(Configuration.instance().commands.hideListCmd).queue();
             return;
+        }
+        for (UUID p : players.keySet()) {
+            if(INSTANCE.getServerInterface().isPlayerVanish(p)) vanishedPlayers.add(p);
+        }
+        for (UUID vanishedPlayer : vanishedPlayers) {
+            players.remove(vanishedPlayer);
         }
         StringBuilder out = new StringBuilder((players.size() == 1 ? Localization.instance().commands.cmdList_one
                 : Localization.instance().commands.cmdList_header.replace("%amount%", "" + players.size())) + "\n```\n");
