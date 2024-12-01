@@ -117,8 +117,9 @@ public interface McServerInterface {
 
     /**
      * Checks if the player is vanished
+     * @param player UUID of player to check
      * @return vanish state
      */
-    boolean isPlayerVanish();
+    boolean isPlayerVanish(UUID player);
 
 }
