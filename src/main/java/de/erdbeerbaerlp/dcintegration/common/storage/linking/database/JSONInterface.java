@@ -8,6 +8,8 @@ import de.erdbeerbaerlp.dcintegration.common.DiscordIntegration;
 import de.erdbeerbaerlp.dcintegration.common.storage.linking.PlayerLink;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Default JSON database implementation
@@ -29,9 +31,7 @@ public class JSONInterface extends DBInterface {
                 jsonFile.getParentFile().mkdirs();
             if (!jsonFile.exists()) {
                 jsonFile.createNewFile();
-                try (Writer writer = new FileWriter(jsonFile)) {
-                    gson.toJson(new JsonArray(), writer);
-                }
+                writeJson(new JsonArray());
             }
 
         } catch (IOException e) {
@@ -59,8 +59,8 @@ public class JSONInterface extends DBInterface {
         }
         json.add(gson.toJsonTree(link).getAsJsonObject());
         DiscordIntegration.LOGGER.debug("JSONInterface addLink | json (new): " + json);
-        try (Writer writer = new FileWriter(jsonFile)) {
-            gson.toJson(json, writer);
+        try {
+            writeJson(json);
             DiscordIntegration.LOGGER.debug("JSONInterface addLink | Written to File");
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -74,8 +74,8 @@ public class JSONInterface extends DBInterface {
             if (o.discordID != null && o.discordID.equals(id)) {
                 final JsonArray json = getJson();
                 json.remove(e);
-                try (Writer writer = new FileWriter(jsonFile)) {
-                    gson.toJson(json, writer);
+                try {
+                    writeJson(json);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                     return;
@@ -102,4 +102,20 @@ public class JSONInterface extends DBInterface {
         }
     }
 
+    private void writeJson(JsonArray json) throws IOException {
+        final File tempFile = new File(jsonFile.getAbsolutePath() + ".tmp");
+        try (
+            FileOutputStream fos = new FileOutputStream(tempFile);
+            OutputStreamWriter writer = new OutputStreamWriter(fos)
+        ){
+            gson.toJson(json, writer);
+            writer.flush();
+        }
+        Files.move(
+                tempFile.toPath(),
+                jsonFile.toPath(),
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.ATOMIC_MOVE
+        );
+    }
 }
