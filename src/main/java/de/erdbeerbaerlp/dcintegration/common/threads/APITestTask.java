@@ -16,6 +16,7 @@ public class APITestTask extends TimerTask {
     // == Values used for testing the URL
     private static final UUID testUUID = UUID.fromString("210f7275-c79f-44f8-a7a0-7da71c751bb9");
     private static final String testName = "ErdbeerbaerLP";
+    private static final String testTexture = "fb057682288b5948a099d41348b35672b4e2af280bcc2b1a8df665f5d3f0aa64";
     // ==
 
     public APITestTask(final DiscordIntegration dc) {
@@ -24,7 +25,7 @@ public class APITestTask extends TimerTask {
 
     @Override
     public void run() {
-        final String urlToTest = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", testUUID.toString()).replace("%uuid_dashless%", testUUID.toString().replace("-", "")).replace("%name%", testName).replace("%randomUUID%", UUID.randomUUID().toString());
+        final String urlToTest = Configuration.instance().webhook.playerAvatarURL.replace("%uuid%", testUUID.toString()).replace("%uuid_dashless%", testUUID.toString().replace("-", "")).replace("%name%", testName).replace("%randomUUID%", UUID.randomUUID().toString()).replace("%texture_hash%", testTexture);
         try {
             final HttpURLConnection c = (HttpURLConnection) new URL(urlToTest).openConnection();
             c.connect();

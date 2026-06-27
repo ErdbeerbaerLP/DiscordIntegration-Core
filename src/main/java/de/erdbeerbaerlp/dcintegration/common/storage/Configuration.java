@@ -350,7 +350,7 @@ public class Configuration {
         public boolean useServerNameForRcon = true;
         @TomlComment("Use the server name and avatar for Console")
         public boolean useServerNameForConsole = true;
-        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache", "https://www.tydiumcraft.net/docs/skinapi supports both bedrock(floodgate) and java players", "Default - https://starlightskins.lunareclipse.studio/render/pixel/%name%/face?randomuuid=%randomUUID%"})
+        @TomlComment({"The URL where the player avatar gets fetched from", "", "PLACEHOLDERS:", "%uuid% - Returns the player's UUID with dashes", "%uuid_dashless% - Returns the player's UUID without dashes", "%name% - Returns the player's name", "%texture_hash% - Returns player's skin texture ID (hash)", "%randomUUID% - Returns an random UUID which can be used to prevent discord cache", "https://www.tydiumcraft.net/docs/skinapi supports both bedrock(floodgate) and java players", "Default - https://starlightskins.lunareclipse.studio/render/pixel/%name%/face?randomuuid=%randomUUID%"})
         public String playerAvatarURL = "https://starlightskins.lunareclipse.studio/render/pixel/%name%/face?randomuuid=%randomUUID%";
         @TomlComment({"Should the avatar url be tested periodically?","If enabled, should the avatar url be down, it will use the fallback one until it comes back"})
         public boolean testAvatarURL = true;
