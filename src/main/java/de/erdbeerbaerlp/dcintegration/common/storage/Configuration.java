@@ -326,13 +326,13 @@ public class Configuration {
         public boolean enabled = true;
 
         @TomlComment("The message displayed when typing /discord in the server chat")
-        public String message = "Join our discord! https://discord.gg/myserver";
+        public String message = "Join our discord! https://example.com";
 
         @TomlComment("The message shown when hovering the /discord command message")
         public String hoverMessage = "Click to open the invite url";
 
         @TomlComment("The url to open when clicking the /discord command text")
-        public String inviteURL = "https://discord.gg/myserver";
+        public String inviteURL = "https://example.com";
     }
 
 
