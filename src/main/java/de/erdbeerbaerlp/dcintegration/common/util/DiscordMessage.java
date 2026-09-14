@@ -158,6 +158,12 @@ public final class DiscordMessage {
             out.setEmbeds(embed);
 
         }
+        if (isSystemMessage && Configuration.instance().advanced.suppressDiscordNotificationsFromSystem) {
+            out.setSuppressedNotifications(true);
+        }
+        if (!isSystemMessage && Configuration.instance().advanced.suppressDiscordNotificationsFromChat) {
+            out.setSuppressedNotifications(true);
+        }
         return out.build();
     }
 

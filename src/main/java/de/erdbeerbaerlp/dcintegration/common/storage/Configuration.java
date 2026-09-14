@@ -311,6 +311,12 @@ public class Configuration {
         public String baseAPIUrl = "https://discord.com";
         @TomlComment({"Delay of sending webhook messages ingame in milliseconds", "If you get duplicate messages in webhook mode, increase this value a bit"})
         public long webhookMessageDelay = 200;
+
+        @TomlComment({"Sends chat messages relayed from Minecraft with the 'Suppress Notifications' flag, also known as \"@silent\""})
+        public boolean suppressDiscordNotificationsFromChat;
+
+        @TomlComment({"Sends server, death and advancement messages with the 'Suppress Notifications' flag, also known as \"@silent\""})
+        public boolean suppressDiscordNotificationsFromSystem;
     }
 
     public static class ForgeSpecific {
